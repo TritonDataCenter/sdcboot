@@ -1,0 +1,132 @@
+
+
+
+SUBST(1)                                                 SUBST(1)
+
+
+NNAAMMEE
+       subst - substitute a path by a drive letter.
+
+SSYYNNOOPPSSIISS
+       subst /?
+
+       subst dr1 dr2
+
+       subst dr /d
+
+       subst
+
+DDEESSCCRRIIPPTTIIOONN
+       _s_u_b_s_t  is  designed to manipulate the CDS ( D S by a drive
+       letter.
+
+       _s_u_b_s_t is part of the _s_w_s_u_b_s_t package. It can  be  created,
+       if  it  does  not already exist, by copying the executable
+       swsubst.exe to subst.exe
+
+OOPPTTIIOONNSS
+       /?     Displays a little help screen.
+
+       /d     Causes _s_u_b_s_t to break off the relation between  the
+              drive  letter dr and the substituted path. If dr is
+              JOIN'ed and not SUBST'ed, the relation is been bro-
+              ken off, too.
+
+       dr1: dr2:path
+              Causes  _s_u_b_s_t  to  substitute the path on drive dr2
+              with the drive letter dr1 dr1 is  already  SUBST'ed
+              or JOIN'ed, this relation will be broken off.  path
+              need not neither exist nor fully qualified. It will
+              be created as well as the full path relative to the
+              current working directory on drive dr2
+
+       without any parameter
+              This dumps a list onto the  screen  containing  all
+              SUBST'ed  drives  in  the form: X: => Y:PATH; where
+              Y:PATH is the fully-qualified path and by  X:  sub-
+              stituted  path.  If  there is no SUBST'ed drive, no
+              output occurs.
+
+SSEEEE AALLSSOO
+       swsubst, join.
+
+KKNNOOWWNN BBUUGGSS
+       o      Networked drives cannot be used.
+
+       o      Sometimes substitutions onto a floppy  drive  won't
+
+
+
+
+
+
+
+                           22 May 1995                          1
+
+
+
+
+
+SUBST(1)                                                 SUBST(1)
+
+
+              work for unknown reason.
+
+CCOONNTTRRIIBBUUTTEERRSS
+                             Steffen Kaiser
+                         Mittelstra'ae 112/B115
+                     53757 Sankt Augustin - Menden
+                         Deutschland - Germany
+
+                e-mail: Steffen.Kaiser@@FH-Rhein-Sieg.DE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                           22 May 1995                          2
+
+

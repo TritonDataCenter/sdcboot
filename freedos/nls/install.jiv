@@ -1,0 +1,29 @@
+0.0:Install version %s, Copyright (C) 1998-2000 Jim Hall\n
+0.1:Dis be free software, and ya' is welcome t'redistribute it\n
+0.2:unda' certain condishuns; see da damn stash COPYING fo' details.\n
+0.3:Install comes wid ABSOLUTELY NO WARRANTY\n
+0.4:De Install honky code completed successfully. Slap mah fro!\n
+0.5:Dere wuz %u erro's and %u non-fatal warnin's.\n
+1.0:Press any key t'continue
+1.1:Where is de install stashs? (where t'install fum?)
+1.2:Where gots'ta stashs be installed? (where t'install to?)
+2.0:no way
+2.1:damn straight
+2.2:Do ya' wanna install dis disk set?
+2.3:Continue installin' dis disk?
+2.4:Install dis package?
+3.0:Disk set, dig dis:
+3.1:In top-level install
+3.2:Installin' series, dig dis:
+3.3:Package, dig dis:
+3.4:Can't find data stash fo' dis install disk!
+3.5:Done installin' dis disk series.
+3.6:ERROR! Failed t'install REQUIRED package.
+3.7:WARNING! Failed t'install OPTIONAL package.
+3.8:You's may not gots de right install floppy in de roll.
+3.9:Doublecheck dat ya' gots de right disk and try again. 'S coo', bro.
+3.10:If ya' is installin' oda' disk series, please insert
+3.11:disk #1 uh de next series in de roll now, so cut me some slack, Jack.
+4.0:OPTIONAL
+4.1:REQUIRED
+4.2:SKIPPED

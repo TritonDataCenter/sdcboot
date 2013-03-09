@@ -1,0 +1,31 @@
+//---------------------------------------------------------------------------
+// seldir.dlg : Select WizUnZip "unzip to" directory.
+// File Open and Save As dialog descriptions
+//
+// Copyright (c) Microsoft Corporation, 1990-
+// This file, from the Windows 3.1 SDK is customized for WizUnzip.
+// Note: Five of the usual "File Open" controls are narrowed, invisible,
+// and lurking in the left margin of the dialog box.
+//---------------------------------------------------------------------------
+
+SELDIR DIALOG 181, 107, 176, 134
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Unzip To"
+FONT 8, "Helv"
+{
+ LTEXT "File &Name:", 1090, 2, 4, 2, 8, NOT WS_VISIBLE | NOT WS_GROUP
+ EDITTEXT 1152, 2, 16, 2, 12, ES_AUTOHSCROLL | ES_OEMCONVERT | NOT WS_VISIBLE | NOT WS_TABSTOP
+ LISTBOX 1120, 2, 34, 2, 60, LBS_SORT | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_DISABLENOSCROLL | NOT WS_VISIBLE | WS_VSCROLL
+ LTEXT "&Directories:", -1, 8, 6, 92, 9
+ LTEXT "", 1088, 8, 18, 92, 9, SS_NOPREFIX
+ LISTBOX 1121, 8, 32, 92, 68, LBS_SORT | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_DISABLENOSCROLL | WS_VSCROLL | WS_TABSTOP
+ LTEXT "List Files of &Type:", 1089, 2, 104, 2, 9, NOT WS_VISIBLE | NOT WS_GROUP
+ COMBOBOX 1136, 2, 114, 2, 34, CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | NOT WS_VISIBLE | WS_BORDER | WS_VSCROLL
+ LTEXT "Dri&ves:", 1091, 8, 104, 92, 9
+ COMBOBOX 1137, 8, 114, 92, 68, CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | CBS_AUTOHSCROLL | CBS_SORT | CBS_HASSTRINGS | WS_BORDER | WS_VSCROLL | WS_TABSTOP
+ DEFPUSHBUTTON "OK", IDOK, 106, 6, 50, 14, WS_GROUP
+ PUSHBUTTON "Cancel", IDCANCEL, 106, 24, 50, 14, WS_GROUP
+ PUSHBUTTON "&Help", 1038, 106, 46, 50, 14, WS_GROUP
+ CHECKBOX "&Read Only", 1040, 106, 68, 50, 12, BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_GROUP | WS_TABSTOP
+ CONTROL "&Save as Default", IDM_SAVE_AS_DEFAULT, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 106, 86, 70, 10
+}

@@ -1,0 +1,1974 @@
+  JMP Main ;Skip over Data to Main Program
+
+
+;==============================================================================
+;NOTE: This program is written for and compiled with Eric Isaacson's A86
+;      assembly language compiler, using Options +P0 -F (8086/8088 CPU
+;      with no FPU).
+;==============================================================================
+
+
+;哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌
+;EQUATE/STRUCTURE/MACRO DEFINITIONS
+;苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;EQUATES
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;==============================================================================
+;Miscellaneous
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special Codes
+  ;----------------------------------------------------------------------------
+  No  EQU  0 ;Miscellaneous Yes/No tests
+  Yes EQU -1 ;      "        "  "    "
+
+
+;==============================================================================
+;CONsole/Screen Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special ASCII Characters
+  ;----------------------------------------------------------------------------
+  Tab       EQU  9 ;Tab
+  LF        EQU 10 ;Line Feed
+  FormFeed  EQU 12 ;FormFeed
+  CR        EQU 13 ;Carriage Return
+  EOF       EQU 26 ;End-of-File
+  Quote2    EQU 34 ;Double quote
+  Quote1    EQU 39 ;Single quote
+  BackSlash EQU 92 ;BackSlash (\)
+
+
+;==============================================================================
+;DOS Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special "hard-coded" DOS Device Handles.
+  ;These Handles are permanently hard-coded in DOS, and are always open.
+  ;There is no need to issue Find, Open, or Close calls to these
+  ;  devices - you can just use them at will.
+  ;----------------------------------------------------------------------------
+  StdInHandle  EQU 0 ;Standard Input Device Handle
+  StdOutHandle EQU 1 ;Standard Output Device Handle
+  StdErrHandle EQU 2 ;Standard Error Device Handle
+  StdAuxHandle EQU 3 ;Standard Auxiliary Device Handle (COM1 by default)
+  StdPrnHandle EQU 4 ;Standard Printer Device Handle (LPT1 by default)
+
+  ;----------------------------------------------------------------------------
+  ;Codes returned by INT 21h, Function 4400h (Get Device Information)
+  ;----------------------------------------------------------------------------
+  ;If bit 7 is Set (is a Device):
+  DvcInfoIsStdIn    EQU 0001h ;STDIN
+  DvcInfoIsStdOut   EQU 0002h ;STDOUT
+  DvcInfoIsNUL      EQU 0004h ;NUL
+  DvcInfoIsClock    EQU 0008h ;CLOCK$
+  DvcInfoInt29h     EQU 0010h ;Uses Int 29h (Special Device)
+  DvcInfoBinary     EQU 0020h ;Binary (Raw) Mode
+  DvcInfoEOF        EQU 0040h ;EOF on Input
+  DvcInfoIsDevice   EQU 0080h ;Is a Device (not a File)
+  DvcInfoKEYB       EQU 0100h ;Unknown (set by DOS 6.2x KEYB program)
+  DvcInfoOpenClose  EQU 0800h ;Supports Open/Close calls
+  DvcInfoOutputBusy EQU 2000h ;Supports Output until Busy
+  DvcInfoIOCTL      EQU 4000h ;Can process IOCTL requests (INT 21h, Func 4402h)
+
+  ;If bit 7 is Clear (is a File):
+  DvcInfoDriveMask    EQU 003Fh ;Drive number (0 = A:)
+  DvcInfoNotWritten   EQU 0040h ;File has not been written (Dirty Buffer?)
+  ;Bit 7 = Clear!
+  DvcInfoInt24h       EQU 0100h ;Generate Int 24h on Errors (DOS 4 only)
+  DvcInfoNotRemovable EQU 0800h ;Media Not Removable
+  DvcInfoNoDateTime   EQU 4000h ;Don't set File Date/Time on Closing (DOS 3.0+)
+  DvcInfoRemote       EQU 8000h ;File is Remote (DOS 3.0+)
+
+
+;==============================================================================
+;Program-specific
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Table & Buffer Sizes
+  ;----------------------------------------------------------------------------
+  TblSize    EQU  10 ;Number of keystrokes to store in the table
+  BufferSize EQU 200 ;Number of scan codes Int09 can store ahead
+  MaxLFNSize EQU 260 ;Maximum size of an LFN File String
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;STRUCTURES
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+  ;----------------------------------------------------------------------------
+  ;This is a Structure to use at the beginning of Interrupt Routines.
+  ;Note that the real Interrupt code MUST IMMEDIATELY follow this Header!!
+  ;----------------------------------------------------------------------------
+  IntHdr STRUC
+    HdwreRst  DB      0CBh ;Hardware Reset Routine (CBh = RETF)
+    CodeJmp   DW    010EBh ;Jump to real Interrupt Handler (JMP ENDS)
+    OldVector DD        ?  ;Old interrupt Vector
+    Signature DW    0424Bh ;Signature for this type of Interrupt routine
+    EOIFlag   DB        0  ;=80h if we issue End-of-Interrupt, else 0
+    HdwreJmp  DW    0F4EBh ;Jump to Hardware Reset Routine (JMP HdwreRst)
+    FutureUse DB 7 DUP (0) ;Reserved for future use
+   ENDS
+  IntOfst    EQU OFFSET CodeJmp ;Offset from beginning of our Structure
+
+  ;----------------------------------------------------------------------------
+  ;Program Segment Prefix (PSP)
+  ;----------------------------------------------------------------------------
+  PSPStruc      STRUC
+    PSPDOSExit     DW       20CDh ;Int 20h Call
+    PSPNextSegment DW          ?  ;Segment of First Byte of Memory beyond Program
+    PSPCPMCall5    DB   6 DUP (?) ;CPM Far Call 5
+    PSPInt22Addr   DD          ?  ;Stored Int 22h Handler
+    PSPInt23Addr   DD          ?  ;Stored Int 23h (Ctrl-Break) Handler
+    PSPInt24Addr   DD          ?  ;Stored Int 23h (Critical Error) Handler
+    PSPParentPSP   DW          ?  ;Segment of Parent PSP
+    PSPJFT         DB  20 DUP (?) ;Job File Table (20 File Handles)
+    PSPEnvirSeg    DW          ?  ;Environment Segment for PSP
+    PSPSSSPOnEntry DD          ?  ;Processes SS:SP on Entry to last Int 21h Call
+    PSPJFTSize     DW          ?  ;Number of entries in JFT (default = 20)
+    PSPJFTPointer  DD          ?  ;Pointer to JFT (Default = PSP:0018h)
+    PSPPreviousPSP DD          ?  ;Pointer to previous PSP (Default = FFFF:FFFF)
+    PSPFiller1     DB  18 DUP (?) ;Misc stuff used by SHARE, Windows, etc.
+                                  ;Memory Below here available to TSR!
+    PSPFiller2     DB   2 DUP (?) ;Unused in DOS <= 6.00
+    PSPInt21       DW       21CDh ;Int 21h Call
+    PSPRETF        DB        0CBh ;RETF Call
+    PSPFiller3     DB   9 DUP (?) ;Can be used to make Extended FCB from FCB1
+    PSPFCB1        DB  16 DUP (?) ;First File Control Block
+    PSPFCB2        DB  16 DUP (?) ;Second File Control Block
+    PSPFiller4     DB   4 DUP (?) ;Unused
+    PSPCmdLineLen  DB          ?  ;Command Line Length & DTA
+    PSPCmdLine     DB 127 DUP (?) ;Command Line String
+   ENDS
+  PSPStrucSize EQU (TYPE PSPStruc) ;Should be 256 bytes
+
+  ;----------------------------------------------------------------------------
+  ;DTA (Disk Transfer Area) after Find First Matching File (INT 21h, Func 4Eh)
+  ;The first several bytes of the DTA are DOS version specific, and
+  ;  we don't care about that data anyway.  We only care about the data
+  ;  that is documented and the same across all versions of DOS.
+  ;----------------------------------------------------------------------------
+  FindFirstStruc   STRUC            ;Find First Matching File
+    FFVerSpecific     DB 21 DUP (0) ;DOS Version-specific Data
+    FFAttribs         DB         ?  ;File Attributes
+      FAttrReadOnly  EQU        01h ;Read-Only
+      FAttrHidden    EQU        02h ;Hidden
+      FAttrSystem    EQU        04h ;System
+      FAttrVolume    EQU        08h ;Volume Label
+      ;Bit 3 = Execute-only (Novell Netware)
+      FAttrDirectory EQU        10h ;Directory
+      FAttrArchive   EQU        20h ;Archive
+      FAttrUnused    EQU        40h ;Unused
+                                    ;DOS 3+ returns this bit set if file
+                                    ;  is actually a character device
+                                    ;DOS Window underneath Windows XP doesn't
+      ;Bit 7 = Delete Pending (OpenDOS, NovellDOS)
+      ;      = Shareable (Novell Netware)
+    FFTime            DW         ?  ;File Creation Time
+    FFDate            DW         ?  ;File Creation Date
+    FFSize            DD         ?  ;File Size
+    FFName            DB 13 DUP (?) ;ASCIIZ File Name & Extension
+   ENDS
+
+   FAttrFindAny EQU FAttrHidden+FAttrSystem+FAttrDirectory+FAttrVolume
+     ;Attributes to use in DOS's Find First Matching File Function
+     ;DOS ignores the Read-Only and and Archive bits, so they don't matter
+     ;If DOS Finds it, though, we need to check to make sure it's not
+     ;  a Directory or Volume or LFN entry
+     ;An LFN entry has the Volume, Hidden, System, and Read-Only bits set
+
+  ;----------------------------------------------------------------------------
+  ;Find First (FindData) Record when using LFN Find First Matching File
+  ;  (INT 21h, FUnc 714Eh)
+  ;----------------------------------------------------------------------------
+  FindFirstLFNStruc STRUC            ;Find First Matching File using LFN
+    FFLAttribs        DW          ?  ;File Attributes
+    ;Bits 0-6 = same as regular DOS attributes
+    ;Bit    8 = Temporary File
+    FFLCreateTime     DQ          ?  ;File Creation Time (number of 100ns
+                                     ;  intervals since 1/1/1601)
+    FFLAccessTime     DQ          ?  ;Last File Access Time
+    FFLModTime        DQ          ?  ;Last File Modification Time
+    FFLSizeHigh32     DW          ?  ;High 32 bits of File Size
+    FFLSizeLow32      DW          ?  ;Low 32 bits of File Size
+    FFLReserved       DB   8 DUP (?) ;Reserved/Unused
+    FFLLongName       DB 260 DUP (?) ;ASCIIZ Long File Name
+    FFLShortName      DB  14 DUP (?) ;ASCIIZ Short File Name
+   ENDS
+  FindFirstLFNSize EQU TYPE (FindFirstLFNStruc) ;Size of the Structure
+
+  ;----------------------------------------------------------------------------
+  ;Device Driver Header
+  ;----------------------------------------------------------------------------
+  DvcHdrStruc         STRUC
+    DHNextHeader         DD    ?  ;Point to the Next Device Header
+                                  ;  Offset = -1 if this is Last Device Header
+    DHAttribs            DW    ?  ;Device Attributes
+     ;Character Devices
+      DHAtrCharDvc      EQU 8000h ;Is a character Device
+      DHAtrCIOCTL       EQU 4000h ;IOCTL supported
+      DHAtrCOutTilBusy  EQU 2000h ;Output Until Busy supported (DOS 3.0+)
+      ;Bit 12 = Reserved
+      DHAtrCOpenClose   EQU 0800h ;Open/Close/RemovableMedia calls supported
+      ;Bits 10-8 = Reserved
+      DHAtrCGenIOCTLCk  EQU 0080h ;Generic IOCTL check supported (DOS 5.0+)
+                                  ;  (Driver Command 19h)
+      DHAtrCGenIOCTL    EQU 0040h ;Generic IOCTL supported (DOS 3.2+)
+                                  ;  (Driver Command 13h)
+      ;Bit 5 = Reserved
+      DHHAtrInt29h      EQU 0010h ;Device is Special (Use INT 29h for Output)
+      DHAtrCIsClock     EQU 0008h ;Device is CLOCK$
+      DHAtrCIsNul       EQU 0004h ;Device is NUL
+      DHAtrCIsStdOut    EQU 0002h ;Device is STDOUT
+      DHAtrCIsStdIn     EQU 0001h ;Device is STDIN
+     ;Block Devices
+      ;Bit 15 Clear if Block Device
+      DHAtrBIOCTL       EQU 4000h ;IOCTL supported
+      DHAtrBNonIBM      EQU 2000h ;Non-IBM format
+      DHAtrBIsRemote    EQU 1000h ;Device is Remote (is a Network Device)
+      DHAtrBOpenClose   EQU 0800h ;Open/Close/RemovableMedia calls supported
+      ;Bit 10 = Reserved
+      ;Bits 9-8 are used by DOS 3.3 DRIVER.SYS for unknown purposes
+      DHAtrBGenIOCTLCk  EQU 0080h ;Generic IOCTL check supported (DOS 5.0+)
+                                  ;  (Driver Command 19h)
+      DHAtrBGenIOCTL    EQU 0040h ;Generic IOCTL supported (DOS 3.2+)
+                                  ;  (Driver Command 13h)
+      ;Bits 5-2 = Reserved
+      DHAtrB32BitSect   EQU 0002h ;Driver supports 32-bit Sectors (DOS 3.31+)
+      ;Bit 0 = Reserved
+    DHStrategyOffset     DW    ?  ;Offset of Strategy Code Entry Point
+                                  ;  Called with ES:[BX] = Request Header
+    DHInterruptOffset    DW    ?  ;Offset of Interrupt Code Entry Point
+    DHCDvcName           DB 8 DUP ' '    ;Character Device Name (blank padded)
+      DHBNumDrives EQU OFFSET DHCDvcName ;Block Dvc = Number of supported drives
+      ;Remaining 7 bytes are normally unused, but sometimes contain an ASCII
+      ;  description of some sort.
+   ENDS
+  DvcHdrStrucSize EQU (TYPE DvcHdrStruc) ;Should be 16 bytes
+
+
+;哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌
+;DATA
+;苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘
+
+;==============================================================================
+;Strings we write to the screen
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;This must be the first data at the top of the file.
+  ;This way, the user will see this if they do a "TYPE SCANTEST.COM"
+  ;  from the command line.
+  ;----------------------------------------------------------------------------
+  Copyright:
+    DB CR
+    DB 'SCANTEST 1.10, (C) 1999-2008, Bret Johnson.',CR,LF
+    DB 'A low-level keyboard testing utility.',CR,LF
+    DB LF,0
+  HelpMsg:
+    DB CR,'Usage: SCANTEST [filename]',CR,LF
+    DB '   where [filename] is where you want to send a copy of the screen.',CR,LF
+    DB 0,EOF
+
+  ;----------------------------------------------------------------------------
+  ;Strings and Data to handle repeating "press" keystrokes
+  ;----------------------------------------------------------------------------
+  WhichFace DB ? ;Keeps track of which face (hollow or solid) to use next
+  Face1Msg: DB '',CR,0
+  Face2Msg: DB '',CR,0
+
+  ;----------------------------------------------------------------------------
+  ;Strings associated with writing output to a File
+  ;----------------------------------------------------------------------------
+  FileIsDirMsg:
+    DB 'There is already an Entry on the drive named: ',0
+  FileIsDirMsg2:
+    DB CR,LF
+    DB 'This Entry is either the Volume Name, a Directory Name, or part of a',CR,LF
+    DB '  Long File Name.',CR,LF
+    DB 'It is not possible to create a file with the same Name.',CR,LF,0
+  FileErrMsg:
+    DB 'Error creating file: ',0
+  FileErrMsg2:
+    DB 'Do you want to continue just using the screen (Y,n)? ',0
+  AlreadyMsg:
+    DB 'File already exists: ',0
+  AlreadyMsg2:
+    DB 'Do you want to overwrite the file (y,N)? ',0
+
+  CrLfMsg: DB CR,LF,0
+  YesMsg:  DB 'Y',CR,LF
+           DB LF,0
+  NoMsg:   DB 'N',CR,LF
+           DB LF,0
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to write our output table
+  ;----------------------------------------------------------------------------
+  Header:
+    DB 'A code surrounded by {brackets} is a key being released.',CR,LF
+    DB 'A code surrounded by *stars* is a Microsoft multimedia keyboard key.',CR,LF
+    DB 'Descriptions may not be valid for non-US or non-Microsoft keyboards.',CR,LF
+    DB LF
+    DB 'Press <Esc> to Quit.',CR,LF
+    DB LF
+    DB '   SCAN CODES      DESCRIPTION (US QWERTY KEYBOARD)',CR,LF
+    DB '=================  ================================',CR,LF,0
+  SpacerMsg:
+    DB '-----------------  --------------------------------',CR,LF,0
+
+  WordString: DB '     ',0
+  Space9Msg:  DB ' '
+  Space8Msg:  DB ' '
+  Space7Msg:  DB ' '
+  Space6Msg:  DB ' '
+  Space5Msg:  DB ' '
+  Space4Msg:  DB ' '
+  Space3Msg:  DB ' '
+  Space2Msg:  DB ' '
+  SpaceMsg:   DB ' '
+  BlankMsg:   DB 0
+
+  DashMsg: DB "-",0
+  RlsMsg1: DB "   {",0
+  RlsMsg2: DB "}",0
+  RlsMsg3: DB "}        ",0
+  RlsMsg4: DB "}    ",0
+
+  ;----------------------------------------------------------------------------
+  ;Table of Interrupt Numbers that the TSR Intercepts
+  ;First byte of each entry is the Interrupt Number
+  ;Second word is the Pointer to our Interrupt Handler Code Header
+  ;----------------------------------------------------------------------------
+  IntNumTable:
+    DB 09h       ;Keyboard Press/Release
+     DW Int09Hdr
+    DB 0         ;End of Table
+
+
+;==============================================================================
+;DOS Environment Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Variables to search for an extended Command Line String
+  ;This should only be valid/needed if the Command Line Size (PSP:[80h]) is 7Eh
+  ;----------------------------------------------------------------------------
+  CmdLineVarString:  DB 'CMDLINE='         ;Environment Variable String
+  CmdLineVarSize    EQU $-CmdLineVarString ;Length of String
+  CmdLineVarPointer  DW -1                 ;Pointer to Program Environment Variable
+
+
+;==============================================================================
+;Program-specific Data
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Miscellaneous Variables
+  ;----------------------------------------------------------------------------
+  KeyCounter DB  0 ;Number of keys currently pushed
+  HelpFlag   DB No ;Does the user need/want help?
+
+  ;----------------------------------------------------------------------------
+  ;Data associated with writing output to a File
+  ;----------------------------------------------------------------------------
+  LFNSupport DB No ;Long File Name Support installed?
+  FileHandle DW  0 ;Handle number of our File
+
+  FileName:
+    DB (MaxLFNSize+9) DUP (0) ;Our FileName (may be LFN)
+
+  LFNTestBuffer:
+    DB (MaxLFNSize+1) DUP (0) ;Temporary Buffer to Test for LFN Support
+
+  LargeDTA:
+    DB FindFirstLFNSize DUP (0) ;A large Disk Transfer Area
+
+
+  ;----------------------------------------------------------------------------
+  ;Circular Buffer to store Scan Codes
+  ;----------------------------------------------------------------------------
+  Buffer:      DB BufferSize DUP (?) ;Circular Buffer to store scan codes in
+  BufferHead   DW OFFSET Buffer + 1  ;Pointer to Buffer Head
+  BufferTail   DW OFFSET Buffer      ;Pointer to Buffer Tail
+  BufferCount  DB 0                  ;Number of codes currently in buffer
+  BufferBegin EQU OFFSET Buffer      ;Beginning of buffer
+  BufferEnd   EQU OFFSET Buffer + BufferSize - 1 ;End of buffer
+
+  ;----------------------------------------------------------------------------
+  ;Buffers to keep track of current and repeated keystrokes
+  ;----------------------------------------------------------------------------
+  OldScanCodes:
+    DB TblSize DUP (3 DUP (0)) ;Stack for Old (repeated) scan codes
+  ScanCodes:
+    DB 3 DUP (0)               ;Current set of Scan Codes
+
+  ;----------------------------------------------------------------------------
+  ;The ScanCode-to-Description Lookup table
+  ;----------------------------------------------------------------------------
+  KeyTable:
+    DB   1,  0, 0, 'Escape',0
+    DB   2,  0, 0, '1!',0
+    DB   3,  0, 0, '2@',0
+    DB   4,  0, 0, '3#',0
+    DB   5,  0, 0, '4$',0
+    DB   6,  0, 0, '5%',0
+    DB   7,  0, 0, '6^',0
+    DB   8,  0, 0, '7&',0
+    DB   9,  0, 0, '8*',0
+    DB  10,  0, 0, '9(',0
+    DB  11,  0, 0, '0)',0
+    DB  12,  0, 0, '-_',0
+    DB  13,  0, 0, '=+',0
+    DB  14,  0, 0, 'BackSpace',0
+    DB  15,  0, 0, 'Tab/BackTab',0
+    DB  16,  0, 0, 'Qq',0
+    DB  17,  0, 0, 'Ww',0
+    DB  18,  0, 0, 'Ee',0
+    DB  19,  0, 0, 'Rr',0
+    DB  20,  0, 0, 'Tt',0
+    DB  21,  0, 0, 'Yy',0
+    DB  22,  0, 0, 'Uu',0
+    DB  23,  0, 0, 'Ii',0
+    DB  24,  0, 0, 'Oo',0
+    DB  25,  0, 0, 'Pp',0
+    DB  26,  0, 0, '[{',0
+    DB  27,  0, 0, ']}',0
+    DB  28,  0, 0, 'Enter',0
+    DB  29,  0, 0, 'Left Control',0
+    DB  30,  0, 0, 'Aa',0
+    DB  31,  0, 0, 'Ss',0
+    DB  32,  0, 0, 'Dd',0
+    DB  33,  0, 0, 'Ff',0
+    DB  34,  0, 0, 'Gg',0
+    DB  35,  0, 0, 'Hh',0
+    DB  36,  0, 0, 'Jj',0
+    DB  37,  0, 0, 'Kk',0
+    DB  38,  0, 0, 'Ll',0
+    DB  39,  0, 0, ';:',0
+    DB  40,  0, 0, "'",'"',0
+    DB  41,  0, 0, '`~',0
+    DB  42,  0, 0, 'Left Shift',0
+    DB  43,  0, 0, '\|',0
+    DB  44,  0, 0, 'Zz',0
+    DB  45,  0, 0, 'Xx',0
+    DB  46,  0, 0, 'Cc',0
+    DB  47,  0, 0, 'Vv',0
+    DB  48,  0, 0, 'Bb',0
+    DB  49,  0, 0, 'Nn',0
+    DB  50,  0, 0, 'Mm',0
+    DB  51,  0, 0, ',<',0
+    DB  52,  0, 0, '.>',0
+    DB  53,  0, 0, '/?',0
+    DB  54,  0, 0, 'Right Shift',0
+    DB  55,  0, 0, 'NumPad *',0
+    DB  56,  0, 0, 'Left Alt',0
+    DB  57,  0, 0, 'Space',0
+    DB  58,  0, 0, 'Caps Lock',0
+    DB  59,  0, 0, 'F1',0
+    DB  60,  0, 0, 'F2',0
+    DB  61,  0, 0, 'F3',0
+    DB  62,  0, 0, 'F4',0
+    DB  63,  0, 0, 'F5',0
+    DB  64,  0, 0, 'F6',0
+    DB  65,  0, 0, 'F7',0
+    DB  66,  0, 0, 'F8',0
+    DB  67,  0, 0, 'F9',0
+    DB  68,  0, 0, 'F10',0
+    DB  69,  0, 0, 'Num Lock',0
+    DB  70,  0, 0, 'Scroll Lock',0
+    DB  71,  0, 0, 'Home & 7',0
+    DB  72,  0, 0, 'Up & 8',0
+    DB  73,  0, 0, 'PageUp & 9',0
+    DB  74,  0, 0, 'NumPad -',0
+    DB  75,  0, 0, 'Left & 4',0
+    DB  76,  0, 0, 'NumPad 5',0
+    DB  77,  0, 0, 'Right & 6',0
+    DB  78,  0, 0, 'NumPad +',0
+    DB  79,  0, 0, 'End & 1',0
+    DB  80,  0, 0, 'Down & 2',0
+    DB  81,  0, 0, 'PageDown & 3',0
+    DB  82,  0, 0, 'Insert & 0',0
+    DB  83,  0, 0, 'Delete & .',0
+    DB  84,  0, 0, 'System Request',0
+    DB  86,  0, 0, '\| (102nd Key)',0
+    DB  87,  0, 0, 'F11',0
+    DB  88,  0, 0, 'F12',0
+
+    DB 224,  5, 0, '*Messenger/Files*',0
+    DB 224,  7, 0, '*Redo*',0
+    DB 224,  8, 0, '*Undo*',0
+    DB 224,  9, 0, '*Application Left*',0
+    DB 224, 10, 0, '*Paste*',0
+    DB 224, 11, 0, '*Scroll Up*',0
+    DB 224, 16, 0, '*Previous Track*',0
+    DB 224, 17, 0, '*Scroll Up Fast*',0
+    DB 224, 18, 0, '*Scroll Up Faster*',0
+    DB 224, 19, 0, '*Word*',0
+    DB 224, 20, 0, '*Excel*',0
+    DB 224, 21, 0, '*Calendar*',0
+    DB 224, 22, 0, '*Log Off*',0
+    DB 224, 23, 0, '*Cut*',0
+    DB 224, 24, 0, '*Copy*',0
+    DB 224, 25, 0, '*Next Track*',0
+    DB 224, 28, 0, 'NumPad Enter',0
+    DB 224, 29, 0, 'Right Control',0
+    DB 224, 30, 0, '*Application Right*',0
+    DB 224, 31, 0, '*Scroll Up Fastest*',0
+    DB 224, 32, 0, '*Mute*',0
+    DB 224, 33, 0, '*Calculator*',0
+    DB 224, 34, 0, '*Play/Pause*',0
+    DB 224, 35, 0, '*Spell*',0
+    DB 224, 36, 0, '*Stop (Media)*',0
+    DB 224, 42, 0, 'Fake Left Shift',0
+    DB 224, 46, 0, '*Volume Down*',0
+    DB 224, 48, 0, '*Volume Up*',0
+    DB 224, 50, 0, '*Web/Home*',0
+    DB 224, 53, 0, 'NumPad /',0
+    DB 224, 54, 0, 'Fake Right Shift',0
+    DB 224, 55, 0, 'PrintScreen',0
+    DB 224, 56, 0, 'Right Alt (AltGr)',0
+    DB 224, 59, 0, '*Help*',0
+    DB 224, 60, 0, '*My Music/Office Home*',0
+    DB 224, 61, 0, '*Task Pane*',0
+    DB 224, 62, 0, '*New*',0
+    DB 224, 63, 0, '*Open*',0
+    DB 224, 64, 0, '*Close*',0
+    DB 224, 65, 0, '*Reply*',0
+    DB 224, 66, 0, '*Forward (E-mail)*',0
+    DB 224, 67, 0, '*Send*',0
+    DB 224, 70, 0, 'Break',0
+    DB 224, 71, 0, 'Grey Home',0
+    DB 224, 72, 0, 'Grey Up',0
+    DB 224, 73, 0, 'Grey PageUp',0
+    DB 224, 75, 0, 'Grey Left',0
+    DB 224, 77, 0, 'Grey Right',0
+    DB 224, 79, 0, 'Grey End',0
+    DB 224, 80, 0, 'Grey Down',0
+    DB 224, 81, 0, 'Grey PageDown',0
+    DB 224, 82, 0, 'Grey Insert',0
+    DB 224, 83, 0, 'Grey Delete',0
+    DB 224, 87, 0, '*Save*',0
+    DB 224, 88, 0, '*Print*',0
+    DB 224, 91, 0, 'Left Windows (Left GUI)',0
+    DB 224, 92, 0, 'Right Windows (Right GUI)',0
+    DB 224, 93, 0, 'Mouse Menu (Application)',0
+    DB 224, 94, 0, '*Power*',0
+    DB 224, 95, 0, '*Sleep*',0
+    DB 224, 99, 0, '*Wake Up*',0
+    DB 224,100, 0, '*My Pictures*',0
+    DB 224,101, 0, '*Search*',0
+    DB 224,102, 0, '*Favorites*',0
+    DB 224,103, 0, '*Refresh*',0
+    DB 224,104, 0, '*Stop/Halt (Internet)*',0
+    DB 224,105, 0, '*Forward (Internet)*',0
+    DB 224,106, 0, '*Back*',0
+    DB 224,107, 0, '*My Computer*',0
+    DB 224,108, 0, '*Mail*',0
+    DB 224,109, 0, '*Media*',0
+    DB 225, 29,69, 'Pause',0
+    DB   0,        '??? Unknown ???',0
+
+
+;哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌哌
+;CODE
+;苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘苘
+
+;------------------------------------------------------------------------------
+;INITIALIZE THE PROGRAM
+;Inputs:
+;Outputs:
+;Changes: Everything
+;------------------------------------------------------------------------------
+Main:
+  CLD               ;Go forward with string functions
+  CALL GetEnvVars   ;Get the Environment variables
+  CALL ParseCmdLine ;Parse the command line
+  MOV  DX,Copyright ;Point to string
+  CALL WriteZCon    ;Write it
+  CMP  HelpFlag,Yes ;Does the user need help?
+  JNE >M10          ;If not, just keep going
+  MOV  DX,HelpMsg   ;If so, write the
+  CALL WriteZErr    ;  help message
+  JMP >M90          ;And we're done
+M10:                ;No help needed
+  CALL CreateFile   ;Create the file, if one was provided
+  JC  >M90          ;If the user just wants to quit, do it
+  MOV  DX,Header    ;If not, point at our header string
+  CALL WriteIt      ;Write it
+  CALL ChangeInts   ;Initialize our interrupts
+  CALL GetChars     ;Get the scan code(s)
+  CALL RestoreInts  ;Restore the interrupts
+  CALL CloseFile    ;Close the file, if necessary
+M90:
+  MOV  AX,4C00h     ;Service 4Ch (quit), Errorlevel = 0
+  INT  21h          ;Do it
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;CODE TO PARSE THE COMMAND LINE FOR OPTIONS
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;------------------------------------------------------------------------------
+;PARSE THE COMMAND LINE FOR OPTIONS
+;Inputs:
+;Outputs: FileName, HelpFlag (if necessary)
+;Changes:
+;------------------------------------------------------------------------------
+ParseCmdLine:
+  PUSH DI,SI                ;Save used registers
+  MOV  SI,81h               ;Point at the command line tail
+  CMP  CmdLineVarPointer,-1 ;Have a CMDLINE Environment variable?
+  JE  >P05                  ;If not, just do regular command line
+  MOV  SI,CmdLineVarPointer ;If so, point at the variable
+P05:                        ;[SI] = Command Line Pointer
+  MOV  DI,FileName          ;Point at where to store the file name
+  XOR  AX,AX                ;Initialize Quote characer (AH) to 0
+P10:                        ;Loop to here to skip past spaces
+  CALL GetNextChar          ;Get the next character
+  CMP  AL,' '               ;Is it a space?
+  JE   P10                  ;If so, keep skipping past the spaces
+  CMP  AL,CR                ;Is it the end-of-command-line marker?
+  JE  >P90                  ;If so, we're done
+  CMP  AL,'/'               ;Is it a switch character?
+  JE  >P50                  ;If so, the user need help
+  CMP  AL,'?'               ;Is it a request for help?
+  JE  >P50                  ;If so, jump to handle it
+  CMP  AL,Quote2            ;Double Quote?
+  JNE >P30                  ;If not, handle a regular (non-quoted) file name
+P20:                        ;Is a Quote
+  MOV  AH,AL                ;Store the Quote character
+  CALL GetNextChar          ;Get the character after the Quote
+P30:                        ;Store the file name
+  STOSB                     ;Store the next character of the file name
+  CALL GetNextChar          ;Get the next character of the file name
+  OR   AH,AH                ;Working with a quoted File Name?
+  JNZ >P35                  ;If so, we don't care about spaces
+  CMP  AL,' '               ;If not, is it a space?
+  JE  >P40                  ;If so, we're done
+P35:                        ;Handled Space, if appropriate
+  CMP  AL,AH                ;End of Quoted File Name?
+  JE  >P40                  ;If so, we're done
+  CMP  AL,CR                ;Is it the end-of-command-line marker?
+  JNE  P30                  ;If not, keep storing the file name
+P40:                        ;File Name is complete
+  MOV  B [DI],0             ;Make sure the File Name is ASCIIZ
+  JMP >P90                  ;
+P50:                        ;The user needs help
+  MOV  HelpFlag,Yes         ;Mark the help flag
+P90:                        ;Doneone
+  POP  SI,DI                ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE NEXT CHARACTER FROM THE ENVIRONMENT OR COMMAND LINE
+;Inputs:  [SI] = Pointer (Command Line or Environment)
+;Outputs: AL = The next character
+;         ZF = Set if End-Of-Line (Character = ASCII 0)
+;            = Clear if "real" character
+;Changes: SI
+;------------------------------------------------------------------------------
+GetNextChar:
+  PUSH DS                   ;Save used registers
+  CMP  CmdLineVarPointer,-1 ;Need to use the CMDLINE Environment variable?
+  JE  >N90                  ;If not, just do the "real" command line
+  MOV  DS,[PSPEnvirSeg]     ;Point at the Environment Segment
+N90:                        ;DS:[SI] points at the next character
+  LODSB                     ;Get the character from the "real" command line
+  OR   AL,AL                ;Set ZF if EOL
+  POP  DS                   ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CAPITALIZE A CHARACTER
+;Inputs:  AL = Character to capitalize
+;Outputs: AL = Capitalized character
+;Changes:
+;------------------------------------------------------------------------------
+Capitalize:
+  CMP  AL,'a'     ;Is it less than 'a'?
+  JB  >C90        ;If so, no need to change it
+  CMP  AL,'z'     ;Is it more than 'z'?
+  JA  >C90        ;If so, no need to change it
+  SUB  AL,'a'-'A' ;If not, capitalize it
+C90:              ;We're done
+  RET
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;Code to Copy the Output to a File or Device in addition to the screen
+;We always want the output to go to the screen (StdErr Device) while
+;  the user is typing so they can make sure they are doing what they
+;  think they're doing.
+;We allow the user to also "TEE" the output do a file or device for
+;  later reference if they want to.  We also support Long File Names
+;  for the input.
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;------------------------------------------------------------------------------
+;CREATE AND OPEN THE FILE STORED IN FILENAME
+;Inputs:
+;Outputs: CF = Clear if OK to continue
+;            = Set if user wants to stop
+;Changes:
+;------------------------------------------------------------------------------
+CreateFile:
+  PUSH AX,BX,CX,DX,SI   ;Save used registers
+  CMP  B FileName[0],0  ;Is there a filename to write to?
+  JE  >F80              ;If not, we're done
+  CALL TestWildCard     ;See if the File Name contains a Wild Card
+  JC  >F40              ;If so, handle it
+  CALL TestLFN          ;Test for Long File Name support
+  CALL FindFile         ;See if the file already exists
+  JC  >F30              ;If not, jump to create it
+F10:                    ;File/Directory/Device already exists
+  CALL TestDirVolLFN    ;See if it's a Directory, Volume, or LFN Entry
+  JZ  >F20              ;If not, see if it's a Device
+F15:                    ;Is a Directory
+  CALL Beep             ;If so, Beep the speaker
+  MOV  DX,FileIsDirMsg  ;Write the first part of the
+  CALL WriteZErr        ;  Directory Error Message
+  CALL WriteFileNameErr ;Write the Filename and move down
+  MOV  DX,FileIsDirMsg2 ;Write the second part of the
+  CALL WriteZErr        ;  Directory Error Message
+  JMP >F50              ;Jump to ask the user if they want to continue
+F20:                    ;Not a directory
+  CALL TestDevice       ;See if it's a Device
+  JNC >F30              ;If a Device, it's OK to open it
+  CALL Beep             ;If really a File, Beep the speaker
+  MOV  DX,AlreadyMsg    ;Point at our error message
+  CALL WriteZErr        ;Write it
+  CALL WriteFileNameErr ;Write the Filename and move down
+  MOV  DX,AlreadyMsg2   ;Ask the user if
+  CALL WriteZErr        ;  they want to overwrite the file
+  MOV  AL,'N'           ;Default answer is No
+  CALL GetUserKey       ;Wait for their response
+  JE  >F70              ;If <N>, just quit
+F30:                    ;Create or truncate the FIle/Device
+  MOV  DX,FileName      ;Point at our filename
+  MOV  AH,3Ch           ;Function 3Ch (Create file)
+  XOR  CX,CX            ;Normal attributes (no H, S, or R)
+  INT  21h              ;Do it
+  JC  >F40              ;If error, see if the user wants to continue
+  MOV  FileHandle,AX    ;If OK, store the handle number
+  CALL TestFileIsCON    ;See if the File is the Console/Screen
+  JMP >F80              ;And we're done
+F40:                    ;We have an error
+  CALL Beep             ;Beep the speaker
+  MOV  DX,FileErrMsg    ;Point at our error message
+  CALL WriteZErr        ;Write it
+  CALL WriteFileNameErr ;Write the Filename and move down
+F50:                    ;Ask user if they want to continue
+  MOV  DX,FileErrMsg2   ;Ask the user if
+  CALL WriteZErr        ;  they want to continue anyway
+  MOV  AL,'Y'           ;Default answer is Yes
+  CALL GetUserKey       ;Wait for their response
+  JNE >F70              ;If <N>, just quit
+  MOV  B FileName[0],0  ;If <Y>, make sure the file name does not exist
+  JMP >F80              ;And we're done
+F70:                    ;User wants to quit
+  STC                   ;Set the Quit flag
+  JMP >F90              ;And we're done
+F80:                    ;Everything's OK - we're done
+  CLC                   ;Set the OK flag
+F90:
+  POP  SI,DX,CX,BX,AX   ;Restore used registers
+  RET
+
+WriteFileNameErr:
+  PUSH DX          ;Save used registers
+  MOV  DX,FileName ;Write the
+  CALL WriteZErr   ;  Filename
+  MOV  DX,CrLfMsg  ;Move
+  CALL WriteZErr   ;  down
+  POP  DX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AND SEE IF THE FILE NAME CONTAINS WILD CARDS
+;Inputs:  CLD already issued
+;         FileName
+;Outputs: CF = Clear if File Name is OK (no Wild Cards)
+;            = Set if Error (File Name contains a WIld Card)
+;Changes:
+;------------------------------------------------------------------------------
+TestWildCard:
+  PUSH AX,SI       ;Save used registers
+  MOV  SI,FileName ;Point at the File Name
+W10:               ;Loop to here for each character
+  LODSB            ;Get the next character
+  OR   AL,AL       ;Is it the end of the File Name?
+  JE  >W80         ;If wo, we're done
+  CMP  AL,'?'      ;Is it a wild card character?
+  JE  >W70         ;If so, there's an error
+  CMP  AL,'*'      ;Is it a wild card character?
+  JNE  W10         ;If not, keept looking
+W70:               ;File Name contains a Wild Card
+  STC              ;Set Error Flag
+  JMP >W90         ;Done
+W80:               ;File Name is OK
+  CLC              ;Set Error Flag
+W90:               ;Done
+  POP  SI,AX       ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AND SEE IF LONG FILE NAME SUPPORT IS LOADED
+;Inputs:  LFNSupport = No
+;Outputs: LFNSupport = Yes if LFN is supported
+;                    = No if LFN is not supported
+;Changes:
+;------------------------------------------------------------------------------
+TestLFN:
+  PUSH AX,DX,SI         ;Save used registers
+  MOV  AX,7147h         ;Function 7147h (LFN Get Current Directory)
+  XOR  DL,DL            ;Drive number = 0 (current)
+  MOV  SI,LFNTestBuffer ;Buffer to store Directory Name on return
+  STC                   ;Preset the error flag
+  INT  21h              ;Do it
+  JC  >L90              ;If not, we're done
+  MOV  LFNSupport,Yes   ;If so, mark LFN as supported
+L90:                    ;We're done
+  POP  SI,DX,AX         ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;SEE IF A FILENAME ALREADY EXISTS (ALSO LOOKS FOR DEVICES AND DIRECTORIES)
+;Inputs:  DS = ES = Local Data Area
+;         FileName = Name of File to look for (may be LFN)
+;         LFNSupport
+;Outputs: CF = Clear if the File Already Exists (could be a Device or Directory)
+;            = Set if File does not Exist
+;Changes: Sets DTA to our LargeDTA
+;         May Change LargeDTA
+;------------------------------------------------------------------------------
+FindFile:
+  PUSH AX,BX,CX,DX     ;Save used registers
+  PUSH DI,SI           ;Save used registers
+  MOV  DX,LargeDTA     ;Point DS:[DX] at our LargeDTA area
+  MOV  AH,1Ah          ;Function 1Ah (Set DTA Address)
+  INT  21h             ;Do it
+  MOV  CX,FAttrFindAny ;Look for a File/Directory/Volume/LFN entry
+  MOV  DX,FileName     ;Point DS:[DX] at the FileName
+  CMP  LFNSupport,Yes  ;Is LFN supported?
+  JNE >F50             ;If not, handle it
+F10:                   ;We have LFN support
+  MOV  DI,LargeDTA     ;ES:[DI] = where to put the Find Record Data
+  MOV  SI,1            ;We want Dates and Times in Standard DOS Format
+  MOV  AX,714Eh        ;Function 714Eh (LFN Find First Matching File)
+  STC                  ;Preset Error Flag
+  INT  21h             ;Do it (returns CF, AX, CX)
+  JC  >F90             ;If no FIle, we're done
+  MOV  BX,AX           ;Put LFN Find Handle in BX
+  MOV  AX,71A1h        ;Function 71A1h (FindClose)
+  INT  21h             ;Do it
+  CLC                  ;Set return flag
+  JMP >F90             ;Done
+F50:                   ;No LFN Support
+  MOV  AH,4Eh          ;Service 4Eh (Find First Matching File)
+  INT  21h             ;Do it (returns CF)
+F90:                   ;Done
+  POP  SI,DI           ;Restore used registers
+  POP  DX,CX,BX,AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST TO SEE IF THE FILE IS A DIRECTORY, VOLUME, OR LFN ENTRY
+;Inputs:  DS = ES = Local Data Area
+;         FileName
+;Outputs: ZF = Clear if it's a Directory, Volume, or LFN Entry
+;            = Set if it's a File or Device
+;Changes:
+;------------------------------------------------------------------------------
+TestDirVolLFN:
+  PUSH AX             ;Save used registers
+  CALL GetFileAttribs ;Get the File Attributes (AX)
+  JNC >V30            ;If OK, it's not a Device
+  XOR  AL,AL          ;Make sure it fails the Dir/Vol/LFN test
+V30:                  ;AL contains Attributes to test
+  TEST AL,(FAttrDirectory+FAttrVolume) ;Set the return flag
+  POP  AX             ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST TO SEE IF THE FILE IS A DEVICE
+;Inputs:  DS = ES = Local Data Area
+;         Filename
+;Outputs: CF = Clear if it's a Device
+;            = Set if it's a File
+;Changes:
+;NOTES: Out original method of thing this test was to use DOS Function 4400h,
+;         which is supposed to let you know directly if something is a Device
+;         or not.  Unfortunately, this function doesn't work properly at
+;         a command prompt under Windows XP.
+;       The next thing we did was scan through the linked list of Device
+;         Drivers, comparing the Driver names to our file name (sans
+;         path and extension and terminating colon).  That worked for all
+;         "standard" drivers (which are loaded in DOS like they're supposed
+;         to be, but XP also has other "Devices" (such as COMxxxxx and
+;         LPTxxxxx) that weren't identified correctly.
+;       So, I did a post on Programmers Heaven and someone came up with
+;         this excellent idea!
+;       A Device is also supposed to have the System Attribute set, but under
+;         XP it doesn't.
+;------------------------------------------------------------------------------
+TestDevice:
+  PUSH AX,BX          ;Save used registers
+  CALL GetFileAttribs ;Get the File Attributes (AX)
+  JC  >D80            ;If Error, assume it's a Device
+  TEST AL,(FAttrVolume+FAttrDirectory) ;Is it a Volume Label or a Directory?
+  JNZ >D70            ;If so, it's not a Device
+  MOV  BL,AL          ;Save original Attributes
+  XOR  AL,FAttrSystem ;If so, try to toggle
+  CALL SetFileAttribs ;  the System Attribute
+  JC  >D80            ;If Error, assume it's a Device
+  CALL GetFileAttribs ;Get the Attributes back again
+  CMP  AL,BL          ;Did the System Attribute change?
+  JE  >D80            ;If not, assume it's a Device
+  MOV  AL,BL          ;If we changed it,
+  CALL SetFileAttribs ;  restore it back to what it was
+D70:                  ;Not a Device
+  STC                 ;Set the not-a-Device Return Flag
+  JMP >D90            ;Done
+D80:                  ;Is a Device
+  CLC                 ;Set the is-a-Device Return Flag
+D90:                  ;Done
+  POP  BX,AX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET OR SET THE ATTRIBUTES OF A FILE/DIRECTORY/DEVICE
+;Inputs:  DS = ES = Local Data Area
+;         LFNSupport
+;         FileName
+;         If SetFileAttribs, AX = Attributes to use
+;Outputs: CF = Clear if OK
+;              If GetFileAttribs,
+;                AX = File Attributes (bit mask, as provided by DOS)
+;              If SetFileAttribs, AX = undetermined
+;            = Set if Error
+;                AX = Error Code returned by DOS
+;Changes:
+;NOTES: We assume no Error returned from DOS.  We've already tested to
+;         see that it exists, so we shouldn't get an error.
+;------------------------------------------------------------------------------
+GetFileAttribs:
+  PUSH BX             ;Save used registers
+  XOR  BL,BL          ;Mark as a Get
+  JMP >A00            ;Do it
+SetFileAttribs:
+  PUSH BX             ;Save used registers
+  MOV  BL,1           ;Mark as a Set
+A00:
+  PUSH CX,DX          ;Save used registers
+  MOV  CX,AX          ;Put attributes (if a Set) in CX
+  MOV  DX,FileName    ;Point DS:[DX] at the FileName
+  CMP  LFNSupport,Yes ;Is LFN supported?
+  JE  >A40            ;If so, handle it
+A10:                  ;No LFN support
+  MOV  AH,43h         ;AH = Function 43h (Get or Set File Attributes)
+  MOV  AL,BL          ;AL = SubFunction (0 = Get, 1 = Set)
+  JMP >A90            ;Jump to do it
+A40:                  ;Get Attributes using LFN
+  MOV  AX,7143h       ;Function 7143h (LFN Get/Set File Attributes)
+A90:                  ;Done
+  STC                 ;Preset Error Flag
+  INT  21h            ;Do it (returns CX, sets CF)
+  MOV  AX,CX          ;Put the Attribute Mask in AX
+  POP  DX,CX          ;Restore used registers
+  POP  BX             ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AND SEE IF THE FILE NAME IS ACTUALLY THE CONSOLE (SCREEN)
+;Inputs:  AX = File Handle (called immediately after Function 3Ch)
+;         FileHandle = Same as AX
+;Outputs: If File is not the Screen, does nothing
+;         If File is the Screen, Closes File and sets FileHandle = 0
+;Changes:
+;------------------------------------------------------------------------------
+TestFileIsCON:
+  PUSH AX,BX,DX     ;Save used registers
+  MOV  BX,AX        ;BX = File Handle
+  MOV  AX,4400h     ;Function 4400h (Get Device Info)
+  INT  21h          ;Do it (returns DX, changes AX)
+  JC  >C90          ;If error, assume not STDOUT
+  AND  DL,(DvcInfoIsDevice+DvcInfoIsStdOut) ;Mask out unwanted bits
+  CMP  DL,(DvcInfoIsDevice+DvcInfoIsStdOut) ;Is it STDOUT?
+  JNE >C90          ;If not, we're done
+C70:                ;File is the Screen
+  CALL CloseFile    ;Close the File (uses FileHandle)
+  MOV  FileHandle,0 ;Mark it as Closed
+C90:                ;Done
+  POP  DX,BX,AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CLOSE OUR FILE
+;Inputs:  FileHandle = Handle number to close
+;Outputs:
+;Changes: Closes the file
+;------------------------------------------------------------------------------
+CloseFile:
+  PUSH AX,BX         ;Save used registers
+  MOV  BX,FileHandle ;Get the handle number of our file
+  OR   BX,BX         ;Is there even a file to close?
+  JZ  >C90           ;If not, we're done
+  MOV  AH,3Eh        ;If so, function 3Eh (Close File)
+  INT  21h           ;Do it
+  JNC >C90           ;If it worked, just quit
+  CALL Beep          ;If not, Beep
+C90:                 ;Done
+  POP  BX,AX         ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WAIT FOR A <Y>, <N>, OR <ENTER> FROM THE USER
+;Inputs:  AL = 'Y' or 'N', default answer (if <Enter>)
+;Outputs: AL = 'Y' or 'N'
+;         ZF = Set if it matches the default entry
+;            = Clear if it doesn't
+;         Writes the 'Y' or 'N' to the screen
+;Changes: AH
+;------------------------------------------------------------------------------
+GetUserKey:
+  PUSH BX,DX      ;Save used registers
+  MOV  BL,AL      ;Store the default value
+K10:
+  XOR  AH,AH      ;Function 0 (Wait for keystroke)
+  INT  16h        ;Do it
+  CALL Capitalize ;Capitalize it
+  CMP  AL,CR      ;Is it <Enter>?
+  JE  >K40        ;If so, jump to handle it
+  CMP  AL,'Y'     ;Is it Yes?
+  JE  >K50        ;If so, jump to handle it
+  CMP  AL,'N'     ;Is it No?
+  JE  >K50        ;If so, jump to handle it
+  CALL Beep       ;If not, beep the speaker
+  JMP  K10        ;And keep waiting for a good key
+K40:              ;The user typed an Enter
+  MOV  AL,BL      ;Get the default answer
+K50:              ;We have a valid keystroke
+  MOV  DX,YesMsg  ;Assume a <Y>
+  CMP  AL,'Y'     ;Is it <Y>?
+  JE  >K90        ;If so, we're done
+  MOV  DX,NoMsg   ;If not, it must be <N>
+K90:              ;We're done
+  CALL WriteZErr  ;Write the 'Y' or the 'N'
+  CMP  AL,BL      ;Clear/Set the return flag
+  POP  DX,BX      ;Restore used registers
+  RET
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;MISCELLANEOUS COMMAND-LINE RELATED STUFF
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;------------------------------------------------------------------------------
+;GET THE POINTERS TO THE ENVIRONMENT VARIABLES WE NEED
+;Inputs:  CS = DS = Local Data Area (also PSP Data Area)
+;Outputs: Various Environment Pointers
+;Changes:
+;------------------------------------------------------------------------------
+GetEnvVars:
+  PUSH BX,CX,SI                    ;Save used registers
+  CMP  B [80h],7Eh                 ;Is command line size maxed out?
+  JB  >V90                         ;If not, don't worry about CMDLINE Env Var
+  MOV  SI,CmdLineVarString         ;Get
+  MOV  BX,OFFSET CmdLineVarPointer ;  the
+  MOV  CX,CmdLineVarSize           ;  CMDLINE
+  CALL GetEnvVarPointer            ;  Pointer
+  CALL AdjustCmdLine               ;Compensate CMDLINE Pointer for Program Name
+V90:                               ;Done
+  POP  SI,CX,BX                    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE POINTER TO AN ENVIRONMENT VARIABLE
+;Inputs:   CS = DS = Local Data Area (also contains PSP)
+;         [BX] = Where to store the Pointer at
+;          CX  = Length of String
+;         [SI] = Environment Variable String to Look for (ends in =)
+;Outputs: ZF = Set if Error (Variable not found)
+;               [BX] = -1
+;             = Clear if OK (variable was found)
+;               [BX] = Pointer to String (in Environment Segment, NOT PSP!!)
+;Changes:
+;------------------------------------------------------------------------------
+GetEnvVarPointer:
+  PUSH AX,CX,SI,BP      ;Save used registers
+  PUSH DS,ES            ;Save used registers
+  MOV  W [BX],-1        ;Default = -1 (does not exist)
+  MOV  ES,[PSPEnvirSeg] ;ES:[DI] =
+  XOR  DI,DI            ;  Environment Variable List
+  MOV  DX,CX            ;Save the Size
+  MOV  BP,SI            ;Save the original Pointer
+  XOR  AL,AL            ;Need to look for 0's
+V10:                    ;Loop to here for each Environment variable
+  MOV  CX,DX            ;CX = Number of bytes to test
+  MOV  SI,BP            ;DS:[SI] = String to Test for
+  REPE CMPSB            ;Is it a match?
+  JZ   >V30             ;If so, continue
+  MOV  CX,-1            ;Max out the count limiter
+  REPNE SCASB           ;Look for the end of this environment variable
+  CMP  B ES:[DI],AL     ;End of Environment?
+  JNE  V10              ;If not, keep looking
+  JMP >V90              ;If so, no variable
+V30:                    ;Found it!
+  MOV  [BX],DI          ;Store the Pointer
+V90:                    ;Done
+  CMP  W [BX],-1        ;Set return flag
+  POP  ES,DS            ;Restore used registers
+  POP  BP,SI,CX,AX      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;ADJUST THE CMDLINE ENVIRONMENT VARIABLE POINT TO POINT AT THE COMMAND TAIL
+;Inputs:  DS = Local Data Area (and PSP Segment)
+;         CmdLineVarPtr (-1 if does not exist)
+;           Unadjusted for Program Path/Name
+;Outputs: CmdLineVarPtr
+;           Adjusted (Program Path/Name skipped over to leave Command Tail)
+;Changes:
+;NOTES: The CMDLINE environment variable, which is only set by SOME
+;         versions of DOS, contains the entire contents of the command
+;         line.  The "entire contents" includes our executable file name
+;         (including the path, if it was provided), but does not include
+;         the redirection and/or piping parameters.
+;       This routine skips over the executable file name part and simply
+;         points at the command tail (the "Options" part of the command line).
+;       The CMDLINE variable is used by some versions of DOS (such as 4DOS/NDOS
+;         and DOS 95) to allow the command-line to be longer than the 126
+;         characters normally allowed by DOS.
+;------------------------------------------------------------------------------
+AdjustCmdLine:
+  PUSH AX,DX,SI,DS             ;Save used registers
+  MOV  SI,CmdLineVarPointer    ;[SI] = CMDLINE environment variable contents
+  CMP  SI,-1                   ;Anything there?
+  JE  >J90                     ;If not, no need for changes
+  MOV  DL,"/"                  ;Assume Get SwitchChar function is unsupported
+  MOV  AX,3700h                ;Function 3700h (Get DOS SwitchChar)
+  INT  21h                     ;Do it (returns DL)
+  MOV  DS,[PSPEnvirSeg]        ;DS:[SI] = CMDLINE contents
+J10:                           ;Loop to here to skip initial spaces & tabs
+  LODSB                        ;Get the next character
+  CMP  AL,' '                  ;Space?
+  JE   J10                     ;If so, keep skipping
+  CMP  AL,Tab                  ;Tab?
+  JE   J10                     ;If so, keep skipping
+J20:                           ;Skipped initial Tabs & Spaces
+  DEC  SI                      ;Point back at the first character
+  XOR  AH,AH                   ;Assume no quotes
+  CMP  AL,Quote2               ;Double Quote (part of LFN Path & File Name)?
+  JNE >J30                     ;If not, continue
+  MOV  AH,AL                   ;If so, mark as a quote
+  INC  SI                      ;Update the Pointer
+J30:                           ;Loop to here for each character
+  LODSB                        ;Get next character
+  OR   AH,AH                   ;Are we looking for a Quoted Path/File Name?
+  JZ  >J40                     ;If not, continue
+J35:                           ;Looking for the Closing Quote
+  CMP  AL,AH                   ;Is it the Closing Quote?
+  JNE >J50                     ;If not, keep looking
+  JMP >J85                     ;If so, we're done
+J40:                           ;Not a Quoted Path/File Name
+  OR   AL,AL                   ;End of variable?
+  JE  >J80                     ;If so, handle it
+  CMP  AL,' '                  ;Space?
+  JE  >J80                     ;If so, we're done
+  CMP  AL,Tab                  ;Tab?
+  JE  >J80                     ;If so, we're done
+  CMP  AL,'/'                  ;Slash?
+  JE  >J80                     ;If so, we're done
+  CMP  AL,DL                   ;SwitchChar?
+  JE  >J80                     ;If so, we're done
+J50:                           ;Not end-of-name
+  JMP  J30                     ;Keep looking
+J80:                           ;[SI-1] = CMDLINE Pointer
+  DEC  SI                      ;Point at beginning of string
+J85:                           ;[SI] = New CMDLINE Pointer
+  MOV  CS:CmdLineVarPointer,SI ;Store it
+J90:                           ;Done
+  POP  DS,SI,DX,AX             ;Restore used registers
+  RET
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;CODE TO SAVE/INITIALIZE/RESTORE INTERRUPT VECTORS
+;THIS CODE IS NEEDED IN EVERY PROGRAM THAT INTERCEPTS INTERRUPT VECTORS.
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;------------------------------------------------------------------------------
+;INITIALIZE ALL APPROPRIATE INTERRUPT VECTORS TO OUR TSR CODE
+;Inputs:  ES = Data area to store Interrupt Vectors in (Presumably a UMB)
+;         CS = Data Area where Interrupt Number Table is stored
+;         CLD Already Issued!
+;Outputs:
+;Changes: Various Int vectors
+;------------------------------------------------------------------------------
+ChangeInts:
+  PUSH AX,DI,SI,DS    ;Save used registers
+  MOV  DS,ES          ;Point DS at TSR Data Area
+  MOV  SI,IntNumTable ;Point at our Interrupt Nubmer Table
+C10:                  ;Loop to here for each table entry
+  MOV  AL,CS:[SI]     ;Get Interrupt Number
+  OR   AL,AL          ;Is it the end of the table?
+  JZ  >C90            ;If so, we're done
+  MOV  DI,CS:[SI+1]   ;If valid, get our Code Header Offset
+  CALL ChangeInt      ;Point the Interrupt at our code
+  ADD  SI,3           ;Point at the next table entry
+  JMP  C10            ;Keep going until we're done
+C90:                  ;Done with the Interrupt Table
+  POP  DS,SI,DI,AX    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CHANGE INTERRUPT VECTOR TO THIS PROGRAMS INTERRUPT ROUTINE, AND SAVE THE OLD
+;Inputs:  DS:[DI] = Pointer to our new interrupt header
+;         AL = Interrupt number to change
+;Outputs:
+;Changes: Interrupt vector
+;------------------------------------------------------------------------------
+ChangeInt:
+  PUSH AX,BX,DX,ES            ;Save used registers
+  CALL InitIntHdr             ;Initialize our Interrupt Header
+  MOV  AH,35h                 ;Service 35h (Get interrupt vector)
+  INT  21h                    ;Do it (returns ES:BX)
+  MOV  W [DI].OldVector,BX    ;Save it
+  MOV  W [DI].OldVector[2],ES ;  in [DI]
+  LEA  DX,[DI].CodeJmp        ;Point DS:DX at our code address
+  MOV  AH,25h                 ;Service 25h (Set interrupt vector)
+  INT  21h                    ;Do it
+  POP  ES,DX,BX,AX            ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;INITIALIZE THE DATA IN A REMOVABLE INTERRUPT VECTOR HEADER
+;Inputs:  DS:[DI] = Pointer to Our Interrupt Header Structure
+;Outputs:
+;Changes: The Interrupt Header Data
+;------------------------------------------------------------------------------
+InitIntHdr:
+  MOV  [DI].HdwreRst,0CBh   ;Hardware Reset Code = CBh = RETF
+  MOV  [DI].CodeJmp,10EBh   ;Jump to Real Code = EBh 10h = JMP ENDS
+  MOV  [DI].Signature,424Bh ;Signature for Removable Vector Header = 424Bh
+  MOV  [DI].EOIFlag,0       ;We will not be issuing EOI's
+  MOV  [DI].HdwreJmp,0F4EBh ;Jump to Hardware Reset = EBh F4h = JMP HdwreRst
+  RET
+
+;------------------------------------------------------------------------------
+;RESTORE ALL INTERRUPT VECTORS BACK TO THEIR ORIGINAL STATE
+;Inputs:  ES = Data Area where original Vector information is stored
+;         CLD already issued!
+;Outputs:
+;Changes: Various Int vectors
+;------------------------------------------------------------------------------
+RestoreInts:
+  PUSH AX,DI,SI       ;Save used registers
+  MOV  SI,IntNumTable ;Point at our Interrupt Nubmer Table
+R10:                  ;Loop to here for each table entry
+  LODSB               ;Get the Interrupt Number
+  OR   AL,AL          ;Is it the end of the table?
+  JZ  >R90            ;If so, we're done
+  MOV  DI,[SI]        ;If valid, get our Code Header Offset
+  CALL RestoreInt     ;Restore Interrupt Vector back to original
+  INC  SI,2           ;Point at the next table entry
+  JMP  R10            ;Keep going until we're done
+R90:                  ;We're done
+  POP  SI,DI,AX       ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;RESTORE INTERRUPT VECTOR TO ITS ORIGINAL PLACE
+;Inputs:  ES:DI = Pointer to our Interrupt Header
+;         AL = Interrupt number to restore
+;Outputs:
+;Changes: Interrupt vector back to where it belongs
+;Notes:   If we got to here, nothing should have intercepted
+;           an interrupt that we haven't checked for.
+;         We shouldn't have to worry about running into a road-block!
+;------------------------------------------------------------------------------
+RestoreInt:
+  PUSHF                          ;Save flags
+  PUSH BX,CX,DX,SI,BP,ES         ;Save used registers
+  MOV  SI,W ES:[DI].OldVector    ;Put the address we'll need to store
+  MOV  BP,W ES:[DI].OldVector[2] ;  in BP:SI
+  MOV  CX,ES                     ;Point CX:DX
+  LEA  DX,[DI].CodeJmp           ;  at our address
+  CALL FindInt                   ;Search for it (returns ES:BX)
+  CLI                            ;Disable interrupts
+  MOV  ES:[BX],SI                ;Store the
+  MOV  ES:[BX+2],BP              ;  address
+  POP  ES,BP,SI,DX,CX,BX         ;Restore used registers
+  POPF                           ;Restore flags
+  RET
+
+;------------------------------------------------------------------------------
+;SEARCH FOR AN INTERRUPT VECTOR ADDRESS (TO SEE IF OUR CODE CAN BE REMOVED)
+;Inputs:  CX:DX = Interrupt Vector address to find (address of our TSR code)
+;         AL = Interrupt number to find
+;Outputs: CF = Clear if OK to remove
+;           ES:BX = address where it is stored
+;         CF = Set if rehooked and can't be removed
+;           ES:BX = unknown state
+;Changes:
+;------------------------------------------------------------------------------
+FindInt:
+  PUSH AX                                ;Save used registers
+  XOR  AH,AH                             ;Point ES:BX
+  ADD  AX,AX                             ;  at the
+  ADD  AX,AX                             ;  main
+  MOV  BX,AX                             ;  interupt
+  XOR  AX,AX                             ;  vector
+  MOV  ES,AX                             ;  table
+  CMP  ES:[BX],DX                        ;Is the offset the same as ours?
+  JNE >F20                               ;If not, it can't be ours
+  CMP  ES:[BX+2],CX                      ;Is the segment the same as ours?
+  JE  >F80                               ;If so, it's ours - we're done
+F20:                                     ;The main interrupt vector has changed
+  LES  BX,ES:[BX]                        ;Get the current vector address
+F30:                                     ;Loop for each removable interrupt
+  CALL TestIntHdr                        ;Is this a removable interrupt?
+  JC  >F70                               ;If not, we can't be removed
+  CMP  W ES:[BX-IntOfst].OldVector,DX    ;If so, is the old offset ours?
+  JNE >F50                               ;If not, keep looking
+  CMP  W ES:[BX-IntOfst].OldVector[2],CX ;If so, is old segment ours?
+  JNE >F50                               ;If not, keep looking
+  ADD  BX,(OFFSET OldVector) - IntOfst   ;If so, ES:BX = old vector pointer
+  JMP >F80                               ;And we're done
+F50:                                     ;Removable, but doesn't point at us
+  LES  BX,ES:[BX-IntOfst].OldVector      ;Get its old vector address
+  JMP  F30                               ;And keep looking for our vector
+F70:                                     ;Been rehooked and can't be removed
+  STC                                    ;Set the "rehooked" flag
+  JMP >F90                               ;We're done
+F80:                                     ;It's not rehooked, or it's removable
+  CLC                                    ;Set the "OK to remove" flag
+F90:                                     ;We're done
+  POP  AX                                ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AN INTERRUPT POINTER TO SEE IF IT'S REMOVABLE
+;Inputs:  ES:BX = Interrupt Vector to test
+;Outputs: CF = Set if it's not a removable vector
+;            = Clear if it is removable
+;Changes:
+;Notes:   The references to [BX-IntOfst] instead of [BX] are because of
+;           our "unusual" Interrupt Header Structure design
+;         We have included the (unneeded) Hardware Reset Routine code
+;           (a simple RETF) in our Header Structure for efficiency
+;------------------------------------------------------------------------------
+TestIntHdr:
+  PUSH AX,BX,DS                      ;Save used registers
+  MOV  DS,ES                         ;Point DS at the interrupt segment
+  CMP  B [BX-IntOfst].CodeJmp,0EBh   ;Is the first instruction a Short JMP?
+  JNE >H70                           ;If not, it's not removable
+  CMP  [BX-IntOfst].Signature,0424Bh ;Is there a Removeable Interrupt Signature?
+  JNE >H70                           ;If not, it's not removable
+  MOV  AL,[BX-IntOfst].EOIFlag       ;Get the EOI flag
+  OR   AL,AL                         ;Is it zero?
+  JZ  >H10                           ;If so, continue checking
+  CMP  AL,80h                        ;Is it 80h?
+  JNE >H70                           ;If not, it's not removable
+H10:                                 ;EOI flag is OK
+  CMP  B [BX-IntOfst].HdwreJmp,0EBh  ;Is the HdwreJmp instruction a Short JMP?
+  JE  >H80                           ;If so, it's removable!
+H70:                                 ;Vector is not removable
+  STC                                ;Set the "not removable" flag
+  JMP >H90                           ;We're done
+H80:                                 ;Vector is removable
+  CLC                                ;Set the "removable" flag
+H90:                                 ;We're done
+  POP  DS,BX,AX                      ;Restore used registers
+  RET
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;CODE TO PROCESS INT 09 (KEYBOARD)
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;------------------------------------------------------------------------------
+;HAVE INTERRUPT 09 RUN THIS PROGRAM EVERY TIME IT OCCURS
+;Inputs:
+;Outputs:
+;Changes: Processes all Key Presses & Releases and stores them in our Buffer
+;------------------------------------------------------------------------------
+Int09Hdr:
+  DB TYPE IntHdr DUP (0) ;Header for removable interrupt vector code
+
+Int09:
+  PUSH AX,DS,ES  ;Save used registers
+  PUSHF          ;Save flags
+  STI            ;Enable interrupts
+  MOV  DS,CS     ;Point DS
+  MOV  ES,CS     ;  and ES at our data area
+  IN   AL,60h    ;Get the scan code
+  CALL PutBuffer ;Store it in our buffer
+  CALL ResetKbd  ;Reset the keyboard interrupt hardware
+  POPF           ;Restore flags
+  POP  ES,DS,AX  ;Restore used registers
+  IRET
+
+;------------------------------------------------------------------------------
+;RESET THE KEYBOARD CONTROLLER
+;Inputs:
+;Outputs:
+;Changes: Resets the keyboard controller
+;------------------------------------------------------------------------------
+ResetKbd:
+  PUSH AX     ;Save used registers
+  PUSHF       ;Save flags
+  CLI         ;Disable interrupts
+  IN   AL,61h ;Get the keyboard port info
+  PUSH AX     ;Save it for a second
+  OR   AL,80h ;Tell the keyboard
+  OUT  61h,AL ;  we're done
+  POP  AX     ;Get the port info back
+  OUT  61h,AL ;Start the keyboard again
+  MOV  AL,20h ;Tell the interrupt controller
+  OUT  20h,AL ;  we're done
+  POPF        ;Restore flags
+  POP  AX     ;Restore used registers
+  RET
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;CODE TO PUT DATA INTO AND OUT OF OUR CIRCULAR BUFFER
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;-----------------------------------------------------------------------------
+;PUT A SCAN CODE AT THE END OF OUR BUFFER
+;Inputs:  BufferHead, BufferTail = Head and Tail of the circular buffer
+;         AL = Scan Code to put in the Buffer
+;Outputs: Adds a Scan Code to the end of the buffer
+;         CF = Clear if it worked OK
+;            = Set if it didn't work
+;Changes: BufferTail, BufferCount
+;-----------------------------------------------------------------------------
+PutBuffer:
+  PUSH DI                     ;Save used registers
+  CLI                         ;Disable interrupts
+  CLD                         ;Go forward with string functions
+  CMP  BufferCount,BufferSize ;Is the buffer already full?
+  JE  >P95                    ;If so, we can't do anything
+  MOV  DI,BufferTail          ;If OK, get the buffer Tail
+  INC  DI                     ;Point at the next space in the buffer
+  CMP  DI,BufferEnd           ;Will this put us past the end of our buffer?
+  JBE >P10                    ;If not, our pointer is OK
+  MOV  DI,Buffer              ;If so, point at the beginning of our buffer
+P10:
+  MOV  BufferTail,DI          ;Store the new Tail
+  INC  BufferCount            ;Increment the counter
+  STOSB                       ;Store the scan code
+P90:                          ;It worked OK
+  CLC                         ;Set the "it worked" flag
+  JMP >P99                    ;We're done
+P95:                          ;The buffer is already full
+  STC                         ;Set the "buffer is full" flag
+P99:                          ;We're done
+  STI                         ;Enable interrupts
+  POP  DI                     ;Restore used registers
+  RET
+
+;-----------------------------------------------------------------------------
+;GET A SCAN CODE FROM THE BEGINNING OF OUR BUFFER
+;Inputs:  CS:BufferHead, CS:BufferTail = Head and Tail of the circular buffer
+;Outputs: Gets the next Scan Code from the beginning of the buffer
+;         AL = Scan code from the buffer
+;         CF = Clear if it worked OK
+;            = Set if it didn't work
+;Changes: CS:BufferHead (if there is anything in the buffer)
+;-----------------------------------------------------------------------------
+GetBuffer:
+  PUSH SI            ;Save used registers
+  CLI                ;Disable interrupts
+  CLD                ;Go forward with string functions
+  CMP  BufferCount,0 ;Does the buffer have anything in it?
+  JE  >G95           ;If not, we can't do anything
+  MOV  SI,BufferHead ;If so, point at the buffer Head
+  LODSB              ;Get the scan code
+  CMP  SI,BufferEnd  ;Are we past the end of our buffer?
+  JBE >G10           ;If not, our pointer is OK
+  MOV  SI,Buffer     ;If so, point at the beginning of our buffer
+G10:                 ;
+  MOV  BufferHead,SI ;Store the new Head
+  DEC  BufferCount   ;Decrement the counter
+G90:                 ;There's a scan code in AL
+  CLC                ;Set the "it worked" flag
+  JMP >G99           ;We're done
+G95:                 ;The buffer is empty
+  STC                ;Set the "buffer was empty" flag
+G99:                 ;We're done
+  STI                ;Enable interrupts
+  POP  SI            ;Restore used registers
+  RET
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;CODE TO PROCESS KEYSTROKES THAT HAVE BEEN TYPED
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;------------------------------------------------------------------------------
+;WAIT FOR USER TO ENTER KEYSTROKES
+;Inputs:  DS:[DX] = Message to Print
+;Outputs: AX = character to be stored
+;         ScanCodeBuff = Scan code(s) to store
+;Changes: StartingCount
+;------------------------------------------------------------------------------
+GetChars:
+  PUSH BX                  ;Save used registers
+  XOR  BX,BX               ;Assume it will be a keystroke push
+  CALL WaitForKey          ;Wait for the first keystroke
+  JZ  >G20                 ;If it's a Push, go ahead and write it
+                           ;  If not, it's the <Enter>, <Y>, or <N> release
+G10:                       ;Loop to here for each keystroke
+  XOR  BX,BX               ;Assume it will be a keystroke push
+  CALL WaitForKey          ;Wait for a keystroke
+  JZ  >G20                 ;If it's a keystroke push, we're OK
+  MOV  BX,8080h            ;If a release, mark our flag
+G20:                       ;It's a keystroke release
+  CALL CopyToOld           ;Store and write the scan codes as necessary
+  CMP  B ScanCodes[0],129  ;Was this the <Esc> release key?
+  JNE  G10                 ;If not, just keep going
+  CMP  B OldScanCodes[0],0 ;Is another key still pressed?
+  JNE  G10                 ;If so, keep going
+  CMP  B OldScanCodes[3],0 ;Is another key still pressed?
+  JNE  G10                 ;If so, keep going
+  CMP  B OldScanCodes[6],0 ;Is another key still pressed?
+  JNE  G10                 ;If so, keep going
+  POP  BX                  ;If so, restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WAIT FOR USER TO ENTER A KEYSTROKE, AND STORE ALL THE SCAN CODE(S)
+;Inputs:
+;Outputs: ScanCodes
+;         ZF = Set if keystroke Push
+;            = Clear if keystroke Release
+;Changes:
+;------------------------------------------------------------------------------
+WaitForKey:
+  PUSH AX,DI              ;Save used registers
+  MOV  DI,ScanCodes       ;Point at where to store the codes
+  PUSH DI                 ;Save the pointer for a second
+  XOR  AX,AX              ;Fill the buffer
+  STOSW                   ;  with
+  STOSB                   ;  zeroes
+  POP  DI                 ;Restore the pointer
+W10:                      ;Loop to here for each scan code in a keystroke
+  CALL GetBuffer          ;Is there a scan code waiting in our buffer?
+  JC   W10                ;If not, keep waiting until there is
+  STOSB                   ;When we get one, store it
+  CMP  AL,224             ;Is it the first part of an extended key?
+  JE   W10                ;If so, wait for the second part of the keystroke
+  CMP  AL,225             ;Is it the first part of a Pause?
+  JE   W10                ;If so, wait for the second scan code
+  CMP  AL,29              ;Is it possibly the second part of a Pause?
+  JE  >W20                ;If so, see if it's really part of a Pause
+  CMP  AL,29+128          ;Is it a possible Pause release?
+  JNE >W90                ;If not, we're done getting scan codes
+W20:                      ;See if it's part of a Pause
+  CMP  B ScanCodes[0],225 ;Is it really part of a Pause?
+  JE   W10                ;If so, wait for the rest of the scan codes
+W90:                      ;We've got all the scan codes for this keystroke
+  TEST AL,80h             ;Set the Push/Release flag
+  POP  DI,AX              ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;COPY FROM SCANCODES TO OLDSCANCODES AND PRINT SCAN CODES, IF NOT REPEATED
+;Inputs:  BL = 00h (if Push) or 80h (if Release)
+;Outputs:
+;Changes:
+;------------------------------------------------------------------------------
+CopyToOld:
+  PUSH AX,BX,CX,DX,DI,SI ;Save used registers
+  MOV  DI,OldScanCodes   ;Point at the old scan code table
+  MOV  SI,ScanCodes      ;Point at the current set of scan codes
+  MOV  CX,TblSize        ;Number of table entries to look through
+O10:                     ;Loop to here for each table entry
+  MOV  AX,[DI]           ;Get the Old scan codes
+  MOV  DL,[DI+2]         ;  from the table
+  OR   AL,AL             ;Is there even an entry in the table?
+  JZ  >O30               ;If not, it can't be a match!
+  OR   AL,BL             ;If so, Release first code, if necessary
+  CMP  AL,224            ;Is it an extended key?
+  JE  >O15               ;If so, jump to handle it
+  CMP  AL,225            ;Is it a Pause?
+  JNE >O25               ;If not, everything's OK like it is
+  OR   DL,BL             ;If so, Release last code, if necessary
+  OR   AH,BL             ;Release middle code, if necessary
+  JMP >O25               ;Jump to test it
+O15:                     ;It's an extended key
+  TEST AH,80h            ;Did the Release come before the Push?
+  JNZ >O20               ;If so, jump to handle it (must be a <FakeShift>)
+  OR   AH,BL             ;If not, Release second code, if necessary
+  JMP >O25               ;Jump to test it
+O20:                     ;The extended Release came before the Push
+  TEST B[SI+1],80h       ;Is this key a Release also?
+  JNZ >O25               ;If so, it's OK to test it
+  AND  AH,7Fh            ;If not, Push second scan code
+O25:                     ;All of the codes are converted
+  CMP  AX,[SI]           ;Do the first two codes match?
+  JNE >O30               ;If not, try the next entry in the table
+  CMP  DL,[SI+2]         ;Does the third code match?
+  JE  >O60               ;If so, handle a repeat
+O30:                     ;Go to the next table entry
+  ADD  DI,3              ;No match - point at the next table entry
+  LOOP O10               ;Keep checking all of the table entries
+
+O40:                     ;We've got a new entry for the table
+  CALL PrintCodes        ;A new push scan code - write the codes
+  CALL PrintKeys         ;Write the descriptions
+  INC  KeyCounter        ;Increment our key counter
+  MOV  DI,OldScanCodes   ;Point at the start of OldScanCodes
+  MOV  CX,TblSize        ;Limit ourselves to the number of table entries
+O45:                     ;Loop to here to find an empty table entry
+  CMP  B [DI],0          ;Is this an empty table entry?
+  JE  >O50               ;If so, we can store it
+  ADD  DI,3              ;If not, keep looking for
+  LOOP O45               ;  an empty spot in the table
+O50:                     ;We're pointing at an empty table entry
+  MOVSW                  ;Copy the current codes
+  MOVSB                  ;  into the table
+  JMP >O90               ;And we're done
+
+O60:                     ;We've found a match (it's a repeat or release)
+  MOV  AX,[DI]           ;Is it
+  CMP  AX,[SI]           ;  a repeat?
+  JNE >O63               ;If not, it's a release - handle it
+  CALL WriteFace         ;If so, write a happy face
+  JMP >O90               ;Done
+O63:                     ;Is a Key Release
+  CALL PrintCodes        ;If not, it's a release, so Print the codes
+  CALL PrintKeys         ;Write the descriptions
+  DEC  KeyCounter        ;Decrement our key counter
+  JZ  >O80               ;If it's 0, jump to handle "all keys released"
+  CMP  KeyCounter,1      ;Is there more than one table entry?
+  JA  >O85               ;If not, just reset the table entry
+  MOV  BX,OldScanCodes   ;If so, point at the old scan codes again
+O65:                     ;Look for the one remaining table entry
+  MOV  AX,[BX]           ;Get the table entry
+  ADD  BX,3              ;Point at the next table entry
+  OR   AX,AX             ;Is this an empty one?
+  JZ   O65               ;If so, keep looking
+  CMP  AL,224            ;If not, is it an extended key?
+  JNE >O85               ;If not, everything's OK
+  CMP  AH,42+128         ;Is it a <FakeShift> release?
+  JE  >O70               ;If so, jump to handle it
+  CMP  AH,54+128         ;Is it a <FakeRightShift> release?
+  JNE >O85               ;If not, everything's OK
+O70:                     ;It's an un-Pushed <FakeShift> release
+  DEC  KeyCounter        ;If so, decrement our table entry counter
+O80:                     ;All the current keys are released
+  MOV  DX,SpacerMsg      ;Write a
+  CALL WriteIt           ;  "spacer" line
+O85:                     ;Eliminate the table entry
+  XOR  AX,AX             ;Reset the
+  STOSW                  ;  table entry
+  STOSB                  ;  to all zeroes
+O90:                     ;We're done
+  POP  SI,DI,DX,CX,BX,AX ;Restore used registers
+  RET
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;CODE TO WRITE KEYSTROKES AND DESCRIPTIONS OF KEYSTROKES THAT HAVE BEEN TYPED
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;------------------------------------------------------------------------------
+;WRITE THE NEXT FACE MESSAGE (FOR A REPEATED KEY) TO THE SCREEN
+;Inputs:  WhichFace
+;Outputs: Writes the next Face to the Screen
+;Changes: WhichFace
+;------------------------------------------------------------------------------
+WriteFace:
+  PUSH DX          ;Save used registers
+  MOV  DX,Face1Msg ;Assume Hollow Face
+  TEST WhichFace,1 ;Do we want to write the Hollow Face?
+  JZ  >F20         ;If so, continue
+  MOV  DX,Face2Msg ;Point at Filled Face
+F20:               ;DX points at correct message
+  CALL WriteZErr   ;Write the Face message (do not write to File)
+  INC  WhichFace   ;Toggle Hollow/Filled for next time
+  POP  DX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;PRINT THE SCANCODES BUFFER INFO TO THE SCREEN
+;Inputs:  BX = 0000h (if Push) or 8080h (if Release)
+;Outputs:
+;Changes:
+;------------------------------------------------------------------------------
+PrintCodes:
+  PUSH AX,CX,DX,SI  ;Save used registers
+  MOV  DX,BlankMsg  ;Assume it's a push
+  OR   BL,BL        ;Is it a push or a release?
+  JZ  >P10          ;If a push, we're OK like we are
+  MOV  DX,RlsMsg1   ;If not, write a bracket
+P10:
+  CALL WriteIt      ;Write the space or the bracket
+  MOV  SI,ScanCodes ;Point at our buffer
+  LODSB             ;Get the first scan code from the buffer
+  CALL ByteToString ;Write it
+  LODSB             ;Get the second scan code from the buffer
+  OR   AL,AL        ;Is it valid?
+  JNZ >P30          ;If so, handle it
+  OR   BL,BL        ;Are we doing pushes?
+  JZ  >P20          ;If so, jump to handle it
+  MOV  DX,RlsMsg3   ;If not, write a bracket and some spaces
+  JMP >P90          ;Do it and we're done
+P20:                ;We're doing pushes
+  MOV  DX,Space9Msg ;Need to write 9 spaces
+  JMP >P90          ;Do it and we're done
+P30:                ;Valid second scan code
+  MOV  DX,DashMsg   ;It's a valid second scan code
+  CALL WriteIt      ;Write a dash
+  CALL ByteToString ;Write the number
+  LODSB             ;Get the third scan code
+  OR   AL,AL        ;Is it valid?
+  JNZ >P50          ;If so, handle it
+  OR   BL,BL        ;Are we doing pushes?
+  JZ  >P40          ;If so, jump to handle it
+  MOV  DX,RlsMsg4   ;If not, write a bracket and some spaces
+  JMP >P90          ;Do it and we're done
+P40:                ;We're doing pushes
+  MOV  DX,Space5Msg ;Need to write 5 spaces
+  JMP >P90          ;Do it and we're done
+P50:                ;Valid third scan code
+  MOV  DX,DashMsg   ;It's a valid third scan code
+  CALL WriteIt      ;Write a dash
+  CALL ByteToString ;Write the number
+  MOV  DX,SpaceMsg  ;Assume it's a push
+  OR   BL,BL        ;Are we doing pushes?
+  JZ  >P90          ;If so, we're OK
+  MOV  DX,RlsMsg2   ;If not, we need to write a bracket
+P90:                ;We're done
+  CALL WriteIt      ;Write the last string
+  POP  SI,DX,CX,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;PRINT THE SCAN CODE KEY DESCRIPTION TO THE SCREEN
+;Inputs:  BX = 0000h (if Push) or 8080h (if Release)
+;Outputs:
+;Changes:
+;------------------------------------------------------------------------------
+PrintKeys:
+  PUSH AX,CX,DX,DI,SI ;Save used registers
+  MOV  DX,SpaceMsg    ;Write a
+  CALL WriteIt        ;  space
+  MOV  DX,Space6Msg   ;Assume it's a push
+  PUSH BX             ;Save BX - we'll need to restore it later
+  OR   BL,BL          ;Is it a push or a release?
+  JZ  >K10            ;If a push, we're OK like we are
+  MOV  DX,Space2Msg   ;If a release,
+  CALL WriteIt        ;  write 2 spaces
+  MOV  DX,RlsMsg1     ;Write a bracket
+K10:
+  CALL WriteIt        ;Write the spaces or the bracket
+  MOV  SI,ScanCodes   ;Point at our current buffer
+  MOV  DI,KeyTable    ;Point at our table of descriptions
+  NOT  BX             ;Convert BX to AND instead of OR
+K20:                  ;Loop to here for each table entry test
+  PUSH SI             ;Save our pointer
+  LODSW               ;Get the first two scan codes
+  CMP  AL,224         ;Is it extended?
+  JB  >K25            ;If not, we're OK
+  CMP  AL,225         ;Is it a Pause?
+  JA  >K25            ;If not, we're OK
+  MOV  BL,-1          ;If so, we don't want to change the first code
+K25:
+  AND  AX,BX          ;Convert to pushes if needed
+  CMP  AX,[DI]        ;Do they match?
+  JNE >K30            ;If not, try the next table entry
+  LODSB               ;If so, get the third scan code
+  AND  AL,BH          ;Convert to a push if needed
+  CMP  AL,[DI+2]      ;Does it match also?
+  JE  >K40            ;If so, it's a total match
+K30:                  ;No match this time
+  POP  SI             ;Restore the pointer
+  ADD  DI,3           ;Skip past the scan code entries
+  XOR  AL,AL          ;Need to look for a 0
+  MOV  CX,-1          ;Maximize our counter
+  REPNE SCASB         ;Look for the 0 (the end of the description)
+  CMP  B [DI],0       ;Is this the last entry in the table?
+  JNE  K20            ;If not, keep looking
+  INC  DI             ;If so, point at the no-match string
+  JMP >K80            ;Jump to write it
+K40:                  ;It's a match
+  POP  SI             ;Restore the pointer
+  ADD  DI,3           ;Skip past the scan code entries
+K80:                  ;Write the string and quit
+  MOV  DX,DI          ;Point DX at the description
+  CALL WriteIt        ;Write it
+  POP  BX             ;Restore BX again
+  OR   BL,BL          ;Is this a push?
+  JZ  >K90            ;If so, we're done
+  MOV  DX,RlsMsg2     ;If not, we need to
+  CALL WriteIt        ;  write a bracket
+K90:                  ;We're done
+  MOV  DX,CrLfMsg     ;Write a
+  CALL WriteIt        ;  CrLf
+  POP  SI,DI,DX,CX,AX ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT BYTE OR WORD TO DECIMAL CHARACTER STRING, AND WRITE IT
+;Inputs:  AL = Byte to be converted and written, OR
+;         AX = Word to be converted and written
+;Outputs:
+;Changes: WordString
+;------------------------------------------------------------------------------
+ByteToString:
+  PUSH AX,BX         ;Save the original word & BP
+  XOR  AH,AH         ;Make sure high byte is 0
+  XOR  BH,BH         ;BH = No Word (Byte)
+;  JMP >S00           ;Jump to start the loop
+;WordToString:
+;  PUSH AX,BX         ;Save the original word
+;  MOV  BH,Yes        ;BP = Yes Word (not Byte)
+;S00:                 ;Do either word or byte
+  PUSH CX,DX,DI      ;Save used registers
+  MOV  DI,WordString ;Get address for character string
+  PUSH AX,DI         ;Save registers for a second
+  MOV  AX,'  '       ;Store
+  STOSW              ;  some
+  STOSW              ;  spaces
+  POP  DI,AX         ;Return registers to normal
+  XOR  BL,BL         ;Test for first non-zero character is false
+  MOV  CX,10000d     ;First divisor is 10,000
+S10:                 ;Loop to here for each character
+  XOR  DX,DX         ;So dividend won't be messed up
+  DIV  CX            ;Divide DX:AX by current divisor
+  OR   AX,AX         ;Is this a non-zero character?
+  JNZ >S20           ;If so, jump down to write this character
+  OR   BL,BL         ;Has there already been a non-zero character?
+  JNZ >S20           ;If so, jump down to write this character
+  CMP  CX,1          ;Is this the last character?
+  JNE >S30           ;If not, just increment the loop
+S20:                 ;We need to write this character
+  INC  BL            ;Test for first non-zero character is true
+  MOV  [DI],AL       ;Put the quotient into the string
+  ADD  B [DI],'0'    ;Convert it to ASCII
+S30:                 ;Necessary characters are written
+  CMP  CX,1          ;Was this the last division to do?
+  JE  >S50           ;If so, we're done - jump to write it
+  MOV  AX,DX         ;If not, start next loop with remainder of division
+  PUSH AX            ;Save register for a second
+  XOR  DX,DX         ;So dividend won't be messed up
+  MOV  AX,CX         ;Want to divide divisor in CX
+  MOV  CX,10         ;Want to divide by 10
+  DIV  CX            ;Divide it
+  MOV  CX,AX         ;Store it back in CX
+  POP  AX            ;Restore register
+  INC  DI            ;Move to next character in string
+  JMP  S10           ;Start loop over again
+S50:                 ;All characters are stored
+  MOV  DX,WordString ;Point to string
+  OR   BH,BH         ;Do we want a word?
+  JNZ >S90           ;If so, jump to write it
+  ADD  DX,2          ;If a Byte, we only need three characters
+S90:                 ;OK to write the string now
+  CALL WriteIt       ;Write the string
+  POP  DI,DX,CX      ;Restore used registers
+  POP  BX,AX         ;Restore original word & BP
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING TO BOTH CON AND FILE
+;Inputs:  DS:[DX] = Pointer to the string
+;Outputs: Writes the string to both CON and FILE
+;Changes:
+;------------------------------------------------------------------------------
+WriteIt:
+  CALL WriteZErr  ;Write to the screen
+  CALL WriteZFile ;Write to the file
+  RET
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;CODE TO WRITE (GENERICALLY) TO THE SCREEN OR TO A FILE/DEVICE
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING TO CON OR ERR OR FILE
+;Inputs:  DS:[DX] = Pointer to the string
+;         FileHandle = Handle number of File (if WriteZFile)
+;         CS = Local Data Area
+;Outputs: Writes the string to CON or ERR or FILE
+;Changes:
+;------------------------------------------------------------------------------
+WriteZFile:
+  PUSH BX               ;Save used register
+  MOV  BX,CS:FileHandle ;Get the handle number of our file
+  OR   BX,BX            ;Is there a file to write to?
+  JZ  >Z90              ;If not, just quit
+  JMP >Z00              ;If so, jump to write it
+WriteZCon:              ;Write to CON
+  PUSH BX               ;Save used register
+  MOV  BX,StdOutHandle  ;Write to STDOUT
+  JMP >Z00              ;Jump to do it
+WriteZErr:              ;Write to ERR
+  PUSH BX               ;Save used register
+  MOV  BX,StdErrHandle  ;Write to STDERR
+Z00:
+  PUSH AX,CX            ;Save used registers
+  CALL CalcStrSizeDX    ;Calculate the size of the string (returns CX)
+  JZ  >Z80              ;If nothing to write, just quit
+  MOV  AH,40h           ;Function 40h (Write to Device)
+  INT  21h              ;Do it
+Z80:                    ;We're done
+  POP  CX,AX            ;Restore used registers
+Z90:                    ;We're done
+  POP  BX               ;Restore used register
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE LENGTH OF AN ASCIIZ STRING
+;Inputs:  DS:[DX] = Pointer to the string
+;Outputs: CX = Length of the string
+;         ZF = Set if string is 0 length
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+CalcStrSizeDX:
+  PUSH AX,DI  ;Save used registers
+  PUSH ES     ;Save used registers
+  MOV  ES,DS  ;Point ES:[DI]
+  MOV  DI,DX  ; at the string
+  XOR  AL,AL  ;Look for a 0
+  MOV  CX,-1  ;Start with max count for REPNE
+  REPNE SCASB ;Find the end of the string
+  NOT  CX     ;Calculate the size
+  DEC  CX     ;  of the string (sets ZF)
+  POP  ES     ;Restore used registers
+  POP  DI,AX  ;Restore used registers
+  RET
+
+
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+;CODE TO BEEP THE SPEAKER
+;北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北北
+
+;------------------------------------------------------------------------------
+;BEEP THE SPEAKER
+;Inputs:
+;Outputs:
+;Changes: Beeps the speaker
+;------------------------------------------------------------------------------
+Beep:
+  PUSH AX,BX    ;Save used registers
+  XOR  BX,BX    ;Video page 0
+  MOV  AX,0E07h ;Function 0Eh (write to screen), Char = 07h (BEL)
+  INT  10h      ;Do it
+  POP  BX,AX    ;Restore used registers
+  RET

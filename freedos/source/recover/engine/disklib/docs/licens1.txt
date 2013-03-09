@@ -1,0 +1,20 @@
+The defrag people may be more interested in my DISKED program
+(www.diskwarez.com/disked.htm) due to its code for parsing the FAT and
+indexing all files (a linked list) to their allocated clusters.
+
+I have been meaning to publish this data -- the algorithms may be of
+interest you and defrag interested people. I just finished the FAT32
+version a few weeks ago. 
+
+My DISKED program can index all files (rather quickly) and then enable
+you to associate a cluster to a file (full path name) or a file to all
+of its clusters.
+
+My license is such that you can take the DISKED file indexing code
+(some algorithms and data structures) and integrate them into whatever
+you want -- GPL code in your instance -- even without my [written]
+permission. But in your case I could even provide help. It is up to
+you.
+
+Good luck and Peace
+g jennings  

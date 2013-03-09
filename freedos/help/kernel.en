@@ -1,0 +1,36 @@
+KERNEL.SYS
+
+KERNEL.SYS is the FreeDOS kernel,
+providing basic disk and memory support, as well as
+processing the CONFIG.SYS configuration script.
+
+
+---------------------------------------------------------
+Usage: nothing specific, though SYS C: might help
+
+
+
+---------------------------------------------------------
+
+Features:
+* freely distributable DOS kernel
+* menu system
+* interface with Memdisk parameters to set additional commands
+
+
+Supported:
+* 8086 processor or newer
+* FAT12, FAT16 filesystems
+* FAT32 filesystem as well if compiled in
+* Windows 3.1 in real mode if compiled in (experimental)
+*
+
+Not supported:
+* Running/installing Microsoft Windows 3.x / 9x
+* 8086/80186/80286 platforms if using the 386+ -only kernel
+*
+
+Requirements:
+* KERNEL.SYS needs to be in the root of your drive (A:\ or C:\ )
+* Filesystem needs to be FAT12, FAT16 or FAT32
+* Usually a bootsector is needed (SYS C:) or configuration changes to your bootloader

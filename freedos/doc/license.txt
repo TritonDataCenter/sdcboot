@@ -1,0 +1,15 @@
+This is a simple little program that users can use to 
+easily get the version of the distribution installed,
+and if wanted the version of the specific program
+that CAME WITH the distribution this program is 
+distributed with.  This program is updated with each
+release, and simply displays hard coded information.
+Only covers boot and base.
+
+It is written and maintained by Kenneth J. Davis
+The source & resulting executable are placed into public domain (no copyright).
+The source is provided only as a reference, as this program has little
+use other than obtaining information about a specific distribution.
+
+Jeremy Davis
+jeremyd@computer.org

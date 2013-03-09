@@ -1,0 +1,61 @@
+WHATIS and APROPOS for FreeDOS
+          Version 1.1
+==============================
+WHATIS and APROPOS are help programs, based on the LINUX commands by the
+same names. WHATIS displays a one-line description of a command that you
+specify
+
+    WHATIS command
+
+All command descriptions can be displayed using simply
+
+    WHATIS
+
+And APROPOS will list the commands relevant to a keyword that you provide
+
+    APROPOS keyword
+
+
+Why doesn't WHATIS always find commands?
+========================================
+WHATIS and APROPOS will display information on many FreeDOS commands,
+however there are two reasons it may not be able to:
+
+1. WHATIS bases it's information on the LSM files in the \Appinfo
+directory (usually found in c:\fdos or c:\dos). Since internal commands
+do not have *.LSM files, WHATIS won't be aware of them.
+
+2. A few .LSM files do not list the program name as it would be typed on
+the command line.
+
+Default Setup
+=============
+Usually freedos is installed to a directory such as c:\fdos. Regardless
+of the name and location of this directory, it should contain the following
+subdirectories:
+
+     \APPINFO
+     \BIN
+     \HELP
+
+As long as this directory structure is maintained, and WHATIS.COM is
+located in the \BIN folder, WHATIS will be able to find the .lsm files
+in \APPINFO and put a WHATIS database in \HELP.
+
+Other Setups
+============
+In other cases, the /S and /D WHATIS options can be used. Type WHATIS /?
+for more information.
+
+Additionally, whatis will check the environment variable HELPPATH to find the
+location of the \help folder, so that the /D option doesn't have to be used
+every time WHATIS is run.
+
+There is no equivalent of HELPPATH for the /S option, but this is ok because
+/S is only relevant when building the WHATIS database. The WHATIS database
+is only built the first time WHATIS is run, or when the /B option is used.
+
+Distribution
+============
+WHATIS and APROPOS for FreeDOS is protected under the GNU GPL.
+See the file COPYING for details.

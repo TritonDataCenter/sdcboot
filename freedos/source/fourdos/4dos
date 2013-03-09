@@ -1,0 +1,314 @@
+# Build the 4DOS.COM file
+
+# Define local names / options
+PRODUCT=__4DOS
+ENV=DOS
+ENV_D=DOS_D
+COMPNAME=MSC7
+EXENAME=4DOS.COM
+MAPNAME=4DOS.MAP
+LNKNAME=4DOS.LNK
+
+!IF "$(_FAMILY)" == "RT"
+PRODUCT=__4DOSRT
+OBJ=DSR
+EXENAME=4DOSRT.COM
+MAPNAME=4DOSRT.MAP
+LNKNAME=4DOSRT.LNK
+!ENDIF
+
+# Set up language and compiler macros
+!INCLUDE SETUP.MAK
+
+# Set up local macros and header list
+headers=4all.h proto.h globals.h 4dos.h inistruc.h
+
+# Define local commands
+LASM=$(ASM) /D_CSEG=LOAD /D_PREFIX=L_ /D_MODEL=TINY %s
+SASM=$(ASM) /D_CSEG=SERV /D_MODEL=SMALL %s
+TASM=$(ASM) /D_MODEL=SMALL %s
+BASM=$(ASM) /D_MODEL=SMALL /DTEXTLEN=160 %s
+LINKCMD=$(LINK) @..\$(LNKNAME)
+
+#!IF "$(_LANGUAGE)" == "ENGLISH"
+#POSTLINKCMD=..\apprel $(LINKTARG) 0
+#!ELSE
+POSTLINKCMD=..\apprel $(EXENAME) 0
+#!ENDIF
+
+# Define ALL: target
+ALL : setenv $(LINKTARG)
+
+# Define target to do SETs
+setenv :
+     set CL=$(CFLAGS_ENV)
+     set ML=$(AFLAGS_ENV)
+
+# Build the 4DOSTART library to hold the code that moves the loader down,
+# and simultaneously show where the end of the loader is
+
+$(OBJ)\4dostart.obj : 4dostart.asm
+        $(LASM)
+
+4dostart.lib : $(OBJ)\4dostart.obj
+        lib 4dostart -+$(OBJ)\4dostart.obj;
+
+
+
+# Build 4DOS.COM
+
+# ------------------------------------------------------------------------
+# The following modules are text include files
+# ------------------------------------------------------------------------
+
+criterrs.$(TXT_ASM) : criterrs.$(TXT)
+        compress $** $@
+
+parserrs.$(TXT_ASM) : parserrs.$(TXT)
+        compress $** $@
+
+initerrs.$(TXT_ASM) : initerrs.$(TXT)
+        compress $** $@
+
+serverrs.$(TXT_ASM) : serverrs.$(TXT)
+        compress $** $@
+
+
+# ------------------------------------------------------------------------
+# The following modules are the resident portion of 4DOS
+# ------------------------------------------------------------------------
+
+$(OBJ)\4dos.obj : 4dos.asm 4dlparms.asm 4dlstruc.asm \
+           loaddata.asm 4dlmsg.$(TXT_ASM) intver.asm
+        $(LASM)
+
+#
+#       Note use of a different OBJ file name as errormsg is part of both
+#       the resident and transient portions
+#
+$(OBJ)\lerrmsg.obj : errormsg.asm
+        $(LASM)
+
+$(OBJ)\modules.obj : modules.asm 4dlparms.asm
+        $(LASM)
+
+
+# ------------------------------------------------------------------------
+# The following modules are initialization code
+# ------------------------------------------------------------------------
+
+#
+#       Note use of a different OBJ file name as dosumb is
+#       part of both the initialization and transient portions
+#
+$(OBJ)\ldosumb.obj : dosumb.asm
+        $(LASM)
+
+$(OBJ)\initerrs.obj : initerrs.$(TXT_ASM)
+        $(LASM)
+
+$(OBJ)\4dlinit.obj : 4dlinit.asm 4dlparms.asm 4dlstruc.asm inistruc.asm \
+              servdata.asm 4dlmsg.$(TXT_ASM) intclean.asm \
+              criterrs.$(TXT_ASM) parserrs.$(TXT_ASM) intver.asm
+        $(LASM)
+
+$(OBJ)\fname.obj : fname.asm
+        $(LASM)
+
+$(OBJ)\decout.obj : decout.asm
+        $(LASM)
+
+$(OBJ)\srchenv.obj : srchenv.asm
+        $(LASM)
+
+$(OBJ)\parspath.obj : parspath.asm
+        $(LASM)
+
+$(OBJ)\findems.obj : findems.asm
+        $(LASM)
+
+$(OBJ)\findureg.obj : findureg.asm
+        $(LASM)
+
+$(OBJ)\iniparse.obj : iniparse.asm inistruc.asm keyvalue.asm 4dlparms.asm
+        $(LASM)
+
+#
+#       Note use of a different OBJ file name as relocate is part of
+#       both the initialization and transient portions
+#
+$(OBJ)\lreloc.obj : relocate.asm
+        $(LASM)
+
+$(OBJ)\hexout.obj : hexout.asm
+        $(LASM)
+
+
+# ------------------------------------------------------------------------
+# The following modules are the transient portion of 4DOS
+# ------------------------------------------------------------------------
+
+$(OBJ)\server.obj : server.asm 4dlparms.asm 4dlstruc.asm inistruc.asm \
+             servdata.asm loaddata.asm 4dlmsg.$(TXT_ASM) \
+             intclean.asm
+        $(SASM)
+
+$(OBJ)\swapchk.obj : swapchk.asm
+        $(SASM)
+
+$(OBJ)\serverrs.obj : serverrs.$(TXT_ASM)
+        $(SASM)
+
+$(OBJ)\reshigh.obj : reshigh.asm
+        $(SASM)
+
+$(OBJ)\dosumb.obj : dosumb.asm
+        $(SASM)
+
+$(OBJ)\relocate.obj : relocate.asm
+        $(SASM)
+
+$(OBJ)\dv.obj : dv.asm
+        $(SASM)
+
+$(OBJ)\errormsg.obj : errormsg.asm
+        $(SASM)
+
+$(OBJ)\main.obj : main.c $(headers) swerror.c
+        $(COMP) /NT_TEXT main.c
+
+$(OBJ)\parser.obj : parser.c $(headers) sharware.h swerror.c
+        $(COMP) /NT_TEXT parser.c
+
+$(OBJ)\dosinit.obj : dosinit.c $(headers) version.h sharware.h
+        $(COMP) /NT_TEXT dosinit.c
+
+$(OBJ)\cmds.obj : cmds.c $(headers)
+        $(COMP) /NT_TEXT cmds.c
+
+$(OBJ)\expand.obj : expand.c $(headers)
+        $(COMP) /NTMISC_TEXT expand.c
+
+$(OBJ)\eval.obj : eval.c $(headers)
+        $(COMP) /NTDIRCMDS_TEXT eval.c
+
+$(OBJ)\dircmds.obj : dircmds.c $(headers) dblspace.h
+        $(COMP) dircmds.c
+
+$(OBJ)\filecmds.obj : filecmds.c $(headers)
+        $(COMP) /NT_TEXT filecmds.c
+
+$(OBJ)\syscmds.obj : syscmds.c $(headers)
+        $(COMP) /NT_TEXT syscmds.c
+
+$(OBJ)\select.obj : select.c selectc.c $(headers) dblspace.h
+        $(COMP) /NTDIRCMDS_TEXT select.c
+
+$(OBJ)\misc.obj : misc.c $(headers) swerror.c
+        $(COMP) misc.c
+
+$(OBJ)\env.obj : env.c $(headers)
+        $(COMP) /NT_TEXT env.c
+
+$(OBJ)\batch.obj : batch.c $(headers)
+        $(COMP) /NT_TEXT batch.c
+
+$(OBJ)\error.obj : error.c $(headers) message.$(MHDR)
+        $(COMP) /NT_TEXT error.c
+
+!IF "$(FAMILY)" != "RT"
+$(OBJ)\sharware.obj : sharware.c $(headers) sharware.h version.h
+        $(COMP) /NTSHARE_TEXT sharware.c
+!ENDIF
+
+$(OBJ)\screenio.obj : screenio.c $(headers)
+        $(COMP) screenio.c
+
+$(OBJ)\window.obj : window.c $(headers)
+        $(COMP) /NTSCREENIO_TEXT window.c
+ 
+$(OBJ)\listall.obj : listall.c listc.c $(headers)
+        $(COMP) /NTDIRCMDS_TEXT listall.c
+
+$(OBJ)\lines.obj : lines.c $(headers)
+        $(COMP) /NTSCREENIO_TEXT lines.c
+
+$(OBJ)\doscmds.obj : doscmds.c $(headers) version.h build.h
+        $(COMP) /NT_TEXT doscmds.c
+
+$(OBJ)\iofmt.obj : iofmt.c $(headers)
+        $(COMP) /NTSCREENIO_TEXT iofmt.c
+
+$(OBJ)\doscalls.obj : doscalls.c $(headers) version.h sharware.h
+        $(COMP) /NTMISC_TEXT doscalls.c
+
+$(OBJ)\dostty.obj : dostty.c $(headers)
+        $(COMP) /NTSCREENIO_TEXT dostty.c
+
+$(OBJ)\_file.obj : _file.c
+        $(COMP) /NT_TEXT _file.c
+
+$(OBJ)\inout.obj : inout.asm
+        $(TASM)
+
+$(OBJ)\dosutil.obj : dosutil.asm inistruc.asm
+        $(TASM)
+
+$(OBJ)\bcd.obj : bcd.asm
+        $(TASM)
+
+$(OBJ)\keyparse.obj : keyparse.asm keyvalue.asm
+        $(TASM)
+
+$(OBJ)\tokens.obj : tokens.asm
+        $(TASM)
+
+$(OBJ)\umbreg.obj : umbreg.asm 4dlparms.asm 4dlstruc.asm
+        $(TASM)
+
+$(OBJ)\compdrv.obj : compdrv.asm
+        $(TASM)
+
+$(OBJ)\strmenc.obj : strmenc.c
+        $(COMP) /NTSHARE_TEXT strmenc.c
+
+$(OBJ)\md5.obj : md5.c md5.h
+        $(COMP) /NTSHARE_TEXT md5.c
+
+$(OBJ)\batdcomp.obj : batdcomp.asm
+        $(TASM)
+
+$(OBJ)\win95.obj : win95.asm
+   $(ASM) win95.asm
+
+$(LINKTARG) : \
+#       resident (LOAD_TEXT segment)
+              $(OBJ)\4dos.obj $(OBJ)\lerrmsg.obj $(OBJ)\modules.obj \
+#       initialization (LOAD_TEXT segment)
+              $(OBJ)\ldosumb.obj $(OBJ)\initerrs.obj \
+              $(OBJ)\4dlinit.obj $(OBJ)\fname.obj $(OBJ)\decout.obj \
+              $(OBJ)\srchenv.obj $(OBJ)\parspath.obj $(OBJ)\findems.obj \
+              $(OBJ)\findureg.obj $(OBJ)\iniparse.obj $(OBJ)\lreloc.obj \
+              $(OBJ)\hexout.obj \
+#       transient - server (SERV_TEXT segment)
+              $(OBJ)\server.obj $(OBJ)\swapchk.obj $(OBJ)\serverrs.obj \
+              $(OBJ)\reshigh.obj $(OBJ)\dosumb.obj $(OBJ)\relocate.obj \
+              $(OBJ)\dv.obj $(OBJ)\errormsg.obj \
+#       transient - general (_TEXT segment)
+              $(OBJ)\main.obj $(OBJ)\parser.obj $(OBJ)\dosinit.obj \
+              $(OBJ)\cmds.obj $(OBJ)\expand.obj $(OBJ)\eval.obj \
+              $(OBJ)\dircmds.obj $(OBJ)\filecmds.obj $(OBJ)\syscmds.obj \
+              $(OBJ)\select.obj $(OBJ)\misc.obj $(OBJ)\env.obj \
+              $(OBJ)\batch.obj $(OBJ)\error.obj \
+              $(OBJ)\screenio.obj $(OBJ)\window.obj $(OBJ)\listall.obj \
+              $(OBJ)\lines.obj $(OBJ)\doscmds.obj $(OBJ)\iofmt.obj \
+              $(OBJ)\doscalls.obj $(OBJ)\_file.obj $(OBJ)\dosutil.obj \
+              $(OBJ)\dostty.obj $(OBJ)\inout.obj $(OBJ)\bcd.obj \
+              $(OBJ)\keyparse.obj $(OBJ)\tokens.obj $(OBJ)\umbreg.obj \
+              $(OBJ)\compdrv.obj $(OBJ)\strmenc.obj $(OBJ)\md5.obj \
+              $(OBJ)\batdcomp.obj $(OBJ)\win95.obj \
+#       other
+              4dostart.lib startupm.lib 4dos $(LNKNAME) build.txt \
+              setup.mak dolink.mak
+!INCLUDE DOLINK.MAK        
+

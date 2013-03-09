@@ -1,0 +1,6 @@
+GTDRVNMS.C(74): Error! E1031: Name 'fi_fatid' not found in struct/union fatinfo
+GTDRVNMS.C(56): Error! E1044: Variable 'info' has incomplete type
+GTDRVNMS.C(38): Warning! W131: No prototype found for function 'biosequip'
+GTDRVNMS.C(66): Warning! W131: No prototype found for function 'getdisk'
+GTDRVNMS.C(66): Warning! W131: No prototype found for function 'setdisk'
+GTDRVNMS.C(71): Warning! W131: No prototype found for function 'getfat'

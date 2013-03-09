@@ -1,0 +1,248 @@
+#
+# Borland C++ IDE generated makefile
+# Generated 4/22/96 at 9:13:59 AM 
+#
+.AUTODEPEND
+
+
+#
+# Borland C++ tools
+#
+IMPLIB  = Implib
+BCC     = Bcc +BccW16.cfg 
+TLINK   = TLink
+TLIB    = TLib
+BRC     = Brc
+TASM    = Tasm
+#
+# IDE macros
+#
+
+
+#
+# Options
+#
+IDE_LinkFLAGS =  -LD:\BC45\LIB
+IDE_ResFLAGS = 
+LinkerLocalOptsAtW16_CcbUNZIPbDLLEXEbwizunz16dlib =  -Twd -c -LC:\BC5\LIB
+ResLocalOptsAtW16_CcbUNZIPbDLLEXEbwizunz16dlib =  -31
+BLocalOptsAtW16_CcbUNZIPbDLLEXEbwizunz16dlib = 
+CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib = -IC:\BC5\INCLUDE -DWIZUNZIPDLL;WIZUNZIP;NDEBUG;
+LinkerInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib = -x
+LinkerOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib = $(LinkerLocalOptsAtW16_CcbUNZIPbDLLEXEbwizunz16dlib)
+ResOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib = $(ResLocalOptsAtW16_CcbUNZIPbDLLEXEbwizunz16dlib)
+BOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib = $(BLocalOptsAtW16_CcbUNZIPbDLLEXEbwizunz16dlib)
+
+#
+# Dependency List
+#
+Dep_Windll16 = \
+   C:\UNZIP\DLLEXE\wizunz16.lib
+
+Windll16 : BccW16.cfg $(Dep_Windll16)
+  echo MakeNode
+
+C:\UNZIP\DLLEXE\wizunz16.lib : C:\UNZIP\DLLEXE\wizunz16.dll
+  $(IMPLIB) $@ C:\UNZIP\DLLEXE\wizunz16.dll
+
+
+Dep_CcbUNZIPbDLLEXEbwizunz16ddll = \
+   C:\UNZIP\DLLOBJ\wizunz.res\
+   wizdll\wizunz.def\
+   C:\UNZIP\DLLOBJ\wizunz.obj\
+   C:\UNZIP\DLLOBJ\ttyio.obj\
+   C:\UNZIP\DLLOBJ\fileio.obj\
+   C:\UNZIP\DLLOBJ\wizunzip.obj\
+   C:\UNZIP\DLLOBJ\crc32.obj\
+   C:\UNZIP\DLLOBJ\crctab.obj\
+   C:\UNZIP\DLLOBJ\about.obj\
+   C:\UNZIP\DLLOBJ\winsetup.obj\
+   C:\UNZIP\DLLOBJ\rename.obj\
+   C:\UNZIP\DLLOBJ\replace.obj\
+   C:\UNZIP\DLLOBJ\password.obj\
+   C:\UNZIP\DLLOBJ\msdos.obj\
+   C:\UNZIP\DLLOBJ\crypt.obj\
+   C:\UNZIP\DLLOBJ\explode.obj\
+   C:\UNZIP\DLLOBJ\extract.obj\
+   C:\UNZIP\DLLOBJ\globals.obj\
+   C:\UNZIP\DLLOBJ\inflate.obj\
+   C:\UNZIP\DLLOBJ\list.obj\
+   C:\UNZIP\DLLOBJ\match.obj\
+   C:\UNZIP\DLLOBJ\process.obj\
+   C:\UNZIP\DLLOBJ\unreduce.obj\
+   C:\UNZIP\DLLOBJ\unshrink.obj\
+   C:\UNZIP\DLLOBJ\zipinfo.obj
+
+C:\UNZIP\DLLEXE\wizunz16.dll : $(Dep_CcbUNZIPbDLLEXEbwizunz16ddll)
+  $(TLINK)   @&&|
+ /v $(IDE_LinkFLAGS) $(LinkerOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(LinkerInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) +
+C:\BC5\LIB\c0dl.obj+
+C:\UNZIP\DLLOBJ\wizunz.obj+
+C:\UNZIP\DLLOBJ\ttyio.obj+
+C:\UNZIP\DLLOBJ\fileio.obj+
+C:\UNZIP\DLLOBJ\wizunzip.obj+
+C:\UNZIP\DLLOBJ\crc32.obj+
+C:\UNZIP\DLLOBJ\crctab.obj+
+C:\UNZIP\DLLOBJ\about.obj+
+C:\UNZIP\DLLOBJ\winsetup.obj+
+C:\UNZIP\DLLOBJ\rename.obj+
+C:\UNZIP\DLLOBJ\replace.obj+
+C:\UNZIP\DLLOBJ\password.obj+
+C:\UNZIP\DLLOBJ\msdos.obj+
+C:\UNZIP\DLLOBJ\crypt.obj+
+C:\UNZIP\DLLOBJ\explode.obj+
+C:\UNZIP\DLLOBJ\extract.obj+
+C:\UNZIP\DLLOBJ\globals.obj+
+C:\UNZIP\DLLOBJ\inflate.obj+
+C:\UNZIP\DLLOBJ\list.obj+
+C:\UNZIP\DLLOBJ\match.obj+
+C:\UNZIP\DLLOBJ\process.obj+
+C:\UNZIP\DLLOBJ\unreduce.obj+
+C:\UNZIP\DLLOBJ\unshrink.obj+
+C:\UNZIP\DLLOBJ\zipinfo.obj
+$<,$*
+C:\BC5\LIB\import.lib+
+C:\BC5\LIB\mathwl.lib+
+C:\BC5\LIB\cwl.lib
+wizdll\wizunz.def
+|
+   $(BRC) C:\UNZIP\DLLOBJ\wizunz.res $<
+
+C:\UNZIP\DLLOBJ\wizunz.res :  wizdll\wizunz.rc
+  $(BRC) -R @&&|
+ $(IDE_ResFLAGS) $(ROptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib)  -FO$@ wizdll\wizunz.rc
+|
+C:\UNZIP\DLLOBJ\wizunz.obj :  wizdll\wizunz.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ wizdll\wizunz.c
+|
+
+C:\UNZIP\DLLOBJ\ttyio.obj :  ttyio.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ ttyio.c
+|
+
+C:\UNZIP\DLLOBJ\fileio.obj :  fileio.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ fileio.c
+|
+
+C:\UNZIP\DLLOBJ\wizunzip.obj :  wingui\wizunzip.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ wingui\wizunzip.c
+|
+
+C:\UNZIP\DLLOBJ\crc32.obj :  crc32.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ crc32.c
+|
+
+C:\UNZIP\DLLOBJ\crctab.obj :  crctab.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ crctab.c
+|
+
+C:\UNZIP\DLLOBJ\about.obj :  wingui\about.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ wingui\about.c
+|
+
+C:\UNZIP\DLLOBJ\winsetup.obj :  wingui\winsetup.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ wingui\winsetup.c
+|
+
+C:\UNZIP\DLLOBJ\rename.obj :  wingui\rename.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ wingui\rename.c
+|
+
+C:\UNZIP\DLLOBJ\replace.obj :  wingui\replace.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ wingui\replace.c
+|
+
+C:\UNZIP\DLLOBJ\password.obj :  wingui\password.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ wingui\password.c
+|
+
+C:\UNZIP\DLLOBJ\msdos.obj :  msdos\msdos.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ msdos\msdos.c
+|
+
+C:\UNZIP\DLLOBJ\crypt.obj :  crypt.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ crypt.c
+|
+
+C:\UNZIP\DLLOBJ\explode.obj :  explode.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ explode.c
+|
+
+C:\UNZIP\DLLOBJ\extract.obj :  extract.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ extract.c
+|
+
+C:\UNZIP\DLLOBJ\globals.obj :  globals.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ globals.c
+|
+
+C:\UNZIP\DLLOBJ\inflate.obj :  inflate.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ inflate.c
+|
+
+C:\UNZIP\DLLOBJ\list.obj :  list.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ list.c
+|
+
+C:\UNZIP\DLLOBJ\match.obj :  match.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ match.c
+|
+
+C:\UNZIP\DLLOBJ\process.obj :  process.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ process.c
+|
+
+C:\UNZIP\DLLOBJ\unreduce.obj :  unreduce.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ unreduce.c
+|
+
+C:\UNZIP\DLLOBJ\unshrink.obj :  unshrink.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ unshrink.c
+|
+
+C:\UNZIP\DLLOBJ\zipinfo.obj :  zipinfo.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) $(CompInheritOptsAt_CcbUNZIPbDLLEXEbwizunz16dlib) -o$@ zipinfo.c
+|
+
+# Compiler configuration file
+BccW16.cfg : 
+   Copy &&|
+-w
+-R
+-v
+-vi
+-H
+-H=windll.csm
+-ml
+-WD
+-H-
+-d
+-Ff
+-dc
+-Vf
+| $@
+
+

@@ -1,0 +1,294 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 0270FH 02710H _TEXT              CODE
+ 02710H 02710H 00000H _FARDATA           FAR_DATA
+ 02710H 02721H 00012H _INIT_             INITDATA
+ 02722H 02722H 00000H _INITEND_          INITDATA
+ 02722H 02722H 00000H _EXIT_             EXITDATA
+ 02722H 02722H 00000H _EXITEND_          EXITDATA
+ 02730H 02DB7H 00688H _DATA              DATA
+ 02DB8H 02DB8H 00000H _CVTSEG            DATA
+ 02DB8H 02DB8H 00000H _SCNSEG            DATA
+ 02DB8H 04CF3H 01F3CH _BSS               BSS
+ 04CF4H 04CF4H 00000H _BSSEND            ENDBSS
+
+  Address         Publics by Name
+
+ 0000:2730       DATASEG@
+ 0000:030D       DGROUP@
+ 0000:02F8       _abort
+ 0000:1099       _atexit
+ 0000:17E6       _atoi
+ 0000:1776       _atol
+ 0000:1845       _brk
+ 0000:34AE       _catcontents
+ 0000:2E2E       _catfile
+ 0000:32AE       _catpoints
+ 0000:0CB0       _catread
+ 0000:1861       _chdir
+ 0000:032A       _cmpr
+ 0000:2DBC       _collate
+ 0000:0A4B       _dos_close
+ 0000:0991       _dos_open
+ 0000:09CD       _dos_read
+ 0000:0A0C       _dos_write
+ 0000:2DB6       _environ
+ 0000:27C0       _err
+ 0000:27A9       _errno
+ 0000:10BE       _exit
+ 0000:10E1       _fflush
+ 0000:1163       _flushall
+ 0000:1199       _fprintf
+ 0000:12D2       _fputc
+ 0000:13CF       _fputchar
+ 0000:2330       _free
+ 0000:1215       _fseek
+ 0000:1277       _ftell
+ 0000:1877       _getdisk
+ 0000:188A       _getenv
+ 0000:2EAE       _getlbuf
+ 0000:2E2C       _getlp
+ 0000:29F4       _getlrem
+ 0000:0FA7       _get_char
+ 0000:0FF9       _get_line
+ 0000:2DC2       _help
+ 0000:18E8       _intdos
+ 0000:190A       _intdosx
+ 0000:196D       _intr
+ 0000:1A4E       _isatty
+ 0000:1B05       _itoa
+ 0000:0E37       _kittenclose
+ 0000:0A69       _kittengets
+ 0000:0AC7       _kittenopen
+ 0000:29F6       _lastcr
+ 0000:097C       _lfn2sfn95
+ 0000:0893       _LFNConvertToSFN
+ 0000:1A5F       _lseek
+ 0000:1B46       _ltoa
+ 0000:049A       _main
+ 0000:23FF       _malloc
+ 0000:1B6B       _memcpy
+ 0000:0E3E       _mystrtoul
+ 0000:2DB8       _nls
+ 0000:0EAA       _processEscChars
+ 0000:1CEE       _qsort
+ 0000:2556       _realloc
+ 0000:2DC0       _rev
+ 0000:1851       _sbrk
+ 0000:1D0C       _segread
+ 0000:187D       _setdisk
+ 0000:157E       _setvbuf
+ 0000:2DBA       _sortcol
+ 0000:1D21       _strcat
+ 0000:1D5A       _strchr
+ 0000:1D90       _strcmp
+ 0000:1DBF       _strcpy
+ 0000:1DE3       _strlen
+ 0000:164A       _tell
+ 0000:0967       _truename95
+ 0000:1B2C       _ultoa
+ 0000:03DC       _usage
+ 0000:1662       _write
+ 0000:0311       _WriteString
+ 0000:1000  Abs  __AHINCR
+ 0000:000C  Abs  __AHSHIFT
+ 0000:2DA8       __argc
+ 0000:2DAA       __argv
+ 0000:2A62       __atexitcnt
+ 0000:4CAE       __atexittbl
+ 0000:27B7       __brklvl
+ 0000:2799       __C0argc
+ 0000:279B       __C0argv
+ 0000:279D       __C0environ
+ 0000:2A64       __ctype
+ 0000:2CDE       __doserrno
+ 0000:2CE0       __dosErrorToSV
+ 0000:279F       __envLng
+ 0000:27A1       __envseg
+ 0000:27A3       __envSize
+ 0000:0223       __exit
+ 0000:2B66       __exitbuf
+ 0000:0209       __exitclean
+ 0000:2B68       __exitfopen
+ 0000:2B6A       __exitopen
+ 0000:2DA2       __first
+ 0000:12B8       __fputc
+ 0000:13E3       __FPUTN
+ 0000:27B3       __heapbase
+ 0000:2CD4       __heaplen
+ 0000:27BB       __heaptop
+ 0000:2789       __Int0Vector
+ 0000:278D       __Int4Vector
+ 0000:2791       __Int5Vector
+ 0000:2795       __Int6Vector
+ 0000:1A11       __IOERROR
+ 0000:29F2       __kitten_catalog
+ 0000:2DA4       __last
+ 0000:1A88       __LONGTOA
+ 0000:030F       __MMODEL
+ 0000:2CAC       __openfd
+ 0000:27A7       __osmajor
+ 0000:27A8       __osminor
+ 0000:27A5       __psp
+ 0000:25A7       __REALCVT
+ 0000:2DB8       __RealCvtVector
+ 0000:0280       __restorezero
+ 0000:2DA6       __rover
+ 0000:2DB8       __ScanTodVector
+ 0000:0000  Abs  __setargv__
+ 0000:0000  Abs  __setenvp__
+ 0000:1515       __setupio
+ 0000:27AB       __StartTime
+ 0000:2CDC       __stklen
+ 0000:2B6C       __streams
+ 0000:27A7       __version
+ 0000:1E15       __VPRINTER
+ 0000:22DC       __write
+ 0000:1755       __xfflush
+ 0000:107B       ___assertfail
+ 0000:17F2       ___brk
+ 0000:27B1       ___brklvl
+ 0000:27AF       ___heapbase
+ 0000:1814       ___sbrk
+
+  Address         Publics by Value
+
+ 0000:0000  Abs  __setargv__
+ 0000:0000  Abs  __setenvp__
+ 0000:000C  Abs  __AHSHIFT
+ 0000:1000  Abs  __AHINCR
+ 0000:0209       __exitclean
+ 0000:0223       __exit
+ 0000:0280       __restorezero
+ 0000:02F8       _abort
+ 0000:030D       DGROUP@
+ 0000:030F       __MMODEL
+ 0000:0311       _WriteString
+ 0000:032A       _cmpr
+ 0000:03DC       _usage
+ 0000:049A       _main
+ 0000:0893       _LFNConvertToSFN
+ 0000:0967       _truename95
+ 0000:097C       _lfn2sfn95
+ 0000:0991       _dos_open
+ 0000:09CD       _dos_read
+ 0000:0A0C       _dos_write
+ 0000:0A4B       _dos_close
+ 0000:0A69       _kittengets
+ 0000:0AC7       _kittenopen
+ 0000:0CB0       _catread
+ 0000:0E37       _kittenclose
+ 0000:0E3E       _mystrtoul
+ 0000:0EAA       _processEscChars
+ 0000:0FA7       _get_char
+ 0000:0FF9       _get_line
+ 0000:107B       ___assertfail
+ 0000:1099       _atexit
+ 0000:10BE       _exit
+ 0000:10E1       _fflush
+ 0000:1163       _flushall
+ 0000:1199       _fprintf
+ 0000:1215       _fseek
+ 0000:1277       _ftell
+ 0000:12B8       __fputc
+ 0000:12D2       _fputc
+ 0000:13CF       _fputchar
+ 0000:13E3       __FPUTN
+ 0000:1515       __setupio
+ 0000:157E       _setvbuf
+ 0000:164A       _tell
+ 0000:1662       _write
+ 0000:1755       __xfflush
+ 0000:1776       _atol
+ 0000:17E6       _atoi
+ 0000:17F2       ___brk
+ 0000:1814       ___sbrk
+ 0000:1845       _brk
+ 0000:1851       _sbrk
+ 0000:1861       _chdir
+ 0000:1877       _getdisk
+ 0000:187D       _setdisk
+ 0000:188A       _getenv
+ 0000:18E8       _intdos
+ 0000:190A       _intdosx
+ 0000:196D       _intr
+ 0000:1A11       __IOERROR
+ 0000:1A4E       _isatty
+ 0000:1A5F       _lseek
+ 0000:1A88       __LONGTOA
+ 0000:1B05       _itoa
+ 0000:1B2C       _ultoa
+ 0000:1B46       _ltoa
+ 0000:1B6B       _memcpy
+ 0000:1CEE       _qsort
+ 0000:1D0C       _segread
+ 0000:1D21       _strcat
+ 0000:1D5A       _strchr
+ 0000:1D90       _strcmp
+ 0000:1DBF       _strcpy
+ 0000:1DE3       _strlen
+ 0000:1E15       __VPRINTER
+ 0000:22DC       __write
+ 0000:2330       _free
+ 0000:23FF       _malloc
+ 0000:2556       _realloc
+ 0000:25A7       __REALCVT
+ 0000:2730       DATASEG@
+ 0000:2789       __Int0Vector
+ 0000:278D       __Int4Vector
+ 0000:2791       __Int5Vector
+ 0000:2795       __Int6Vector
+ 0000:2799       __C0argc
+ 0000:279B       __C0argv
+ 0000:279D       __C0environ
+ 0000:279F       __envLng
+ 0000:27A1       __envseg
+ 0000:27A3       __envSize
+ 0000:27A5       __psp
+ 0000:27A7       __osmajor
+ 0000:27A7       __version
+ 0000:27A8       __osminor
+ 0000:27A9       _errno
+ 0000:27AB       __StartTime
+ 0000:27AF       ___heapbase
+ 0000:27B1       ___brklvl
+ 0000:27B3       __heapbase
+ 0000:27B7       __brklvl
+ 0000:27BB       __heaptop
+ 0000:27C0       _err
+ 0000:29F2       __kitten_catalog
+ 0000:29F4       _getlrem
+ 0000:29F6       _lastcr
+ 0000:2A62       __atexitcnt
+ 0000:2A64       __ctype
+ 0000:2B66       __exitbuf
+ 0000:2B68       __exitfopen
+ 0000:2B6A       __exitopen
+ 0000:2B6C       __streams
+ 0000:2CAC       __openfd
+ 0000:2CD4       __heaplen
+ 0000:2CDC       __stklen
+ 0000:2CDE       __doserrno
+ 0000:2CE0       __dosErrorToSV
+ 0000:2DA2       __first
+ 0000:2DA4       __last
+ 0000:2DA6       __rover
+ 0000:2DA8       __argc
+ 0000:2DAA       __argv
+ 0000:2DB6       _environ
+ 0000:2DB8       __ScanTodVector
+ 0000:2DB8       __RealCvtVector
+ 0000:2DB8       _nls
+ 0000:2DBA       _sortcol
+ 0000:2DBC       _collate
+ 0000:2DC0       _rev
+ 0000:2DC2       _help
+ 0000:2E2C       _getlp
+ 0000:2E2E       _catfile
+ 0000:2EAE       _getlbuf
+ 0000:32AE       _catpoints
+ 0000:34AE       _catcontents
+ 0000:4CAE       __atexittbl
+
+

@@ -1,0 +1,93 @@
+PACKAGE
+-------
+
+Package files should only include subdirectories of the install
+target. For example, do not specify C:\FDOS in the path. The install
+target may be referred to after installation using the %DOSDIR%
+variable.
+
+1.0 PACKAGES
+
+FreeDOS 1.0 used separate packages for binaries ("pkg") and source
+code ("spkg"). The below directories are subdirectories of the base
+install directory.
+
+Binary packages used this directory structure:
+
+	APPINFO
+	Put the program's LSM file here.
+
+	BIN
+	Binaries, such as exe and com files. And if a program is made
+	of of a bat file, then that goes in BIN too. Programs only.
+
+	DOC
+	Package documentation, with each package having its own
+	directory (for example, DOC\CHOICE). This allows a complicated
+	package such as a compiler or programmable editor to include
+	more than just a readme (perhaps sample code for the compiler,
+	technical notes or other references, etc.)
+
+	HELP
+	The help files.
+
+Source packages used this directory:
+
+	SOURCE
+	The complete source code (when installed) with each package
+	having its own directory. (For example, SOURCE\CHOICE).
+
+1.1 PACKAGES
+
+FreeDOS 1.1 will use a single package file that includes binary and
+source code. The Installer can choose to remove the source code after
+the install.
+
+The directory structure is otherwise the same as 1.0:
+
+	APPINFO
+	Put the program's LSM file here.
+
+	BIN
+	Binaries, such as exe and com files. Programs only.
+
+	DOC
+	Package documentation, with each package having its own
+	directory.
+
+	HELP
+	The help files.
+
+	SOURCE
+	The complete source code (when installed) with each package
+	having its own directory. (For example, SOURCE\CHOICE).
+
+ZIP FILES
+
+When the FreeDOS install program was first written, we used zip as the
+package manager. We chose zip for several reasons, not the least of
+them the fact that zip files under DOS have become the de facto way to
+distribute collections of files. The file format is well known, well
+supported, and in the public domain.
+
+However, zip files lack certain features that we planned to (one day)
+build into the install program, such as dependencies - so we may one
+day switch file formats. But for now, zip files are the standard.
+
+If you are using PKZIP to create your packages, you will want to use a
+command line like this one:
+
+	PKZIP -ex -Pr package.zip subdir/*.*
+
+Or with PKZIP 2.5x, you can also use:
+
+	PKZIP -exx -Pr package.zip subdir/*.*
+
+Or, if you are using Info-ZIP to create your packages, use:
+
+	ZIP −9 -r -k package.zip subdir
+
+Always make sure that your zip files contain valid 8.3 filenames. For
+example, when using PKZIP 2.5x, you may additionally require either
+the -n option or the PKWARE.INI directive [PKZIP] USELFN=disabled to
+disable long filenames - at least, when long filenames are available.

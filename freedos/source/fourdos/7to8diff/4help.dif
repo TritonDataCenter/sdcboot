@@ -1,0 +1,559 @@
+--- d:tpdefine.inc	1996-11-06 10:11:56.000000000 +0200
++++ g:tpdefine.inc	2008-05-31 17:53:50.000000000 +0200
+@@ -10,7 +10,7 @@
+ {This directive determines whether or not TPCRT is compiled in such a way as
+  to coexist peacefully with the standard Turbo Pascal CRT unit.}
+ 
+-{$DEFINE UseCrt}
++{.$DEFINE UseCrt}
+ 
+ {This directive enables mouse support in several of the units, as well as in
+  some of the demo programs}
+@@ -86,7 +86,7 @@
+ 
+ {Activate the following define to allow alternate orientations in TPPICK}
+ 
+-{$DEFINE EnablePickOrientations}
++{.$DEFINE EnablePickOrientations}
+ 
+ {The following define controls how various TPRO units react to the heap
+  changes of TP6 and later. There's no need for you to modify it.}
+--- d:tppick.in1	1993-02-26 05:21:00.000000000 +0200
++++ g:tppick.in1	2007-01-13 18:06:02.000000000 +0200
+@@ -94,8 +94,6 @@
+       sPickMouseEnabled := PickMouseEnabled;
+       sSliderFunc := SliderFunc;
+       sScrollProc := ScrollProc;
+-      sPrevSlid := PrevSlid; {!!.12}
+-      sPickMouseWindow := PickMouseWindow; {!!.21}
+       {$ENDIF}
+       {$IFDEF PickItemDisable}
+       sPickable := Pickable;
+@@ -152,8 +150,6 @@
+       PickMouseEnabled := sPickMouseEnabled;
+       SliderFunc := sSliderFunc;
+       ScrollProc := sScrollProc;
+-      PrevSlid := sPrevSlid; {!!.12}
+-      PickMouseWindow := sPickMouseWindow; {!!.21}
+       {$ENDIF}
+       {$IFDEF PickItemDisable}
+       Pickable := sPickable;
+Binary files d:4help.exe and g:4help.exe differ
+diff -u -x'tp*.pas' -x'*tpu' d:4help.pas g:4help.pas
+--- d:4help.pas	2002-09-29 19:56:54.000000000 +0200
++++ g:4help.pas	2007-01-13 18:06:00.000000000 +0200
+@@ -112,7 +112,7 @@
+ {$ENDIF}
+ 
+ {------------------- Patch area used by HELPCFG ------------------------}
+-  StartMarker : String[18] = '4DH750 PATCH HERE:';
++  StartMarker : String[18] = '4DH701 PATCH HERE:';
+   HelpColor : HelpColorArray =
+ {            Item           Background      Foreground
+             -------------   -------------   ------------}
+Binary files d:4make.exe and g:4make.exe differ
+diff -u -x'tp*.pas' -x'*tpu' d:tpc.cfg g:tpc.cfg
+--- d:tpc.cfg	1998-11-04 10:55:14.000000000 +0200
++++ g:tpc.cfg	2007-01-13 15:48:26.000000000 +0200
+@@ -1,5 +1,6 @@
+-/Ih:\tpro
+-/Uh:\TP;h:\tpro
+-/Oh:\tpro;h:\tpro\asm;h:\tp\editor
++/Id:\src\tpro\include;d:\src\editools
++/Od:\src\tpro\obj;d:\src\editools
++/Ud:\src\tpro\units
+ /B
+ /GD
++/Dver40
+diff -u -x'tp*.pas' -x'*tpu' d:build.btm g:build.btm
+--- d:build.btm	1998-11-04 10:50:02.000000000 +0200
++++ g:build.btm	2007-01-15 12:19:28.000000000 +0200
+@@ -1,7 +1,4 @@
+-copy tpc.std *.cfg
+-tpc /b 4help
+-tpc /b helpcfg
+-tpc /b 4make
+-f:\pklite\pklite -e helpcfg.exe
+-f:\pklite\pklite -e 4make.exe
+-
++c:\bp\bin\tasm -Id:\src\tpro\asm tpmouse
++c:\bp\bin\tpc 4help
++c:\bp\bin\tpc helpcfg
++c:\bp\bin\tpc 4make
+--- d:tphelp.pas	2001-11-14 14:46:14.000000000 +0200
++++ g:tphelp.pas	2008-07-16 11:10:18.000000000 +0200
+@@ -85,7 +85,7 @@
+ 
+ { *** 4.00 *** }
+   MaxLinesPerSection = 2000; {Maximum number of lines per topic?}
+-  MaxXrefsPerSection = 128;  {Maximum number of topic xrefs per section}
++  MaxXrefsPerSection = 512;  {Maximum number of topic xrefs per section}
+   MaxTopics = 1024;          {Maximum number of topics in one help file}
+   MaxHelpStack = 15;         {Highest stacked topic}
+   MaxXrefSearchLen = 16;     {Max length of xref search string}
+@@ -183,19 +183,20 @@
+   3, $00, $EF, HKSProbe,    {Click left}          {106}
+   3, $00, $EE, HKSExit,     {Click right}
+   3, $00, $ED, HKSIndex,    {Click both}
++  3, $00, $E8, HKSDown,     {Wheel down}
++  3, $00, $E0, HKSUp,       {Wheel up}
+ 
+   {$ELSE}
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                   {106}
+-  0, 0,
+-  {$ENDIF}
+-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                   {118}
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++  {$ENDIF}
++  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,                   {126}
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+   0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+-  0, 0, 0, 0, 0
++  0, 0, 0, 0, 0, 0, 0
+   );
+   {.F+}
+ 
+--- d:tpmouse.pas	1991-11-01 22:12:56.000000000 +0200
++++ g:tpmouse.pas	2007-01-15 17:22:14.000000000 +0200
+@@ -41,7 +41,17 @@
+   ButtonStatus = (
+     NoButton, LeftButton, RightButton, BothButtons,
+     {the following values are possible only on a 3-button mouse}
+-    CenterButton, LeftAndCenterButtons, RightAndCenterButtons, All3Buttons);
++    CenterButton, LeftAndCenterButtons, RightAndCenterButtons, All3Buttons,
++    {the following values are possible only on a wheel mouse}
++    WheelDown, LeftButtonAndWheelDown, RightButtonAndWheelDown,
++    BothButtonsAndWheelDown, CenterButtonAndWheelDown,
++    LeftAndCenterButtonsAndWheelDown, RightAndCenterButtonsAndWheelDown,
++    All3ButtonsAndWheelDown,
++    WheelUp, LeftButtonAndWheelUp, RightButtonAndWheelUp,
++    BothButtonsAndWheelUp, CenterButtonAndWheelUp,
++    LeftAndCenterButtonsAndWheelUp, RightAndCenterButtonsAndWheelUp,
++    All3ButtonsAndWheelUp
++    );
+ 
+ const
+   DisableEventHandler = $00;
+@@ -52,7 +62,8 @@
+   RightButtonReleased = $10;
+   CenterButtonPressed = $20;
+   CenterButtonReleased = $40;
+-  AllMouseEvents = $7F;
++  WheelMoved = $80;
++  AllMouseEvents = $FF;
+ type
+   MouseEventType = DisableEventHandler..AllMouseEvents;
+ 
+@@ -88,6 +99,22 @@
+   MouseLftCtr = $EB00;       {left and center buttons}
+   MouseRtCtr = $EA00;        {right and center buttons}
+   MouseThree = $E900;        {all three buttons}
++  MouseWhDn = $E800;         {wheel down}
++  MouseLftWhDn = $E700;      {left button and wheel down}
++  MouseRtWhDn = $E600;       {right button and wheel down}
++  MouseBothWhDn = $E500;     {both buttons and wheel down}
++  MouseCtrWhDn = $E400;      {center button and wheel down}
++  MouseLftCtrWhDn = $E300;   {left and center buttons and wheel down}
++  MouseRtCtrWhDn = $E200;    {right and center buttons and wheel down}
++  MouseThreeWhDn = $E100;    {all three buttons and wheel down}
++  MouseWhUp = $E000;         {wheel up}
++  MouseLftWhUp = $DF00;      {left button and wheel up}
++  MouseRtWhUp = $DE00;       {right button and wheel up}
++  MouseBothWhUp = $DD00;     {both buttons and wheel up}
++  MouseCtrWhUp = $DC00;      {center button and wheel up}
++  MouseLftCtrWhUp = $DB00;   {left and center buttons and wheel up}
++  MouseRtCtrWhUp = $DA00;    {right and center buttons and wheel up}
++  MouseThreeWhUp = $D900;    {all three buttons and wheel up}
+ var
+   MouseKeyWordX : Byte;      {mouse coordinates at time of call to MouseKeyWord}
+   MouseKeyWordY : Byte;
+@@ -270,9 +297,15 @@
+   function MouseKeyWord : Word;
+     {-Return a pseudo scan code based on which key is being pressed}
+   const
+-    ScanTable : array[LeftButton..All3Buttons] of Word = (MouseLft, MouseRt,
+-      MouseBoth, MouseCtr, MouseLftCtr, MouseRtCtr, MouseThree);
+-    BitsTable : array[ButtonStatus] of Byte = (0, 1, 1, 2, 1, 2, 2, 3);
++    ScanTable : array[LeftButton..All3ButtonsAndWheelUp] of Word = (MouseLft,
++      MouseRt, MouseBoth, MouseCtr, MouseLftCtr, MouseRtCtr, MouseThree,
++      MouseWhDn, MouseLftWhDn, MouseRtWhDn, MouseBothWhDn, MouseCtrWhDn,
++      MouseLftCtrWhDn, MouseRtCtrWhDn, MouseThreeWhDn,
++      MouseWhUp, MouseLftWhUp, MouseRtWhUp, MouseBothWhUp, MouseCtrWhUp,
++      MouseLftCtrWhUp, MouseRtCtrWhUp, MouseThreeWhUp
++    );
++    BitsTable : array[ButtonStatus] of Byte = (0, 1, 1, 2, 1, 2, 2, 3,
++      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+   var
+     Status, TempStatus : ButtonStatus;
+     SaveBitsOn, BitsOn : Byte;
+@@ -326,6 +359,9 @@
+     MouseKeyWordX := MouseLastX;
+     MouseKeyWordY := MouseLastY;
+ 
++    {reset wheel data}
++    MouseStatus := ButtonStatus(ord(MouseStatus) and 7);
++
+     {turn interrupts on}
+     inline($FB);
+   end;
+--- d:tpmouse.asm	1993-02-26 05:21:00.000000000 +0200
++++ g:tpmouse.asm	2007-01-15 13:33:32.000000000 +0200
+@@ -116,6 +116,15 @@
+ mehMouseMoved:                  ;                               !!.21
+         MOV     MouseEvent,AL   ;save the event mask in MouseEvent
+         MOV     MouseStatus,BL  ;save the button status in MouseStatus
++        OR      AL,AL           ;wheel moved?
++        JNS     mehSaveXY       ;no, continue
++        OR      BH,BH           ;yes, up?
++        JS      mehWheelUp      ;yes
++        OR      MouseStatus,1000b;no, down
++        JMP     mehSaveXY
++mehWheelUp:
++        OR      MouseStatus,10000b
++mehSaveXY:
+         MOV     AX,CX           ;scale last horizontal coordinate
+         CALL    ScaleDownX
+         MOV     MouseLastX,AL   ;save last horizontal in MouseLastX
+--- d:ediscrn.inc	1970-01-01 02:00:00 +0200
++++ g:ediscrn.inc	2008-10-19 18:35:52 +0200
+@@ -0,0 +1,337 @@
++{                          EDISCRN.INC
++                           EDINST 4.0
++             Copyright (c) 1985, 87 by Borland International, Inc.            }
++
++  procedure ScreenInstall(ForceMono : Boolean; ScreenOfs : Longint);
++    {-Customize FirstEd's screen.}
++  var
++    Ch : Char;
++
++    procedure InstallColors(var AA : AttributeArray);
++      {-Install default colors}
++      {Note: This routine is designed to be easily incorporated into
++       other installation programs for editors based on the Toolbox,
++       including MSINST. Only two changes need to be made if more than four
++       video attributes are used: (1) FarTopRow and FarBotRow need to be
++       adjusted, and (2) the AttrsUsed set needs to be modified accordingly.
++       For example, if the block cursor attribute is also used, FarBotRow
++       can be increased by 1, and CursorColor would be added to the set.
++       If all defined attributes are used, as they are in MicroStar, the
++       box on the right (Far) side of the screen will be the same height
++       as that on the left side.}
++    const
++      {if the asterisk is changed to another character, the BoxCharArray
++       in DrawAttributeBox must also be changed}
++      Choice : string[3] = ' * ';
++
++      {Attributes used by FirstEd. For Microstar, use [TxtColor..Alt2Color]}
++      AttrsUsed : set of ColorType = [FrAttr..BBAttr];
++
++      {box on left}          {box on right (Far side)}
++      TopRow = 2; FarTopRow = 7; {for MicroStar, these would be equal}
++      BotRow = 21; FarBotRow = 14; {so would these}
++      LeftCol = 5; FarLeftCol = 38;
++      RtCol = 33; FarRtCol = 77;
++
++      {prompt box on the bottom -- also defined by LeftCol and FarRtCol}
++      TopPrompt = 22;
++      BotPrompt = 25;
++
++      {prompts}
++      MainPrompt : string[38] =
++      'Use  to move highlight, Ù to select';
++      MainPrompt2: string[57] =
++      'Alt-X to exit and save, Esc to exit without save';
++      MakeSelectionPrompt =
++      'Use '^Z' to move highlight, Ù to select, <Esc> to cancel';
++      MakeSelectionPrompt2=
++      'Press INS or ^U to toggle Blink/Underline on and off';
++      AnyKey = 'Press any key to continue...';
++      HereIs : string[38] = '  Here is a sample of this attribute. ';
++
++    var
++      CT, OldCT : ColorType;
++      WAA : AttributeArray;
++      Row, Col, Attr : Byte;
++      Done : Boolean;
++      BoxColorArray : array[3..20 {row} , 6..32 {col} ] of Byte;
++
++      procedure Prompt(Message, Message2 : string);
++        {-Show message centered in prompt box}
++      var
++        Width, Col : Byte;
++      begin
++        Width := Pred(FarRtCol-LeftCol);
++        BlankLine[0] := Chr(Width);
++        FastWrite(BlankLine, Succ(TopPrompt), Succ(LeftCol), LoColor);
++        Col := Succ(LeftCol)+((Width-Length(Message)) shr 1);
++        FastWrite(Message, Succ(TopPrompt), Col, LoColor);
++        FastWrite(BlankLine, TopPrompt+2, Succ(LeftCol), LoColor);
++        Col := Succ(LeftCol)+((Width-Length(Message2)) shr 1);
++        FastWrite(Message2, TopPrompt+2, Col, LoColor);
++      end;
++
++      procedure CalcRowCol(Attr : Byte; var Row, Col : Byte);
++        {-Calculate the row and column for an attribute}
++      begin
++        {calculate row}
++        Row := (TopRow+2)+(Attr and $F);
++        {calculate column}
++        Col := (LeftCol+2)+(3*(Attr div 16));
++      end;
++
++      procedure DrawChart;
++        {-Draw the color chart and initialize BoxColorArray}
++      var
++        I : Integer;
++        Row, Col, Attr : Byte;
++      begin
++        FillChar(BoxColorArray, SizeOf(BoxColorArray), TiColor);
++        for Attr := 0 to 127 do begin
++          CalcRowCol(Attr, Row, Col);
++          FastWrite(Choice, Row, Col, Attr);
++          for I := Col to (Col+2) do
++            BoxColorArray[Row, I] := (Attr and $F0)+(TiColor and $F);
++        end;
++      end;
++
++      function ColorName(CType : ColorType) : VarString;
++        {-Return a string describing the specified ColorType}
++      begin                  {ColorName}
++        case CType of
++          {the following are used by both FirstEd and MicroStar}
++          FrAttr : ColorName := 'Window frame';
++          TeAttr : ColorName := 'Normal text & unselected menu';
++          HeAttr : ColorName := 'Window header';
++          XsAttr : ColorName := 'Selected menu & cross-reference';
++          XrAttr : ColorName := 'Unselected cross-reference';
++          SpAtt1 : ColorName := 'Headings';
++          SpAtt2 : ColorName := 'Options and switches';
++          SpAtt3 : ColorName := 'Cautions and warnings';
++          PWAttr : ColorName := 'Prompt window';
++          PIAttr : ColorName := 'Prompt input box';
++          BBAttr : ColorName := 'Mouse button bar (bottom of screen)';
++        end;
++      end;                   {ColorName}
++
++      function WhichRow(CType : ColorType) : Byte;
++        {-Given a color type, return the row on which the color name should
++         be displayed.}
++      var
++        CT : ColorType;
++        LoopCount : Byte;
++      begin                  {WhichRow}
++        LoopCount := 0;
++        for CT := FrAttr to BBAttr do
++          if CT in AttrsUsed then
++          begin
++            Inc(LoopCount);
++            if CT = CType then CT := BBAttr;
++          end;
++        WhichRow := FarTopRow+3+Pred(LoopCount);
++      end;                   {WhichRow}
++
++      procedure ColorSample(Attr : Byte);
++        {-Change the attribute of the color sample}
++      begin
++        ChangeAttribute(Length(HereIs), Succ(FarTopRow), Succ(FarLeftCol), Attr);
++      end;
++
++      procedure DrawAttributeBox(Attr, Row, Col : Byte);
++        {-Draw special box around current selection}
++      const
++        BoxCharArray : array[ -1..1, -2..2] of string[1] =
++        (('Ú', 'Ä', 'Ä', 'Ä', '¿'),
++         ('³', ' ', '*', ' ', '³'),
++         ('À', 'Ä', 'Ä', 'Ä', 'Ù'));
++      var
++        A : Byte;
++        I, J, RowDelta, ColDelta : Integer;
++      begin
++        for RowDelta := -1 to 1 do
++          for ColDelta := -2 to 2 do begin
++            I := Row+RowDelta;
++            J := Col+ColDelta;
++            A := BoxColorArray[I, J];
++
++            {leave the attribute of ' * ' alone}
++            case ColDelta of
++              -1..1 : if RowDelta = 0 then
++                        A := Attr;
++            end;
++            FastWrite(BoxCharArray[RowDelta, ColDelta], I, J, A);
++          end;
++      end;
++
++      procedure ShowChoice(Attr : Byte; FirstCall : Boolean);
++        {-Show the currently selected attribute}
++      var
++        Row, Col : Byte;
++      begin
++        {remove the previous box, if any}
++        if not FirstCall then
++          RestoreWindow(WP, False);
++
++        {calculate the row and column for the new one}
++        CalcRowCol(Attr and $7F, Row, Col);
++
++        {save the portion of the window that will be overwritten}
++        SaveWindow(WP, Pred(Col), Pred(Row), Col+3, Succ(Row), FirstCall);
++
++        {draw the box that marks the current attribute}
++        DrawAttributeBox(Attr, Row, Succ(Col));
++
++        {change the attribute of the sample string too}
++        ColorSample(Attr);
++      end;
++
++      procedure MakeSelection(var Attr : Byte);
++        {-Allow user to select an attribute}
++      var
++        Done : Boolean;
++        A : Byte;
++      begin                  {MakeSelection}
++        WP := nil;
++        Done := False;
++        A := Attr;
++        ShowChoice(A, True);
++        Prompt(MakeSelectionPrompt, MakeSelectionPrompt2);
++        repeat
++          case GetCursorCommand of
++            ^M :             {select}
++              begin
++                Attr := A;
++                Done := True;
++              end;
++            ^E, ^W :         {up}
++              if (A and $F) = 0 then
++                A := A+15
++              else
++                A := Pred(A);
++            ^X, ^Z :         {down}
++              if (A and $F) = $F then
++                A := A-15
++              else
++                A := Succ(A);
++            ^S :             {left}
++              if A <= 15 then
++                A := A+112
++              else
++                A := A-16;
++            ^D :             {right}
++              if A >= 112 then
++                A := A-112
++              else
++                A := A+16;
++            ^U :             {toggle blink/underline}
++              A := A xor Blink;
++            Escape : Done := True; {cancel}
++          end;
++          ShowChoice(A, False);
++        until Done;
++        RestoreWindow(WP, True);
++      end;                   {MakeSelection}
++
++      procedure HighlightName(OldCT, CT : ColorType);
++        {-Highlight name of current selection}
++      var
++        N : Integer;
++      begin
++        {number of attribute bytes to change}
++        N := Pred(FarRtCol-FarLeftCol);
++
++        {remove highlight from OldCT}
++        ChangeAttribute(N, WhichRow(OldCT), Succ(FarLeftCol), LoColor);
++
++        {highlight CT}
++        ChangeAttribute(N, WhichRow(CT), Succ(FarLeftCol), EdColor);
++      end;
++
++    begin                    {InstallColors}
++      {initialize}
++      WAA := AA;
++      SetColor(TiColor);
++
++      {hide the cursor}
++      HiddenCursor;
++
++      {draw the choices box}
++      MakeBox(LeftCol, TopRow, RtCol, BotRow, TiColor);
++      FastWrite(' Choices ', TopRow, LeftCol+10, TiColor);
++
++      {draw the choices}
++      for CT := FrAttr to BBAttr do
++        if CT in AttrsUsed then
++          FastWrite(ColorName(CT), WhichRow(CT), FarLeftCol+3, LoColor);
++
++      {draw the menu box on the right}
++      MakeBox(FarLeftCol, FarTopRow, FarRtCol, FarBotRow+7, TiColor);
++      FastWrite(' Sample ', FarTopRow, FarLeftCol+16, TiColor);
++      FastWrite('ÃÄÄÄÄÄÄÄÄÄÄÄÄÄ Attributes ÄÄÄÄÄÄÄÄÄÄÄÄÄ´', FarTopRow+2,
++                  FarLeftCol, TiColor);
++      FastWrite(HereIs, Succ(FarTopRow), Succ(FarLeftCol), TiColor);
++
++      {draw the prompt box}
++      MakeBox(LeftCol, TopPrompt, FarRtCol, BotPrompt, TiColor);
++      Prompt(MainPrompt, MainPrompt2);
++
++      {get choices}
++      CT := FrAttr;
++      Done := False;
++      DrawChart;
++      OldCT := CT;
++      repeat
++        ColorSample(WAA[CT]);
++        HighlightName(OldCT, CT);
++        OldCT := CT;
++        Ch := GetCursorCommand;
++        repeat
++          case Ch of
++            ^M : begin       {select}
++                   MakeSelection(WAA[CT]);
++                   Prompt(MainPrompt, MainPrompt2);
++                 end;
++            ^E, ^W :         {scroll up}
++              if CT = FrAttr then
++                CT := BBAttr
++              else
++                CT := Pred(CT);
++            ^X, ^Z :         {scroll down}
++              if CT = BBAttr then
++                CT := FrAttr
++              else
++                CT := Succ(CT);
++            Escape, #254 : Done := True; {done}
++          end;
++        until (CT in AttrsUsed);
++      until Done;
++
++      {copy the working array to the actual array}
++      AA := WAA;
++
++      NormalCursor;
++    end;                     {InstallColors}
++
++  begin                      {ScreenInstall}
++
++    {install colors}
++    with ScreenDefaults do
++      if (VideoSegment = $B800) then begin
++        {check for snow first}
++        GoodColorCard := True; {assume no snow - argh, global warming!}
++        InstallColors(ColorAttr);
++      end
++      else
++        InstallColors(MonoAttr);
++
++    {reset screen color}
++    SetColor(LoColor);
++
++    {write modified defaults}
++    if Ch = #254 then
++    begin
++      if not ModifyDefaults(ScreenOfs, ScreenDefaults, SizeOf(ScreenDefaults)) then
++        HaltError('Error writing screen defaults to '+ProgName);
++    end;
++
++  end;                       {ScreenInstall}

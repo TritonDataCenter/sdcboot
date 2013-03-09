@@ -1,0 +1,18 @@
+Long Command Lines
+Although in previous versions of MS-DOS the limit for environment variables
+and batch file lines is 128 characters, it is 1024 characters in Windows 95.
+The limit for the keyboard buffer, however, is still 128 characters. Although
+1024 and 128 are the standard limits, users may configure their systems to 
+lower these limits.
+
+In previous versions of MS-DOS, command-line arguments are located in the 
+command tail of the program segment prefix (PSP). The command tail in the 
+PSP is limited to 128 characters, including the leading byte that specifies 
+the length of the command line and the trailing carriage return character. 
+In Windows 95, if the command line is less than or equal to 126 characters, 
+it is set in the command tail of the PSP. For command lines that are greater 
+than 126 characters, an application should follow these steps: 
+
+Set the count byte in the command tail to 7Fh. 
+Fill in 7Eh bytes of the command tail followed by the carriage return character (0Dh). 
+Place the rest of the command line in the CMDLINE environment variable. 

@@ -1,0 +1,886 @@
+<HTML>
+<HEAD>
+<META NAME="ROBOTS" CONTENT="NOFOLLOW">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="GENERATOR" CONTENT="Mozilla/4.05 [en] (Win16; I) [Netscape]">
+<META NAME="Description" CONTENT="Sector level disk drive interfacing in C">
+<META NAME="KeyWords" CONTENT="disk drives, MSDOS, drives, disks, C source code, IBM PC, MS-DOS, sector, disked, disk editor">
+<META NAME="robots" CONTENT="nofollow">
+<TITLE>Sector level disk drive interfacing in C</TITLE>
+</HEAD>
+<BODY>
+23-Aug-1998
+<CENTER>
+<H2>
+Sector level disk drive interfacing for IBM PCs and Compatibles in C</H2></CENTER>
+
+<CENTER>
+<H3>
+Part I</H3></CENTER>
+&nbsp;
+<CENTER><TABLE COLS=2 WIDTH="90%" >
+<TR>
+<TD>Contents&nbsp;
+<CENTER>&nbsp;</CENTER>
+<A HREF="#0.0">0.0 Introduction</A>&nbsp;
+<BR><A HREF="#1.0">1.0 Basic Data types</A>&nbsp;
+<BR><A HREF="#2.0">2.0 Drive Dimensions</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#2.1">2.1 Physical Drive Values</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#2.2">2.2 Logical Drive Values</A>&nbsp;
+<BR><A HREF="#3.0">3.0 DOS Data Areas</A>&nbsp;
+<BR><A HREF="#4.0">4.0 Getting Drive Dimensions</A>&nbsp;
+<BR><A HREF="#5.0">5.0 Setting the DOS Settings</A>&nbsp;
+<BR><A HREF="#6.0">6.0 The Read Function</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#6.1">6.1 DOS INT 25h</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#6.2">6.2 BIOS INT 13h</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#6.3">6.3 IOCTL INT 21h, 440Dh/61h</A>&nbsp;
+<BR><A HREF="#7.0">7.0 If Get Device Parameters Fails</A>&nbsp;
+<BR><A HREF="#8.0">8.0 Putting It All Together</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#8.1">8.1 DOSREAD</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#8.2">8.2 BIOSREAD</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#8.3">8.3 IOCTLREAD</A>&nbsp;
+<BR><A HREF="#9.0">9.0 Summary</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#9.1">9.1 Drive Parameter Functions</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#9.2">9.2 Sector Read Functions by Drive
+Type</A>&nbsp;
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#9.3">9.3 Sector Read Functions by OS</A>&nbsp;
+<BR><A HREF="#ref">References</A>&nbsp;</TD>
+
+<TD ALIGN=RIGHT VALIGN=TOP>Links&nbsp;
+
+<P><A HREF="http://www.diskwarez.com/diskio2.htm">PART II</A>&nbsp;
+
+<P><A HREF="http://www.diskwarez.com/disked.htm">DISKED - The DISK EDitor</A>&nbsp;
+<BR><A HREF="http://www.diskwarez.com/diskbug.htm">DISKBUG - The Disk Debugger</A>&nbsp;
+<BR><A HREF="http://www.diskwarez.com/diskio/diskio.zip">DISKIO code archive</A>&nbsp;
+<BR><A HREF="http://www.diskwarez.com/disklib.htm">DISK I/O Library - all this and more</A>&nbsp;
+<BR><A HREF="http://www.diskwarez.com/d_disk.htm">D_DISK - Posix-like DISKIO Library</A>&nbsp;
+<BR><A HREF="http://www.diskwarez.com/doslib.htm">DOS C function summary</A>&nbsp;
+<BR><A HREF="http://www.diskwarez.com/disk.htm">Reading the MBR under Windows NT</A>&nbsp;
+<BR><A HREF="http://www.diskwarez.com/diskio/diskio.txt">Text version: DISKIO.TXT</A>&nbsp;
+<BR>&nbsp;
+
+<P>&nbsp;
+<BR>&nbsp;
+<BR>&nbsp;
+<BR>&nbsp;
+<BR>&nbsp;
+<BR>&nbsp;</TD>
+</TR>
+</TABLE></CENTER>
+
+<H2>
+<BR>
+<A NAME="0.0"></A>0.0&nbsp;&nbsp;&nbsp; Introduction</H2>
+This document outlines how to read disk drives at the sector level using
+C. The online code is compatible with the 16-bit versions of <B>Microsoft</B>
+and <B>Watcom</B> compilers. The code
+<A HREF="http://www.diskwarez.com/diskio/diskio.zip">archive</A>
+is also compatible with <B>DJGPP</B> and <B>WIN32</B>. A more
+complete library is
+<A HREF="http://www.diskwarez.com/disklib.htm">DISKLIB</A> which works with Windows.
+
+<P>For an alternative version of sector level I/O get my
+<A HREF="http://www.diskwarez.com/d_disk.htm">D_DISK</A>
+Library, a <U>MUCH improved version of DISK I/O</U>.
+
+<P>(I've created a <A HREF="http://www.diskwarez.com/doslib.htm">summary of DOS specific C library
+functions</A> listing the differences between three major C Compilers --
+Borland, Microsoft and Watcom; DJGPP will be added later.)
+
+<P>This document currently only shows how to implement the very basics.
+Over the next few chapters I will be presenting a comprehensive code base
+for actually doing useful things. I will also explain DOS drive structures
+and data formats and other technical details.
+<BR>&nbsp;
+<CENTER><TABLE CELLSPACING=2 CELLPADDING=2 COLS=1 WIDTH="70%" BGCOLOR="#FFCCCC" >
+<CAPTION><B>DISCLAIMER</B></CAPTION>
+
+<TR>
+<TD ALIGN=CENTER><B><TT>I HAVE TRIED VERY HARD TO KEEP THESE DOCUMENTS
+CORRECT BUT</TT></B>&nbsp;
+<BR><B><TT>I CANNOT GIVE ANY GARAUNTEES THAT THERE ARE NOT ANY ERRORS</TT></B></TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<BR>All the code presented here is working, bug free code (well, if any
+bugs exist they will be due to typos and other stupid mistakes). All the
+code presented here is also archived for downloading. The
+<A HREF="http://www.diskwarez.com/diskio/diskio.zip">code
+examples</A> are archived if you want to jump right in. But here there
+are annotations as to why I chose to do things a particular way. DJGPP
+and WIN32 users will have to get the examples archive.
+<BR>&nbsp;
+<BR>Before a drive sector can be read the sector size must be known. Sector
+size is usually 512 bytes but not guaranteed. To find the sector size it's
+easiest to just ask DOS.
+
+<P>After the sector size is known which interrupt to use to read the drive
+must be determined. Not all drives are supported by both BIOS and DOS calls.
+Only standard floppies and hard drives are supported by the BIOS.
+
+<P>But once the basic dimensions are known, and the interrupt chosen to
+read the drive, just being able to arbitrarily read the drive is not much
+use unless you can match sectors to data. To access data the dimensions
+must be determined and the incremental algorithm must be performed when
+reads extend across the boundaries.
+<BR>&nbsp;
+<H2>
+<A NAME="1.0"></A>1.0&nbsp;&nbsp;&nbsp; Basic Data types</H2>
+The code presented here was developed with 16-bit DOS compilers. The following
+typedefs are used to help moving the code base to 32-bit compilers and
+for other operating systems:
+
+<P><TT><FONT SIZE=+1>typedef unsigned char BYTE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</FONT></TT>
+<BR><TT><FONT SIZE=+1>typedef unsigned short UINT16;</FONT></TT>
+<BR><TT><FONT SIZE=+1>typedef unsigned long UINT32;</FONT></TT>
+<BR>&nbsp;
+<CENTER><TABLE CELLPADDING=2 WIDTH="90%" BGCOLOR="#999999" >
+<TR>
+<TD ALIGN=LEFT VALIGN=TOP>Coding Note</TD>
+
+<TD>Data sizes are often <I>very important</I>. Data structure <I>packing</I>
+is always <I>extremely important</I> and must be packed on byte boundaries
+for DOS.</TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H2>
+<A NAME="2.0"></A>2.0&nbsp;&nbsp;&nbsp; Drive Dimensions</H2>
+All drives have physical dimensions, made up of a number of two sided platters,
+each platter is divided into tracks, and each track divided into sectors.
+Each platter is referenced by head, track and sector.
+
+<P>DOS treats a drive as only having a continuous number of sectors; a
+small percentage of the total number of sectors for it's system data and
+the rest of the sectors for file data. The file data sectors are sub-grouped
+into clusters.
+
+<P>The drive dimensions are used to know where to read (or write) and to
+perform incremental movement. System or file data can run over boundaries;
+any data block can start on the last sector of a track and extend to the
+first sector of the next track.
+<H3>
+<A NAME="2.1"></A>2.1&nbsp;&nbsp;&nbsp; Physical Drive Values</H3>
+There are only a few basic physical values that define a drive: number
+of heads, number of tracks per head, number of sectors per track, and number
+of bytes per sector.
+
+<P>To access a sector you just supply the head, track and sector and a
+buffer of the appropriate size:
+
+<P><TT><FONT SIZE=+1>UINT16 cur_head;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* current head */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 cur_track;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* current track */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 cur_sector;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* current sector */</FONT></TT>
+<BR><TT><FONT SIZE=+1>BYTE *sec_buf;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* sector buffer */</FONT></TT>
+
+<P>For the drive physical dimensions you need:
+
+<P><TT><FONT SIZE=+1>UINT16 max_head;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* number of heads */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 max_track;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* number of tracks per head */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 max_sector;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* number of sectors per track */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 sec_size;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* bytes per sector */</FONT></TT>
+
+<P>This physical access to a drive is done through the BIOS INT 13h.
+<H3>
+<A NAME="2.2"></A>2.2&nbsp;&nbsp;&nbsp; Logical Drive Values</H3>
+DOS removes all of the physical characteristics from a drive by pretending
+that the drive is just a sequence of logical sectors. There are even less
+values needed.
+
+<P><TT><FONT SIZE=+1>UINT32 log_sector;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*
+current logical sector */</FONT></TT>
+<BR><TT><FONT SIZE=+1>BYTE *sec_buf;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* sector buffer */</FONT></TT>
+
+<P>For the drive logical dimensions all you need are:
+
+<P><TT><FONT SIZE=+1>UINT32 num_sectors;&nbsp;&nbsp;&nbsp;&nbsp; /* total
+number of sectors */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 sec_size;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* bytes per sector */</FONT></TT>
+
+<P>This logical access to a drive is done through the DOS INTs 25h and
+26h.
+
+<P>But because DOS originally chose <TT><FONT SIZE=+1>UINT16</FONT></TT>
+for the data type of the number of sectors, which is too small for the
+total number of sectors for drives greater than 32MB, you also need to
+know the drive size to handle the two different ways DOS reads drive sectors.
+
+<P><TT><FONT SIZE=+1>UINT32 drive_size;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*
+drive size in bytes */</FONT></TT>
+
+<P>This limits the drive size to 4GB.
+<BR>&nbsp;
+<H2>
+<A NAME="3.0"></A>3.0&nbsp;&nbsp;&nbsp; DOS Data Areas</H2>
+At the lowest level DOS divvies up the drive into system and file data
+areas. The values needed consist of the following:
+
+<P><TT><FONT SIZE=+1>UINT32 hidden_secs;&nbsp;&nbsp;&nbsp;&nbsp; /* number
+of hidden sectors on */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* harddrives - Partition info, first track */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 reserved_secs;&nbsp;&nbsp; /* number of reserved
+sectors */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/*&nbsp; Boot sector(s) */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 secs_fat;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* sectors per FAT */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 num_fats;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* number of FATs */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 dir_sector;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* start of root directory */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 data_sector;&nbsp;&nbsp;&nbsp;&nbsp; /* first
+data sector */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 secs_cluster;&nbsp;&nbsp;&nbsp; /* sectors
+per cluster */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 dir_sectors;&nbsp;&nbsp;&nbsp;&nbsp; /* number
+of sectors of root */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 dir_entries;&nbsp;&nbsp;&nbsp;&nbsp; /* number
+of directory entries */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 cluster_size;&nbsp;&nbsp;&nbsp; /* cluster
+size in bytes */</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT16 num_clusters;&nbsp;&nbsp;&nbsp; /* maximum
+cluster no. */</FONT></TT>
+
+<P>These values must always be calculated. Floppies don't have <TT><FONT SIZE=+1>hidden_secs</FONT></TT>;
+<TT><FONT SIZE=+1>reserved_secs</FONT></TT> is usually one for the boot
+sector but can be more.
+
+<P>To put this visually:
+<BR>&nbsp;
+<CENTER><TABLE CELLPADDING=2 COLS=6 WIDTH="100%" BGCOLOR="#FFCCCC" >
+<TR ALIGN=CENTER VALIGN=CENTER>
+<TD ALIGN=CENTER VALIGN=CENTER>hidden</TD>
+
+<TD>reserved (boot)</TD>
+
+<TD>FAT</TD>
+
+<TD>FAT copy</TD>
+
+<TD>root directory</TD>
+
+<TD>data</TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H2>
+<A NAME="4.0"></A>4.0&nbsp;&nbsp;&nbsp; Getting Drive Dimensions</H2>
+Not all drives are the same. Not all DOS versions are the same.
+
+<P>Before a drive sector can be read the sector size needs to be known.
+Assuming a sector size of 512 bytes will cover most drives, but not all.
+The type of interrupt used to read a drive sectors depends on the drive
+type; only standard floppies and hard drives can be read by the BIOS. The
+sector size and the drive type is determined at the same time.
+
+<P>The DOS function 440dh, code 60h, (get device parameters) gives almost
+everything needed to start reading a drive. The same information is contained
+in a drive's boot sector. But the sector size is needed to read the boot
+sector.
+
+<P>(Note: The get device parameters function is not always going to be
+supported depending on the drive type and DOS version. The DOS function
+36h (get disk free space) can be used if get device parameters is not supported,
+and then the boot sector is read.)
+
+<P>&nbsp;The DOS function 440dh, code 60h uses a
+<A HREF="http://www.diskwarez.com/diskio/structs.htm#deviceparams">DEVICEPARAMS
+structure</A>:
+
+<P><TT><FONT SIZE=+1>int getdevparams(int drive, struct DEVICEPARAMS *dp)</FONT></TT>
+<BR><TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; union REGS regs;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; struct SREGS sregs;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.bx = drive;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* 0 = default, 1 = A:, 2 = B:, etc. */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.ax = 0x440D;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* function */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.cx = 0x0860;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* sub-function */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.dx = FP_OFF(dp);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; sregs.ds = FP_SEG(dp);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; intdosx(&amp;regs,&amp;regs,&amp;sregs);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; if (regs.x.cflag)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return regs.x.ax;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; return 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>}</FONT></TT>
+
+<P><A HREF="http://www.diskwarez.com/diskio/get.c">[example program]</A>
+<BR>&nbsp;
+<CENTER><TABLE CELLPADDING=2 WIDTH="90%" BGCOLOR="#999999" >
+<TR>
+<TD ALIGN=LEFT VALIGN=TOP>Coding Note</TD>
+
+<TD>For 16-bit compilers the <I>Large Memory</I> model should be used;
+if not, <TT><FONT SIZE=+1>__far</FONT></TT> pointers should be used or
+the <TT><FONT SIZE=+1>FP_OFF/FP_SEG </FONT></TT>macros should be removed
+and the data offset set as:&nbsp;
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.dx = (unsigned)dp;</FONT></TT>&nbsp;
+<BR>&nbsp;
+<BR>and a call to <TT><FONT SIZE=+1>segread()</FONT></TT> should be used
+to set <TT><FONT SIZE=+1>sregs.ds</FONT></TT>.</TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H2>
+<A NAME="5.0"></A>5.0&nbsp;&nbsp;&nbsp; Setting the DOS Settings</H2>
+The DEVICEPARAMS does not give everything, only the basics. But once the
+basic dimensions are known everything else that is needed can be easily
+calculated:
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; sec_size = dp.sec_size;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; if (dp.num_sectors != 0)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; {</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drive_size = (UINT32)dp.num_sectors
+* dp.sec_size;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; num_sectors = dp.num_sectors;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; }</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; else</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; {</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drive_size = dp.huge_sectors
+* dp.sec_size;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; num_sectors = dp.huge_sectors;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; }</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; hidden_secs = dp.hidden_sectors;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; secs_cluster = dp.secs_cluster;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; reserved_secs = dp.reserved_secs;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; num_fats = dp.num_fats;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; dir_entries = dp.dir_entries;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; secs_fat = dp.secs_fat;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; max_sector = dp.secs_track;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; max_head = dp.num_heads;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; dir_sectors = dir_entries / (sec_size
+/ 32);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; data_sector = (secs_fat * num_fats)
++ dir_sectors + reserved_secs-1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; dir_sector = (secs_fat * num_fats) +
+reserved_secs;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; cluster_size = sec_size * secs_cluster;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; num_clusters = (UINT16)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ((num_sectors - (secs_fat
+* num_fats) - dir_sectors-1) / secs_cluster)+1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; max_track = (UINT16)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (((num_sectors + hidden_secs)
+/ max_head) / max_sector)-1;</FONT></TT>
+<BR>&nbsp;
+<BR>&nbsp;<A HREF="http://www.diskwarez.com/diskio/settings.c">[example program]</A>
+<BR>&nbsp;
+<BR>&nbsp;
+<CENTER><TABLE CELLPADDING=2 WIDTH="90%" BGCOLOR="#999999" >
+<TR>
+<TD ALIGN=LEFT VALIGN=TOP>DOS Note</TD>
+
+<TD>If <TT><FONT SIZE=+1>dp.num_sectors</FONT></TT> (a UINT16) is zero
+<TT><FONT SIZE=+1>dp.huge_sectors</FONT></TT> (a UINT32) is used to hold
+the actual number of sectors. This is how DOS handled larger disk drives.</TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H2>
+<A NAME="6.0"></A>6.0&nbsp;&nbsp;&nbsp; The Read Function</H2>
+
+<H3>
+<A NAME="6.1"></A>6.1&nbsp;&nbsp;&nbsp; DOS INT 25h</H3>
+This interrupt is easy to use, and even though stated as obsolete it is
+still supported. And it fits right in because DOS treats a drive a just
+a number of sectors. There are two ways of implementing it. For drives
+less than or equal to 32MB:
+
+<P>(Note: More than one sector can be read at a time, depending on what
+is to be done, as long as the buffer size is the appropriate size.)
+
+<P><TT><FONT SIZE=+1>int dosread(int drive, UINT32 sector, BYTE *buffer)</FONT></TT>
+<BR><TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>union REGS regs;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct SREGS sregs;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.ax = drive;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.dx = sector;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.cx = 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.bx = FP_OFF(buffer);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; sregs.ds = FP_SEG(buffer);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; int86x(0x25,&amp;regs,&amp;regs,&amp;sregs);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; if (regs.x.cflag)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return regs.h.al;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; return 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>}</FONT></TT>
+
+<P>For drives greater than 32MB, a <A HREF="http://www.diskwarez.com/diskio/structs.htm#dcb">Disk
+Control Block</A> structure must be used:
+
+<P><TT><FONT SIZE=+1>int dosread(int drive, UINT32 sector, BYTE *buffer)</FONT></TT>
+<BR><TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>union REGS regs;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct SREGS sregs;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct DCB Dcb;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct DCB *dcb = &amp;Dcb;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.ax = drive;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; dcb->sector = sector;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; dcb->number = 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; dcb->buffer = buffer;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.cx = 0xffff;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.bx = FP_OFF(dcb);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; sregs.ds = FP_SEG(dcb);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; int86x(0x25,&amp;regs,&amp;regs,&amp;sregs);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; if (regs.x.cflag)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return regs.h.al;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; return 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>}</FONT></TT>
+
+<P>To write a sector just use <TT><FONT SIZE=+1>0x26</FONT></TT> instead
+of <TT><FONT SIZE=+1>0x25</FONT></TT>. However, the write interrupt is
+not supported by Windows.
+
+<P>(Notes: The <TT><FONT SIZE=+1>int86x()</FONT></TT> function does handle
+the popping of the flags register which DOS leaves on the stack with this
+function.)
+<BR>&nbsp;
+<CENTER><TABLE CELLPADDING=2 WIDTH="90%" BGCOLOR="#999999" >
+<TR>
+<TD ALIGN=LEFT VALIGN=TOP>Coding Note&nbsp;</TD>
+
+<TD>The macros <TT><FONT SIZE=+1>FP_OFF</FONT></TT> and <TT><FONT SIZE=+1>FP_SEG</FONT></TT>
+differ between compilers. Microsoft's only work with pointers and will
+not work with <TT><FONT SIZE=+1>&amp;</FONT></TT> (address of operator).
+This is the reason for using both a structure and a pointer to a structure
+in this and the following examples.</TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H3>
+<A NAME="6.2"></A>6.2&nbsp;&nbsp;&nbsp; BIOS INT 13h</H3>
+This also is fairly easy. DOS C run time libraries usually supply the function
+and a structure.
+
+<P><TT><FONT SIZE=+1>int biosread(int drive, UINT16 track, UINT16 sec,
+UINT16 head, BYTE *buffer)</FONT></TT>
+<BR><TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>unsigned i;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct diskinfo_t blk;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if (drive > 2)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* floppys: 0 - 7Fh, hards: 80h - FFh */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drive += (0x80 - 3);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; else</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drive--;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; blk.drive = drive;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk.track = track;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk.sector = sector;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk.head = head;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk.nsectors = 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk.buffer = buffer;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; _bios_disk(_DISK_READ,&amp;blk);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; i = _bios_disk(_DISK_STATUS,&amp;blk);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; i >>= CHAR_BIT;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* AH contains result; AL sectors read */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; return i;</FONT></TT>
+<BR><TT><FONT SIZE=+1>}</FONT></TT>
+
+<P>To write a sector use <TT><FONT SIZE=+1>_DISK_WRITE</FONT></TT> instead
+of <TT><FONT SIZE=+1>_DISK_READ</FONT></TT>.
+<H3>
+<A NAME="6.3"></A>6.3&nbsp;&nbsp;&nbsp; IOCTL</H3>
+The DOS IOCTL function (INT 21h Function 440Dh, Sub-function 61h) is similar
+to the BIOS function and uses a <A HREF="http://www.diskwarez.com/diskio/structs.htm#rwblock">RWBLOCK
+structure</A>:
+
+<P><TT><FONT SIZE=+1>int ioctlread(int drive, UINT16 track, UINT16 sec,
+UINT16 head, BYTE *buffer)</FONT></TT>
+<BR><TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>union REGS regs;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct SREGS sregs;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct RWBLOCK Blk;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct RWBLOCK *blk = &amp;Blk;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; blk->special = 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk->head = head;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk->track = track;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk->sector = sec - 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk->nsecs = 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; blk->buffer = buffer;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.bx = drive;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* 0 = default, 1 = A:, 2 = B:, etc. */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.ax = 0x440D;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* function */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.cx = 0x0861;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* sub-function */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.dx = FP_OFF(blk);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; sregs.ds = FP_SEG(blk);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; intdosx(&amp;regs,&amp;regs,&amp;sregs);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; if (regs.x.cflag)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return regs.x.ax;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; return 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>}</FONT></TT>
+
+<P>To write a sector use Sub-function <TT><FONT SIZE=+1>0x0841</FONT></TT>
+instead of <TT><FONT SIZE=+1>0x0861</FONT></TT>.
+
+<P><A HREF="http://www.diskwarez.com/diskio/ioctl.c">[example program]</A>
+<BR>&nbsp;
+<H2>
+<A NAME="7.0"></A>7.0&nbsp;&nbsp;&nbsp; If Get Device Parameters Fails</H2>
+Some drives do not support the Get Device Parameters function (ramdrives
+for example). An equivalent of the Device Parameters is stored in the drive
+boot sector which can be used in it's place. But again the sector and drive
+sizes are needed. The DOS function 36h, Get Freespace, provide these.
+
+<P>The DOS function 36h uses a <A HREF="http://www.diskwarez.com/diskio/structs.htm#freespace">FREESPACE
+structure</A>:
+
+<P><TT><FONT SIZE=+1>int getfreespace(int drive, struct FREESPACE *fs)</FONT></TT>
+<BR><TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>union REGS regs;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.dx = drive;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.ax = 0x3600;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; intdos(&amp;regs,&amp;regs);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; if (regs.h.al == 0xFF)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; fs->secs_cluster = regs.x.ax;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; fs->avail_clusters = regs.x.bx;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; fs->sec_size = regs.x.cx;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; fs->num_clusters = regs.x.dx;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; return 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>}</FONT></TT>
+
+<P><A HREF="http://www.diskwarez.com/diskio/free.c">[example program]</A>
+
+<P>The sizes we need are:
+
+<P>&nbsp;&nbsp;&nbsp;&nbsp; <TT><FONT SIZE=+1>sec_size = fs.sec_size;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp; drive_size = (UINT32)fs.num_clusters * fs.secs_cluster
+* fs.sec_size;</FONT></TT>
+
+<P>The next section provide the function to read the
+<A HREF="http://www.diskwarez.com/diskio/structs.htm#bootsector">boot
+sector</A>.
+<BR>&nbsp;
+<H2>
+<A NAME="8.0"></A>8.0&nbsp;&nbsp;&nbsp; Putting It All Together</H2>
+These examples read the boot sector of a drive, first using <TT><FONT SIZE=+1>dosread()</FONT></TT>
+and then using <TT><FONT SIZE=+1>biosread()</FONT></TT>. <TT><FONT SIZE=+1>getdevparams()</FONT></TT>
+is used to get the sector size and a buffer is allocated for the
+<A HREF="http://www.diskwarez.com/diskio/structs.htm#bootsector">boot
+sector</A>. For the <TT><FONT SIZE=+1>dosread()</FONT></TT> version the
+drive size is checked for which version of <TT><FONT SIZE=+1>dosread()</FONT></TT>
+is used.
+
+<P>The<TT><FONT SIZE=+1> biosread()</FONT></TT> version needs a special
+check for the location of the boot sector: for floppies it resides at track
+0, sector 1, and head 0; for hard drives it is at track 0, sector 1, and
+head 1.
+<H3>
+<A NAME="8.1"></A>8.1&nbsp;&nbsp;&nbsp; DOSREAD</H3>
+<TT><FONT SIZE=+1>main(int argc, char **argv)</FONT></TT>
+<BR><TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>int i,drive;</FONT></TT>
+<BR><TT><FONT SIZE=+1>char *buffer;</FONT></TT>
+<BR><TT><FONT SIZE=+1>UINT32 drive_size;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct DEVICEPARAMS dp;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; drive = 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; if (argc == 2)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drive = atoi(argv[1]);</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if (drive == 0)</FONT></TT> <TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("usage: dosread
+&lt;drivenum>");</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; }</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if ((i = getdevparams(drive,&amp;dp))
+!= 0)</FONT></TT> <TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("DEVICEPARAMS
+not supported: error == %02x",i);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; }</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if ((buffer = malloc(dp.sec_size)) ==
+NULL)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; abort();</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if (dp.num_sectors != 0)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drive_size = (UINT32)dp.num_sectors
+* dp.sec_size;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; else</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drive_size = (UINT32)dp.huge_sectors
+* dp.sec_size;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if (drive_size &lt;= (UINT32)32L * 1024L
+* 1024L)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i = dosread(drive,0,buffer);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; else</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i = dosread32(drive,0,buffer);</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if (i != 0)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("DOS Read error:
+%02x",i);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; else</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; display(drive,(struct
+BOOTSECTOR *)buffer);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; return 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>}</FONT></TT>
+
+<P><A HREF="http://www.diskwarez.com/diskio/dosread.c">[example program]</A>
+<H3>
+<A NAME="8.2"></A>8.2&nbsp;&nbsp;&nbsp; BIOSREAD</H3>
+<TT><FONT SIZE=+1>main(int argc, char **argv)</FONT></TT>
+<BR><TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>int i,drive;</FONT></TT>
+<BR><TT><FONT SIZE=+1>char *buffer;</FONT></TT>
+<BR><TT><FONT SIZE=+1>struct DEVICEPARAMS dp;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; drive = 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; if (argc == 2)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; drive = atoi(argv[1]);</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if (drive == 0) {</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("usage: biosread
+&lt;drivenum>");</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; }</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if ((i = getdevparams(drive,&amp;dp))
+!= 0) {</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("DEVICEPARAMS
+not supported: error == %02x",i);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return 1;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; }</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if ((buffer = malloc(dp.sec_size)) ==
+NULL)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; abort();</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if (drive &lt;= 2)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i = biosread(drive,0,1,0,buffer);&nbsp;&nbsp;&nbsp;
+/* floppy disk boot sector */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; else</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; i = biosread(drive,0,1,1,buffer);&nbsp;&nbsp;&nbsp;
+/* hard disk boot sector */</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if (i != 0)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("BIOS Read
+error: %02x",i);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; else</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; display(drive,(struct
+BOOTSECTOR *)buffer);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; return 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>}</FONT></TT>
+
+<P><A HREF="http://www.diskwarez.com/diskio/biosread.c">[example program]</A>
+<H3>
+<A NAME="8.3"></A>8.3&nbsp;&nbsp;&nbsp; IOCTL</H3>
+The IOCTL version is almost identical to the BIOS version; just substitute
+<TT><FONT SIZE=+1>ioctlread()</FONT></TT> for <TT><FONT SIZE=+1>biosread()</FONT></TT>.
+
+<P><A HREF="http://www.diskwarez.com/diskio/ioctl.c">[example program]</A>
+<BR>&nbsp;
+<H2>
+<A NAME="9.0"></A>9.0 Summary</H2>
+As mentioned before: Not all drives are the same. Not all DOS versions
+are the same. What this means is that some of the functions shown here
+will fail or not work depending on the drive type and the OS version. Here
+are the results of my tests.
+<BR>&nbsp;
+<H3>
+<A NAME="9.1"></A>9.1&nbsp;&nbsp;&nbsp; Drive Parameter Functions</H3>
+&nbsp;
+<CENTER><TABLE BORDER CELLPADDING=2 WIDTH="90%" >
+<CAPTION>DOS Drive Parameter Functions by Drive Type</CAPTION>
+
+<TR>
+<TD>&nbsp;</TD>
+
+<TD>floppy</TD>
+
+<TD>hard drive</TD>
+
+<TD>ramdrive<SUP><A HREF="#notes">1</A></SUP></TD>
+</TR>
+
+<TR>
+<TD>Get Disk Free Space (INT 21/36)</TD>
+
+<TD>X</TD>
+
+<TD>X</TD>
+
+<TD>X</TD>
+</TR>
+
+<TR>
+<TD>Get Device Parameters (INT 21/440D)</TD>
+
+<TD>X</TD>
+
+<TD>X</TD>
+
+<TD>&nbsp;</TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H3>
+<A NAME="9.2"></A>9.2&nbsp;&nbsp;&nbsp; Sector Read Functions by Drive
+Type</H3>
+&nbsp;
+<CENTER><TABLE BORDER CELLPADDING=2 WIDTH="90%" >
+<CAPTION>DOS Sector Read Functions by Drive Type</CAPTION>
+
+<TR>
+<TD>&nbsp;</TD>
+
+<TD>floppy</TD>
+
+<TD>hard drive</TD>
+
+<TD>ramdrive<SUP><A HREF="#notes">1</A></SUP></TD>
+</TR>
+
+<TR>
+<TD>dosread (INT 25/26)</TD>
+
+<TD>X</TD>
+
+<TD>X</TD>
+
+<TD>X</TD>
+</TR>
+
+<TR>
+<TD>biosread (INT 13)</TD>
+
+<TD>X</TD>
+
+<TD>X</TD>
+
+<TD>&nbsp;</TD>
+</TR>
+
+<TR>
+<TD>ioctlread (INT 21/440D)</TD>
+
+<TD>X</TD>
+
+<TD>X<SUP><A HREF="#notes">2</A></SUP></TD>
+
+<TD>&nbsp;</TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H3>
+<A NAME="9.3"></A>9.3&nbsp;&nbsp;&nbsp; Sector Read Functions by OS</H3>
+&nbsp;
+<CENTER><TABLE BORDER CELLPADDING=2 WIDTH="90%" >
+<CAPTION>Sector Read Functions by OS (F = floppy, H = hard, R = ramdrive<SUP>
+<A HREF="#notes">1</A></SUP>)</CAPTION>
+
+<TR>
+<TD>&nbsp;</TD>
+
+<TD>DOS&nbsp;</TD>
+
+<TD>Windows 3.1/95</TD>
+
+<TD>Windows NT</TD>
+</TR>
+
+<TR>
+<TD>dosread (INT 25/26)</TD>
+
+<TD>FHR</TD>
+
+<TD>FH<SUP><A HREF="#notes">3</A></SUP></TD>
+
+<TD>FH</TD>
+</TR>
+
+<TR>
+<TD>biosread (INT 13)</TD>
+
+<TD>FH<SUP><A HREF="notes">4</A></SUP></TD>
+
+<TD>FH<SUP><A HREF="notes">4</A></SUP></TD>
+
+<TD>F</TD>
+</TR>
+
+<TR>
+<TD>ioctlread (INT 21/440D)</TD>
+
+<TD>FH<SUP><A HREF="#notes">2</A></SUP></TD>
+
+<TD>FH<SUP><A HREF="#notes">2</A></SUP></TD>
+
+<TD>FH<SUP><A HREF="#notes">2</A></SUP></TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<BR>&nbsp;
+<H2>
+<A NAME="ref"></A>References</H2>
+"MS-DOS(r) Programmer's Reference", Microsoft Press
+<BR>"IBM ROM BIOS Quick Reference", Ray Duncan, Microsoft Press
+<BR>"DOS and BIOS Functions Quick Reference", QUE Corp.
+<BR>"The Official Spinrite II Companion", John M. Goodman, Ph.D., IDG Books
+<BR>"The x86/MSDOS Interrupt List", Ralf Brown, http://www.pobox.com/~ralf
+
+<P><A NAME="notes"></A>
+<HR WIDTH="10%">
+<BR>&nbsp;
+<CENTER><TABLE WIDTH="90%" BGCOLOR="#FFCCCC" >
+<CAPTION>Notes</CAPTION>
+
+<TR>
+<TD>1</TD>
+
+<TD>may include other drives created by a loadable device driver</TD>
+</TR>
+
+<TR>
+<TD>2</TD>
+
+<TD>translations will make the IOCTL read invalid for hard drives</TD>
+</TR>
+
+<TR>
+<TD>3</TD>
+
+<TD>read only for hard drives</TD>
+</TR>
+
+<TR>
+<TD>4</TD>
+
+<TD>physical drives only</TD>
+</TR>
+</TABLE></CENTER>
+
+<HR WIDTH="100%">
+
+<P>Presented here are just the basics: you figure out the basic drive parameters,
+determine which read/write functions to use, and calculate where on the
+drive DOS places it's data. Simple? Well, sort of. Wait until you see the
+next part.
+<BR>&nbsp;
+<BR><A HREF="http://www.diskwarez.com/diskio2.htm">PART II</A>
+<BR>
+<HR WIDTH="100%">
+<BR>&nbsp;
+</BODY>
+</HTML>

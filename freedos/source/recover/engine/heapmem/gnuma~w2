@@ -1,0 +1,22 @@
+#
+# makefile for files in fte\heapmem
+#
+
+include ../../configlinux.mak
+
+all: heapmem.a
+	@cp heapmem.lib ../lib
+	@echo FTE heap memory management compiled.
+
+heapmem.a: ftemem.o
+	@$(libman) heapmem.a ftemem.o
+
+ftemem.o: ftemem.c ../../misc/bool.h ../header/ftemem.h \
+          ../header/backmem.h ../header/suremem.h ../header/fteerr.h
+	@$(compiler) $(options) $(memory_manager) -I../header -I../../misc ftemem.c
+
+clean:
+	@-rm -f backmem.o
+	@-rm -f suremem.o
+	@-rm -f ftemem.o
+	@-rm -f heapmem.a

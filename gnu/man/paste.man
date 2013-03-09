@@ -1,0 +1,26 @@
+NAME
+     paste - merge lines of files
+
+SYNOPSIS
+     paste [-s] [-d delim-list] [--serial] [--delimiters=delim-list] [file...]
+
+DESCRIPTION
+     This manual page documents the GNU version of paste.  paste prints  lines
+     consisting  of  sequentially  corresponding  lines  of  each  given file,
+     separated by TABs, terminated by a newline.  If no files are  given,  the
+     standard input is used.  A file name of `-' means standard input.
+
+     OPTIONS
+
+     -s, --serial
+          Paste the lines of one file at a time rather than one line from each
+          file.
+
+     -d, --delimiters delim-list
+          Consecutively use the characters in delim-list  instead  of  TAB  to
+          separate merged lines.  When delim-list is exhausted, start again at
+          its beginning.
+
+     The long-named options can be introduced with `+' as well  as  `--',  for
+     compatibility with previous releases.  Eventually support for `+' will be
+     removed, because it is incompatible with the POSIX.2 standard.

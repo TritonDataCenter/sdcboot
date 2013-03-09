@@ -1,0 +1,82 @@
+# Help Message
+
+0.0:FDPKG v0.2 - GPL by Blair Campbell 2005\n
+0.1:Installs FreeDOS packages both in specialized format and regular format.\n
+0.2:Syntax: FDPKG [/INSTALL] [/REMOVE] [/CHECK] [/CONFIGURE] [/E] PKGX.ZIP ...\n
+0.3:   /INSTALL       Installation mode; install package (default)\n
+0.4:   /REMOVE        Removal mode; remove package\n
+0.5:   /CHECK         Checking mode; check dependencies of package\n
+0.6:   /CONFIGURE     Configuration mode; configure package\n
+0.7:   /DESC[:FIELD]  View the description from an LSM.  Field (optional) would\n
+0.8:                  be field of the LSM to print.  LSMs are searched for in\n
+0.9:                  the current directory first, otherwise in %%DOSDIR%%\\APPINFO\n
+0.10:   /DISPLAY       List all installed packages matching argument\n
+0.11:   /E             Extract only, do not check dependencies (unless already\n
+0.12:                  installed), do not configure\n
+0.13:   /B             Be backwards compatible with fdpkg.bat\n
+0.14:   /S[:|=]ARG     Switch ARG's backslashes to forward slashes\n
+0.15:   /[-]F|/[-]Y    Force; Don't ask questions (POSSIBLY DANGEROUS)\n
+0.16:   /?[E]|/H[E]    This help; /?E or /HE prints extended help\n
+0.17:   PKGX.ZIP       The package to install; multiple names / wildcards accepted\n
+0.18:Exit codes:\n
+0.19:   255            Invalid path\n
+0.20:   0              No problems\n
+0.21:   1              Unresolved dependencies\n
+0.22:   2              Invalid name\n
+0.23:   3              Invalid environment variables\n
+0.24:   4              Invalid options or arguments\n
+0.25:   5              Aborted by user\n
+0.26:   6              Unpacker not in path\n
+0.27:   7              Insufficient memory\n
+0.28:   8              Not all files could be removed\n
+0.29:   9              Failure extracting\n
+0.30:   10             Switch successful\n
+0.31:   11             Switch failed\n
+
+# FDPKG Messages
+
+1.0:Invalid environment variables.\n
+1.1:Insufficient arguments.\n
+1.2:Drive or directory nonexistant.\n
+1.3:Invalid option in %s\n
+1.4:Invalid LSM field : %s\n
+
+# FUNC Misc Messages
+
+2.0:Press any key...
+2.1:Archiver not in path.\n
+2.2:Couldn't get version of installed %s %s.\n
+2.3:Couldn't get version to be installed.\n
+2.4:Version to be installed is the same as installed package.\n
+2.5:The version of the installed package is \"%s\"\nand the version to be installed is \"%s\".\nProceed (Y/N)? 
+2.6:Warnings extracting %s.\n
+2.7:Unpackaging failed for %s.\n
+2.8:Configuring...\n
+2.9:binaries
+2.10:sources
+
+# FUNC Messages
+
+3.0:This package needs \"%s\" installed\nAttempt install (Y/N)? 
+3.1:This package conflicts with \"%s\" Remove (Y/N)? 
+3.2:Running depends.bat...\n
+3.3:Checking existance...\n
+3.4:No package found : %s\n
+3.5:Invalid %%DOSDIR%% variable.\n
+3.6:Upgrading...\n
+3.7:Package extracted\n
+3.8:Unpacking...\n
+3.9:Package installed.\n
+3.10:Couldn't get \"%s\" field for : %s\n
+3.11:Are you sure? Remove the %s %s (Y/N)? 
+3.12:All files couldn't be removed\n
+3.13:All dependencies aren't met.\n
+3.14:All dependencies met or there aren't dependencies.\n
+3.15:Configuration complete.\n
+3.16:Configuration unnecessary.\n
+3.17:This package recommends \"%s\"\n
+
+# Yes character
+
+4.0:Y
+

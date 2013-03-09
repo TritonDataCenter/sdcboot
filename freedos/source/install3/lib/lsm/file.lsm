@@ -1,0 +1,14 @@
+Begin3
+Title:          Foo
+Version:        1.0
+Entered-date:   20 July 1998
+Description:    Prints the text "Hello world" to the screen.
+Keywords:       hello world foo
+Author:         Jim Hall <jhall1@isd.net>
+Maintained-by:  Jim Hall <jhall1@isd.net>
+Primary-site:   ftp://ftp.isd.net/jhall1/freedos/foo10s.zip (1k)
+Alternate-site: ftp://ftp.foo.com/pub/foo/foo10s.zip (1k)
+Original-site:  ftp://ftp.isd.net/jhall1/freedos/foo10s.zip (1k)
+Platforms:      DOS (Borland C), UNIX (gcc)
+Copying-policy: GPL
+End

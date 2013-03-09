@@ -1,0 +1,8 @@
+:
+: Set up environment for MSC 8 and MASM 6 (Rex's system, DOS only)
+:
+path d:\tcmd\4dos750;d:\tcmd\sasm;d:\msvc\bin;d:\masm611\bin;%path
+set lib=d:\msvc\lib;d:\tcmd\4dos750;%lib
+set include=d:\msvc\include;d:\tcmd\sasm;%include
+set _masm=ml
+

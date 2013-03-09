@@ -1,0 +1,8 @@
+FreeDOS Updater allows you to easily maintain your FreeDOS system up to date.
+It requires the following packages to be installed:
+    WGET or CURL - For downloading tasks
+    FDPKG - For installing/deleting tasks
+
+Usage: FDUPDATE [/new] [/h]
+ /new - Allows to install new packages from the repository
+ /h   - Displays the help screen

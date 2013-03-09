@@ -1,0 +1,10 @@
+#define IDM_SOUND_HELP        100
+#define IDM_SOUND_NONE        101
+#define IDM_SOUND_BEEP        102
+#define IDM_SOUND_WAVE_DURING 103
+#define IDM_SOUND_WAVE_AFTER  104
+#define IDM_SOUND_BROWSE      105
+#define IDM_SOUND_EDIT        106
+#define IDM_SOUND_FILE_TEXT   107
+#define IDM_SOUND_PLAY			108
+

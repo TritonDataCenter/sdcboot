@@ -1,0 +1,38 @@
+#
+# Makefile for the FAT transformation engine
+#
+
+include ../../configlinux.mak
+
+.PHONY: low.a
+.PHONY: high.a
+.PHONY: misc.a
+.PHONY: heapmem.a
+.PHONY: dtstrct.a
+
+fte.a: low.a high.a misc.a heapmem.a dtstrct.a
+
+low.a:
+	@cd ../low && $(MAKE)
+        
+high.a:
+	@cd ../high && $(MAKE)
+        
+misc.a:
+	@cd ../misc && $(MAKE)
+             
+heapmem.a:
+	@cd ../heapmem && $(MAKE)
+
+dtstrct.a:
+	@cd ../dtstrct && $(MAKE)
+
+clean:
+	@cd ../low && $(MAKE) clean
+	@cd ../high && $(MAKE) clean
+	@cd ../misc && $(MAKE) clean
+	@cd ../heapmem && $(MAKE) clean
+	@cd ../dtstrct && $(MAKE) clean
+	@-rm -f fte.a 
+
+

@@ -1,0 +1,352 @@
+IRCjr DOS IRC Client
+2011-10-29 Version
+Michael Brutman (mbbrutman@gmail.com)
+
+
+Introduction
+
+  This is a fairly simple IRC client that I have been working on since
+  the summer of 2008.  Originally it started as a bare bones program
+  that let you connect to one channel on one server.  All messages
+  came out on the same screen and sending private messages to other
+  users was a hassle.  But, it worked!
+
+  Things have changed a lot lately.  The program has grown in size
+  since those early versions but there are a lot of improvements
+  that make the program much easier to use.  Recently support for
+  multiple sessions as added, allowing one to have a virtual
+  window for each open channel or private conversation.  This newest
+  version adds basic support for the Client To Client Protocol
+  which allows you to see "action" messages correctly, ping other
+  clients directly, and find out the version information for IRC
+  clients used by other users.  The parsing of server messages has
+  been improved slightly too.
+
+
+Hardware requirements
+
+  8088 processor or better
+  190KB available RAM
+  CGA, Monochrome (MDA), EGA or VGA display
+  Supported Ethernet card, SLIP or PPP connection
+
+
+Software requirements
+
+  DOS 2.1 or newer (DOS 3.3 or newer recommended)
+  Packet driver for your Ethernet card, SLIP or PPP connection
+
+
+Quick setup instructions
+
+  IRCjr is built using the mTCP library.  The setup instructions for mTCP can
+  be found in SETUP.TXT.
+
+  Older versions of IRCjr used environment variables for setting the nickname,
+  username, and real name.  This version of IRCjr has changed to use parameters
+  that are specified in the mTCP configuration file.  The parameters that you
+  need to set are:
+
+    IRCJR_NICK	  Your nickname for IRC
+    IRCJR_USER	  Your username on this machine (can be made up)
+    IRCJR_NAME	  Your name in real life
+
+  The IRC RFCs state that the nickname can be a maximum of nine
+  characters.  That is routinely ignored.  IRCjr lets you use up
+  to 25 characters for a nickname, 16 for the username, and 40
+  for your real name.  Be aware that some IRC networks might
+  not allow longer nicknames, so if you have trouble ensure that
+  your nickname is nine characters or less.
+
+  There are seven optional parameters you can set:
+
+    IRCJR_CONNECT_TIMEOUT    Set the timeout period for the socket connect
+    IRCJR_REGISTER_TIMEOUT   Set the timeout for the registration process
+    IRCJR_BACKSCROLL         Set # of backscroll lines for each channel
+    IRCJR_BACKSCROLL_CHAT    Set # of backscroll lines for each chat session
+    IRCJR_BACKSCROLL_SERVER  Set # of backscroll lines for the server session
+    IRCJR_COLOR_SCHEME       Override the default color scheme
+    IRCJR_TIMESTAMPS         Turn timestamps on at program start
+
+
+  IRCJR_CONNECT_TIMEOUT controls how long IRCjr will wait for a TCP/IP
+  socket connection to an IRC server.  The default is 10 seconds.
+
+
+  IRCJR_REGISTER_TIMEOUT controls how long IRCjr will wait for a
+  server to regognize the client after the TCP/IP socket is created.
+  The default is 30 seconds.
+
+  You may need to set these values to larger numbers if you are trying
+  to connect to a busy or slow server.  Settings of 30 seconds for the
+  IRCJR_CONNECT_TIMEOUT and 90 seconds for the IRCJR_REGISTER_TIMEOUT
+  should work on almost any server.
+
+
+  The IRCJR_BACKSCROLL_* settings are used to tell IRCjr how much
+  memory to reserve for backscroll buffers.  The backscroll buffer allows
+  you to see lines that have scrolled off of the current screen.  The
+  backscroll buffers are a great feature but they require more memory.
+
+  The default backscroll buffer settings are:
+
+    Server session:  50 lines
+    Channels:       150 lines
+    Private chats:   75 lines
+
+  These are reasonable for most users.  With these settings:
+
+    - Just connecting to a server requires ~155KB
+    - Connecting and joining a channel requires ~185KB
+    - Connecting, joining a channel and having one private chat
+      requires 200KB
+
+  This is a bit more than in the original IRCjr but still manageable.
+  On an 512KB system you can be on nine different channels with
+  a generous amount of backscroll in every channel.
+
+  The largest value you can set for any backscroll buffer is 375 lines.
+  If you are tight on memory you can disable a class of backscroll
+  buffers by setting them to 0.
+
+
+  IRCJR_COLOR_SCHEME only has one setting at the moment - CGA_MONO.
+  This is useful for machines that have CGA cards but use an LCD or
+  monochrome monitor.  If you have such a machine and the default
+  colors are hard to read add this to the configuration file:
+
+    IRCJR_COLOR_SCHEME CGA_MONO
+
+
+  IRC_TIMESTAMPS is used to turn timestamps on when the program first
+  starts.  The default is to start without timestamps turned on.
+  While the program is running you can always turn the timestamps on
+  by using ALT-T (a toggle setting), but if you usually do that then
+  this setting can do that for you:
+
+    IRCJR_TIMESTAMPS on
+  
+
+  Here is an example of a mTCP configuration file with these parameters set:
+
+    DHCPVER DHCP Client version Apr 26 2009
+    TIMESTAMP Sun Apr 26 17:59:54 2009
+
+    # Parms for my machine
+    #
+    packetint 0x60
+    mtu 576
+    hostname DOSBox
+
+    # IRCjr parms
+    #
+    ircjr_nick Brut_DOSBox
+    ircjr_user Brutman
+    ircjr_name Brutman on IRCjr for DOS
+    #
+    ircjr_connect_timeout 15
+    ircjr_register_timeout 60
+    #
+    # Setup for really large backscroll buffers
+    #
+    ircjr_backscroll 375
+    ircjr_backscroll_chat 150
+    ircjr_backscroll_server 100
+    #
+    # Use this if you need a high contrast screen
+    #
+    ircjr_color_scheme cga_mono
+    #
+    # Turn timestamps on at the start
+    ircjr_timestamps on
+
+
+    # DHCP generated settings will appear here
+    #
+
+
+  Obviously, substitute in values that make sense for your machine.
+
+
+
+Running IRCjr
+
+  Now you are ready to run. The command line arguments are:
+
+    ircjr [-port <n>] <server_name> [<channel>]
+
+
+  The server name is always required.  The channel is optional - you can use
+  a join command to join a channel once you are connected to the IRC server.
+  Here is a sample:
+
+    ircjr irc.slashnet.org #vc
+
+
+  Be sure that the packet driver is loaded first.  When the program first
+  starts it is going to initialize the TCP/IP stack and try to find the IP
+  address of your IRC server.  It is going to use the DNS system to do this.
+  If you have not setup your TCP/IP environment variables correctly you will
+  not be able to connect to your IRC server.  (If you know the numerical IP
+  address of your server you can use it directly to avoid the DNS lookup.)
+
+  If all goes well you will get a connection to the IRC server.  If you
+  specified a channel on the command line you will be signed onto that
+  channel automatically by the program.  At any time during the connection
+  process you can hit the [ESC] key to quit.
+
+  The optional -port <n> can be used to connect to IRC servers
+  running on non-standard ports.
+
+
+Using IRCjr
+
+  Basic knowledge of IRC is assumed.  If you need a tutorial do a little
+  reading on the web first.
+
+  The IRCjr screen is split into two areas - the user input area and
+  the dialog area.  The dialog area shows the running conversation in
+  a channel or a private chat session.  The user input area is where
+  you compose your comments before sending them to the other users.
+
+  A status line separates the two areas of the screen.  The status line
+  tells you which session you are viewing, which sessions are active,
+  and also has indicators for the various toggle settings.
+
+  During normal usage the text that you enter will be sent to the other
+  users as part of the conversation.  The text that you enter will be
+  interleaved in the conversation with text from other users in the
+  order that the server receives it.
+
+  It is also possible to enter IRC commands that will be sent to the
+  server for action; the commands can have different functions
+  and side-effects.  IRC commands to be sent to the server start with
+  a '/' character.
+
+  Some common IRC commands are:
+
+    /join       Join an IRC channel (eg: /join #vc)
+    /msg        Send a private msg to another user (eg: /msg user text)
+    /query      Same as /msg, but open a new session to do it
+    /names      See who is in the channel (eg: /names #vc)
+    /part       Leave a channel (eg: /part #boring)
+    /nick       Change your nickname (eg: /nick newname)
+    /quit       Disconnect from the server and end
+
+  Some less common but still fun commands are:
+
+    /info       Get server information
+    /motd       Read the message of the day on the server
+    /whois      Get information about a particular nickname
+    /away       Mark yourself as away (or back)
+
+  There are three "Client To Client" commands you can use to
+  interact directly with other IRC clients.  They are:
+
+    /me         Send an "Action" command (eg: /me ducks and runs!)
+    /version    Find out what client a user is running (eg: /version bob)
+    /ping       "Ping" a client to see if they are active (eg: /ping john)
+
+
+  IRCjr processes the commands that it understands and passes
+  unfamiliar ones straight to the server.  This lets you use any
+  command, even if IRCjr does not recognize it.
+
+  Besides the IRC commands there are special key combinations that
+  make IRCjr perform extra functions:
+
+    ALT-B    Toggle new message beeper
+    ALT-H    Display help text
+    ALT-C    Close current window
+    ALT-L    Toggle logging to file (irclog.txt)
+    ALT-S    Show statistics
+    ALT-T    Toggle timestamps on incoming messages
+    ALT-X    Exit IRCjr
+
+    PgUp     Go back in time through the backscroll buffer
+    PgDn     Go forward in time through the backscroll buffer
+
+    Alt 0-9  Switch to sessions 0 thru 9 (if applicable)
+  
+
+  Session/Window handling
+
+    Each open channel and private chat has its own virtual session.
+    The main window only displays one session at a time.  To
+    flip between the virtual sessions you use Alt and a number key.
+
+    When you first start you are in a session reserved for server
+    messages.  This window is known as the "Server" session.  You can
+    get to it at any time by hitting Alt-0.  It can not be closed.
+
+    When you join a new channel a new virtual session is created and
+    you are automatically switched to that new session.  The same
+    thing happens if somebody sends you a private message or if you
+    send somebody a private message.
+
+    The name of the current session is shown on the status indicator
+    line.  Also on the status indicator line there is a sequence of
+    digits that show you how many sessions are open and what state
+    they are in:
+
+    - Normal digit: a session with no recent activity
+    - Bright digit: the session currently being displayed
+    - Reverse digit: a session that has new activity in it
+
+    You can flip directly to any session by hitting Alt and the
+    number that represents the session.
+
+    You can have up to 10 sessions including the server session.
+    After that trying to create a new session will fail and whatever
+    messages that are sent to that channel will be put on the
+    Server session.  If a new session is required and it can't be
+    created because you have run out of memory those messages will
+    go to the Server session too.  You should probably close a
+    session to make room for the new session; sending messages will
+    be difficult from the server session.
+
+    Sessions can be closed by hitting Alt-C while in the session.
+    If it is a session for a channel a PART command will be sent
+    automatically.
+
+
+Dual Display users
+
+  If you have a monochrome display and a color display on the same machine
+  choose the display you want to use using the DOS MODE command first.	The
+  IRC client will detect the current active display and use it.
+
+
+Support
+
+  Have a comment or need help?  Please email me at mbbrutman@gmail.com.
+
+
+Recent changes
+
+  2011-09-15: Add ability to edit input before sending it
+  2011-05-27: First open source release (GPL3)
+
+  2011-05-20:
+
+    - Client To Client Protocol support
+    - Parse additional server messages
+    - Minor cosmetic and bug fixes
+
+
+  2011-04-06:
+
+    - Multiple session/virtual window support
+    - Add high contrast color scheme setting.
+    - Small performance enhancements.
+
+  2010-11-27:
+
+    - Misc TCP library changes to improve handling when buffers are full.
+    - Watcom runtime workaround: improve compatibility with older machines
+
+
+More information: http://www.brutman.com/mTCP
+
+Created June 2008, Last updated Oct 29th, 2011
+(C)opyright Michael B. Brutman, mbbrutman@gmail.com

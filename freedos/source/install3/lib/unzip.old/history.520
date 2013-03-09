@@ -1,0 +1,614 @@
+UnZip, version 5.20, 30 April 1996
+
+New features, you betcha:
+
+5.13a:
+ - NT:  added version() checks for MSC 8.5 and 9.0 [Steve S]
+ - added COPYRIGHT_CLEAN ifdef for clean, unencumbered code [CN]
+ - Unix:  added NeXT-specific info to version() [CN, Mark]
+ - noted PKUNZIP limitation with Info-ZIP self-extracting archives [CN,
+    Jean-loup]
+ - removed superfluous force_flag [CN]
+ - converted some "unzip" and "zipinfo" strings to far data [CN]
+ - cleaned up version.h at expense of everything else :-) [CN]
+ - Unix:  added extra-field support for GMT modification/access times and
+    UID/GID [CN]
+ - updated Where file with CIX info [Mike Bernardi] and VMS exes names [CN]
+ - split out unzip.c and file_io.c routines into new process.c file and updated
+    all makefiles accordingly [CN]
+ - MS-DOS:  switched to "smarter" verison of gcc_dos target [CN]
+ - rewrote unshrink() again to use new, smaller data structures:  now usable
+    by small-memory systems (faster than large version, too) [CN]
+ - made COPYRIGHT_CLEAN default (no unreduce); added USE_SMITH_CODE for full
+    version [CN]
+ - OS/2, MS-DOS:  incorporated Watcom/Metaware patches [Kai Uwe]
+ - added version macros to crypt.h [CN]
+ - VMS:  removed /NOWARNINGS from descrip.mms [CN, Hunter, Christian, etc.]
+5.13b:
+ - added README section on Zip "imposters" [CN]
+ - Acorn/RISCOS:  patched crypt.c (and zipcloak.c) for port [Sergio]
+ - MS-DOS:  added explicit 8.3 truncation [CN]
+ - filtered all text output through single (replaceable) routine; added basic
+    "more" function via -M switch (if MORE defined):  Unix, OS/2, MS-DOS, NT
+    so far, but only Unix has (simplistic) screenlines() function [CN]
+5.20c:
+ - OS/2:  updated Where file to note unzip.dll in Warp 3.0 [CN]
+ - Unix:  added linux_dos cross-compilation target (gcc/go32) [Jochen Stein]
+ - Unix:  added check/test target [Mark H-L, CN]
+ - updated README file to note that SGI has renamed "zip" editor to "jot"; also
+    noted third imposter (Infocom game interpreter) [Mark H-L, CN]
+ - Unix:  added ti_sysv target and UID_USHORT patch [James Dumser]
+ - updated Where file to note use of Info-ZIP sources in FileStar/2 and DynaZip
+    [CN]
+ - Unix:  added realix target [Gisbert Selke]
+ - extended zipinfo -T times to include all four digits of year [Jim Spath]
+ - added new extra-field testing code (esp. for OS/2 extra fields) [CN]
+ - split off list.c from zipinfo.c for size reasons [CN]
+ - Unix:  removed cray_scc target; changed cray_v3 to cray_opt [CN]
+ - Acorn RISCOS:  new port!  [Karl Davis, Sergio Monesi]
+ - removed two useless prototypes [Scott Maxwell, CN]
+ - OS/2:  updated makefile; added Watcom pmodew target for DOS cross-
+    compilation [Kai Uwe]
+ - updated INSTALL file with LZW_CLEAN, etc. [CN]
+ - updated COPYING file with LZW/patent info [CN]
+ - updated Where file: HyperView, Archiver Front End, UnZip Shell, ZipShell [CN]
+ - added Solaris 2.x package files [Andrei Arkhipov]
+ - major DLL/reentrancy/globals changes, both OS/2 and generic [Scott Maxwell]
+ - MVS:  new port! (see mvs_vmcms.512.patch--not incorporated) [George Petrov]
+ - VM/CMS:  new port! (ditto) [George Petrov]
+ - NT/Win32:  renamed nt/nt.c to win32/win32.c (makefile not updated yet)
+    [Steve, CN]
+ - updated README [CN]
+5.20d:
+ - updated README, Contents, Where [CN, Wayne Stewart]
+ - added Amiga makesfx.c and MakeSFX binary(?) [Paul K.]
+ - updated COPYING file for self-extracting distributions [CN]
+ - updated msdos.c with G-> stuff [Michael Lawler]
+ - modified process.c to allow ZipInfo to deal with yet another flavor of
+    screwed-up central directory [CN]
+ - added version() test for Linux ELF compilation [CN]
+ - DOS, OS/2:  noted another bug in the djgpp/go32 executables (msdos/README)
+    [Eberhard Mattes, CN]
+ - Unix:  added linux_lib target for Linux ELF shared library (DLL) [CN]
+ - Unix:  added linux_zlib target for Linux ELF shared library in conjunction
+    with zlib (libgz.so), and made necessary modifications to inflate.c [CN]
+ - added ctrl-S pause function for zipfile comments [CN, Shane "Sped" Erstad]
+5.20e:
+ - Acorn:  finally incorporated final patches from last May [Sergio]
+ - Unix:  added __SVR4 test to catch Solaris [John Bush, CN]
+ - streamlined zlib usage (inflateReset) [CN]
+ - moved huft_build() and huft_free() from inflate.c to explode.c [CN]
+ - added zlib version info to unzip -v screen [CN]
+ - MS-DOS:  modified to allow compilation with djgpp v2.0 [Kjetil Jorgenson,
+    Frank Donahoe, CN]
+5.20f:
+5.20g:
+ - VMS:  architecture-independence in makefiles; object-library mods for 
+    make.com [Christian S]
+ - MS-DOS:  added mixed-model support to makefile.bc and makefile.msc (changes
+    to unix/Makefile left out --CN) [Christian S]
+ - DLL:  renamed UzpUnzip() to UzpMain() and added UzpAltMain() to allow
+    specialized initialization of DLL functions; also added UzpVersion() for
+    testing actual DLL version against expected version; enhanced unzipstb.c
+    to demonstrate use of UzpVersion() [CN]
+ - DLL:  added new Windows 16-bit DLL port [Stew Loving-Gibbard]
+    (Mostly integrated, but a few rough spots. --CN)
+ - Win32:  updated MSC compiler info [Steve S]
+ - updated README with mailing-list changes, new OS support [CN]
+ - updated INSTALL with VMS MMK/MMS info [Christian S, CN]
+ - AOS/VS:  new port! (sort of) --integrated old 5.01 patches, mostly [Dave
+    Lovelace, CN]
+ - renamed do_string() FILENAME macro to DS_FN to avoid Borland collisions [CN]
+ - Acorn:  updated INSTALL and Where files with RISC OS info [Karl]
+ - Acorn:  modified crypt.c to use SWI_OS_ReadC() for non-echo input [Sergio]
+ - Windows:  massive updates to WizUnZip GUI interface [Mike White]
+ - VMS:  removed support for Info-ZIP (Igor) version of PKWARE VMS extra field
+    [Christian S]
+ - Amiga:  added filenote capability; enhanced crypt non-echo code; added or
+    enhanced assembler version of CRC routine [Paul K]
+ - resplit unziptyp.h and unzip.h into unzip.h and unzpriv.h (UNZIP_INTERNAL
+    now required to be defined in all source files that include unzip.h);
+    incorporated unzipapi.h into unzip.h; replaced dllvoid with zvoid [CN]
+ - DLL:  renamed message_default, input_default, etc., entry points to 
+    UzpMessagePrnt, UzpInput, etc. (to conform with other exported entry
+    points) [CN]
+ - moved constant globals out of unzip.c and into consts.h (mainly for use
+    with Windows and other GUI ports); removed all MSWIN ifdefs from unzip.c
+    [CN, Mike White]
+ - Windows:  modified all local includes to use win16gui directory [CN]
+5.20h:
+ - Unix:  modified crypt.c TERMIOS/DIRENT stuff [Onno]
+ - added ZipInfo detection of Fred Kantor's MD5 extra field [CN]
+ - added small explicit optimization in inner crypt loop [Christian S]
+ - VMS:  extended -b option to allow extraction of binaries in fixed-length
+    512-byte-record mode [Christian S]
+ - MS-DOS:  Watcom support, assembler mods, etc. [Paul K]
+ - if testing and stdout redirected (let's hope to a file and not a pipe) and
+    stderr not, send error messages to both stderr and stdout [CN, Santiago
+    Vila]
+ - added support for -d exdir *before* zipfile name; removed OLD_EXDIR support
+    [CN, ...]
+ - added support for -x xlist without regular file list in UnZipSFX [CN]
+ - added detection of backslashes as dir separators (twnsck12.zip bug) [CN]
+ - moved CRC-table generation into process.c (do only once, not once per
+    zipfile) [CN]
+ - added fillinbuf() function to funzip for USE_ZLIB support [CN]
+ - Windows:  updated WizUnZip interface, including lots of new icons [Mike
+    White]
+ - Win32:  added crc_i386.asm, 32-bit Intel-assembler version of CRC stuff
+    [Paul K, Christian S]
+ - Amiga:  replaced amiga/ subdirectory contents with updated stuff [Paul K]
+ - Atari:  major update [Harald Denker]
+ - MS-DOS:  updated crc_i86.asm and makefile.msc for multiple memory models
+    [Christian S]
+ - print Info-ZIP banner whenever UnZipSFX invoked (a la PKZIP or lharc) [CN]
+5.20i:
+ - OS/2:  add column with EA sizes to -l listing output [CN, Doug Dougherty]
+ - removed Zip localization stuff from full crypt.[ch] and added MVS and
+    VM/CMS support (to match Zip's version of crypt) [Christian S]
+ - "canonicalized" DOS_W32_OS2 and VMCMS_MVS macros to two-or-three-character,
+    alphabetical lists (DOS_OS2_W32, CMS_MVS); added DOS_H68_OS2_W32 [CN]
+ - MVS, VM/CMS:  integrated/updated George Petrov's ports [Christian S]
+ - integrated zlib-style CRC calculation and multiple assembly-language 
+    versions [Christian S]
+5.20j:
+ - Windows:  de-tabified win16dll files [Christian]
+ - updated CRC stuff, full crypt sources [Christian]
+ - big clean-up:  made local variables and functions static; improved memory
+    usage for static strings; moved OS-specific unzpriv.h config stuff into
+    local directories (for msdos, os2, win32); removed remaining OLD_EXDIR
+    code; etc. [Christian]
+ - OS/2:  added OS2_EAS to unzip -v screen and INSTALL file [CN]
+ - Windows:  more GUI updates [Mike W]
+ - removed "boolean" typedef [CN]
+ - renamed vm_mvs subdirectory to cmsmvs to avoid underscore problem on MVS
+    [CN, Christian]
+ - renamed file_io.c to fileio.c to avoid underscore problem on MVS; updated
+    all makefiles and docs [CN, Christian]
+5.20k:
+ - OS/2:  added zip2exe.cmd script [John McDonald]
+ - Windows:  more updates [Mike W]
+ - more general clean-up and optimizations [Christian]
+ - more CRC/zlib updates [Christian]
+ - Amiga:  more updates [Paul]
+ - NEXTBYTE/defer_input performance optimizations (~2% on Linux/ELF/486, more
+    on 32-bit DOS and Windows, ~7% on SGI Irix) [Paul]
+ - major crypt/tty reorganization [Christian]
+ - OS/2:  removed api.def and unzip16.def [Kai Uwe]
+ - added -h option to print usage without failure status (no VMS /HELP version
+    yet) [CN, Mike F]
+ - OS/2, DOS, Win32:  more 386 assembler CRC updates, pragma updates, makefile
+    updates, INSTALL updates, etc.  [Christian]
+ - Acorn:  cleaned out some obsolete stuff from RunMe1st [Sergio, Christian]
+ - cleaned up ttinp.c; commented out ioctl(), stty() and gtty() prototypes [CN]
+ - Amiga:  removed filedate.c dependency from funzip compilation [Paul,
+    Christian]
+ - Windows:  added new wizdll directory for DLL version of WizUnZip (distinct
+    from "normal" UnZip DLL for Windows in win16dll) [Mike W]
+ - Macintosh:  general updates for compilation [Antoine]
+ - Unix:  wrote *real* screenlines() function for MORE [CN]
+ - defined MORE for everyone to see what breaks [CN]
+5.20m:
+ - made -h option more elegant and added VMS CLI version [Christian]
+ - more clean-up [Christian]
+ - monster extra-field update (multiple e.f.'s per file now handled) and
+    GMT/UTC timestamp support for virtually all OSes [Christian]
+ - renamed ttinp.[ch] to ttyio.[ch] to match fileio.c [CN]
+ - Amiga:  clean-ups for MORE support, fixes for decryption [Paul]
+5.20n:
+ - updates to various shared (with Zip) sources and docs [Christian]
+ - updated ZipPorts doc, moved to new proginfo directory with CONTRIBS, and
+    added new defer.in doc from Paul [CN, Paul]
+ - converted all G-> to G. references -> about 5.4% speedup on Linux/486 [CN,
+    Jean-loup, Johnny Lee]
+5.20o:
+ - Unix:  experimental new zipfile-timestamp-setting option -T [CN]
+ - Win32:  recognize VC++ 4.10 [Steve S]
+ - added MVS, VFAT and BeBox "OS" types [CN, Chris, Christian]
+ - updates to ttyio.[ch], Where [Christian]
+ - WinGUI:  various updates [Mike W]
+5.20p:
+ - Acorn:  added the boys to the CONTRIBS file (oops!) [CN]
+ - various updates (shared timezone code, ifdef parentheses, etc.) [Christian]
+ - MS-DOS:  experimental USE_VFAT option for djgpp compilation (can extract
+    long filenames under plain DOS? or only under Win95 DOS shell?) [Kjetil
+    Jorgensen, Christian]
+ - removed obsolete OLD_EXDIR code [Christian]
+ - more fnfilter() additions to extract.c for safety [Paul]
+ - WinGUI:  about-box e-mail update [Mike W]
+ - new ebcdic.h code tables [Christian, Onno]
+5.20q:
+ - created new novell subdirectory and added/updated old Watcom makefile for
+    UnZip NLM [Mark Wright 930906, CN]
+ - created proginfo/pkbugs file to keep track of pesky known bugs in PKZIP [CN]
+5.20r:
+ - OS/2:  added ACL support for network-server stuff [Kai Uwe]
+ - MSDOS:  removed unnecessary small/medium/large stuff from makefile.bc [CN,
+    Christian]
+ - MSDOS:  added some code to detect Novell overwrite bug [CN]
+5.20s:
+ - VM/CMS:  added some file/record I/O info in proginfo dir [Carl Forde,
+    Christian, CN]
+ - docs updates for release (CONTRIBS, ToDo, BUGS.long, README, ...) [CN]
+ - OS/2:  cleaned up usage screen; added -X/ACL info; removed one example
+    line [CN]
+5.20t:
+ - updated INSTALL [CN]
+5.20u:
+ - updated Where, INSTALL, README, file_id.diz files, man pages/*.doc, Contents
+    files [CN]
+ - Unix:  added install_asm target [James Dumser]
+ - Windows:  added Contents files, cleaned up useful READMEs and/or deleted 
+    unnecessary ones, etc. [CN]
+5.20v:
+ - added "zip -A" lines to examples in unzipsfx.1 [CN]
+ - DOS, Win32, OS/2:  added Borland C++ 5.0 detection; cleaned up ifdefs [CN]
+ - OS/2:  added Visual Age C++ detection [CN, Dave Briccetti]
+ - WinGUI:  added MSC 32-bit makefiles [Mike W]
+ - added TZ comment to quick-install section of INSTALL [CN, Christian]
+ - MS-DOS:  renamed part of NOVELL_BUG_WORKAROUND ifdef to NOVELL_BUG_FAILSAFE;
+    both still enabled by default [Christian]
+5.20w:
+5.20x:
+ - moved win16dll code to separate zipfile and removed all references from
+    unzpriv.h and *.msc makefiles (too much confusion with wizdll) [CN, Mike W]
+ - updated version.h for release (at last!) [CN]
+
+Bugs fixed:
+
+5.13a:
+ - MS-DOS:  added "strip funzip" to gcc_dos target [Kevin F]
+ - fixed LSEEK usage in do_string() for case when extra bytes prepended [CN]
+ - VMS:  fixed ZipInfo wildcard example; noted difference between internal and
+    external wildcards in vms/README [CN]
+ - ".zip" no longer appended to wildcard specifications except under Unix (no
+    other OS allows wildcard characters in filenames) [CN, Clay Zahrobsky]
+ - MS-DOS:  fixed SET typo in INSTALL [Steve S]
+ - VMS:  removed /ANSI from descrip.mms for DEC C on VAX [Hunter]
+ - VMS:  fixed include of sys/param.h in crypt.c [Igor]
+ - Unix:  removed a comment-separator line from each man page to work around
+    bug in broken catman/makewhatis programs [Paul Gilmartin]
+ - NT:  added CPU=i386 to makefile [James B]
+ - fixed missing-central-dir error message for zipinfo [CN]
+ - fixed Watcom/Metaware-patch near/far bug; added __16BIT__ macro [CN]
+ - Unix:  added NO_LIMITS_H and NO_DIR for SCO Xenix 2.3.2; also typecasts to
+    free() calls to avoid warnings [CN, Mike F]
+ - Unix, NT(?):  dropped utime.h and made ztimbuf typedef instead (similar to
+    zip) [Jean-loup, CN]
+5.13b:
+ - used an unused variable in unshrink() [Kevin F]
+ - Unix, VMS:  use ZMEM only for BSD universe on Pyramid; changed "value" macro
+    to "Value" to avoid ioctl.h and vms.h collisions [CN, Kevin F]
+ - updated all file_id.diz files with brief description of UnZip ("portable ZIP
+    archive extractor"); fixed too-long lines in some [Yohanan Weininger, CN]
+ - Unix:  more Xenix fixes (DIR/FILE) [CN, Mike F]
+ - moved area.shrink.* macros into unshrink.c [Christian, CN]
+ - VMS:  fixed dots-in-dirname bug [Christian]
+ - Unix:  still more Xenix fixes (NO_UID_GID) [CN, Mike F]
+ - MS-DOS:  split OBJX into OBJX1 and OBJX2 in makefile.msc [Piet, CN]
+ - MS-DOS/Win:  modified reference to "this version" and "Windows" [Greg Hill]
+ - Unix:  (re)added ALL_SOURCE macro for AIX [CN, Antoine?, Graham?, ?]
+ - VMS:  updated docs and makefiles so don't refer to now-default options; fixed
+    ANSI problems with DEC C [Christian]
+ - Amiga:  fixed OLD_EXDIR stuff [Paul K]
+ - ifdef'd unused variables in file_io.c and unix.c; added stardent target [Jim
+    Neeland]
+ - Unix:  defined SYSV for Linux and HP/UX [CN, Sergio]
+ - Unix:  defined INT_SPRINTF for BSD 4.4 and NeXT [Sergio, Mark]
+ - VMS:  renamed VMS message() to msg() (avoid collision with main version) [CN]
+5.20c:
+ - Unix, NT:  fixed monster macro expansion in version() [CN, Mark, Kevin F]
+ - fixed possible redefinition of CHECK_EOF in inflate.c [CN, Kevin F]
+ - VMS:  lots of fixes related to message()/Info()/MORE option [Christian]
+ - Amiga:  defined INT_SPRINTF [John]
+ - MS-DOS, OS/2:  added Borland C++ 4.5 check to version() [Eric Baatz]
+ - MS-DOS:  fixed "*.obj" link problem in makefile.tc [CN, Alexander Lehmann]
+ - VMS:  lots more fixes related to message()/Info()/MORE option [Christian]
+ - MS-DOS:  fixed filename-mapping of bogus characters [Alexander Lehmann]
+ - updated unzip.1 to note lack of support for multi-part archives [71036,627]
+ - fixed .B and .SH lines in man pages (white space must be quoted) [Greg Woods]
+ - changed .LP -> .PP in man pages [Greg Woods?]
+ - OS/2, MS-DOS:  allow ASCII 255 in filenames [Dan Statkus, Carlton Brewster]
+ - fixed error level:  return 11 if any filespec not matched [CN, Tuomo Soini]
+ - fixed memextract() for large extractions [Kai Uwe]
+ - OS/2:  worked around LINK386 bug in unzip.def [Kai Uwe]
+ - Amiga:  lots of fixes [Paul K.]
+ - fixed MALLOC_WORK stuff [Paul K.]
+ - Unix:  fixed xenix target (needs -lx) [Joe Foster]
+ - fixed misplaced DLL ifdef -> segmentation violation [CN]
+5.20d:
+ - Unix:  fixed xenix target (needs -lx) [Joe Foster]
+ - fixed misplaced DLL ifdef -> segmentation violations [CN]
+ - fixed broken echon/echoff macros in dummy crypt.h [Bo Kullmar, CN]
+ - added missing malloc() typecast to globals.c [CN]
+ - added missing prototypes in unzip.h, extract.c [Michael Lawler, CN]
+ - VMS:  fixed incorrect setup instructions in vms/README [Stephen Ritcey]
+ - Unix:  added "-f unix/Makefile" to most targets which just used "make"
+    instead of "$(MAKE)" [CN, Claude Marinier]
+ - fixed numerous missing __G__ things (crypt.c, extract.c, process.c, unix.c)
+    when compiling with REENTRANT defined [CN]
+ - crypt.[ch] fixes for Zip [Onno]
+ - Win32:  big patch to handle G-> stuff, name change from "nt" [Johnny Lee]
+ - Unix:  fixed BSD 4.4 utime stuff [Andrey Chernov]
+ - renamed voidp typedef to zvoid to avoid annoying zlib.h incompatibility [CN]
+ - fixed handler bug:  exit with PK_ERR if ctrl-C hit [Eberhard Mattes]
+5.20e:
+ - fixed undefined FGETCH macro in file_io.c [Mark Shadley, Bo Kullmar]
+ - Unix:  fixed commented-out -X option in uz_opts [Mark Shadley]
+ - fixed broken string in process.c [Michael Lawler]
+ - fixed broken GG definition in globals.h [CN, Michael Lawler]
+ - MS-DOS:  fixed missing globals.obj in makefile.bc [CN, Shane Erstad]
+ - moved zlib version test into initialization if-block (only seen once) [CN]
+ - fixed ulg/int mismatch in extract.c [Steve S]
+ - Win32:  changed version string from "Windows 4.0" to "Windows 95" [Steve S]
+5.20f:
+ - fixed missing semicolon in one version of DESTROYGLOBALS [Mark Shadley,
+    Bo Kullmar, CN, Andrey Chernov]
+ - Unix:  fixed libgz reference (libz as of 0.94) and added api.o, apihelp.o
+    and unzipstb.o to clean target [Mark Shadley]
+ - fixed missing huft_* functions for funzip (moved back to inflate.c from
+    explode.c) [Bo Kullmar, Mark Shadley, Steve Salisbury, etc.]
+ - VMS:  fixed globals stuff (mostly), missing semicolon, etc. [CN, Mike F]
+ - fixed lots of missing globals stuff (including duplicated globals) in
+    funzip.c, one of which (in) was causing seg faults [CN]
+ - fixed ifdef'd UnZipSFX variable in globals.h (screwed up sharing of object
+    files) [CN, Steve S]
+5.20f2:
+ - MS-DOS:  fixed missing globals.obj in makefiles; fixed broken ifdef in
+   msdos.c [Piet, CN, Michael Lawler]
+5.20g:
+ - MS-DOS:  fixed missing globals.obj and list.obj in makefiles; fixed broken
+   ifdef in msdos.c [Piet, CN, Michael Lawler]
+ - VMS:  updated version strings in vms/*.opt [Christian S]
+ - VMS:  lots of fixes to vms.c [Christian S]
+ - Unix:  defined UNIX and INT_SPRINTF for AIX; check for __svr4__ for Solaris/
+    gcc SYSV [Kjetil]
+ - fixed missing "static" keywords in TestExtraField() and test_OS2() [Mike F]
+ - fixed echon()/echoff() conflicts with globals stuff "smart" way [CN]
+ - MS-DOS:  split too-large macro expansions in zipinfo.c [Christian S]
+ - lots of random fixes [Christian S]
+ - moved outbufptr and outsize to globals.h; cleaned up globals.c [Christian S,
+    CN]
+ - more globals fixes for Trace() variables [John B]
+ - Amiga:  globals fixes [John B]
+ - lots more VMS, MS-DOS and random fixes [Christian S]
+ - Acorn RISC OS:  updated for globals [Sergio]
+ - Unix:  fixed UID/GID code [CN, Bill Davidsen]
+ - Unix:  worked around AIX make bug in unix/Makefile (.c$O rule) [CN]
+ - VMS:  fixed make_unz.com and link_unz.com; added missing MMS dependencies;
+    updated INSTALL [Christian S]
+ - corrected two ftp URLs in Where file [John Hollow]
+ - Acorn:  updated makefile, RunMe1st script [Sergio]
+ - MS-DOS:  changed makefile.msc to use medium model by default (MS VC++)
+    [Steve S]
+ - fixed grammar on extra-bytes error message [CN]
+ - OS/2:  lots of random fixes, especially to makefile.os2 [Kai Uwe]
+ - fixed crypt/inflate bug in USE_ZLIB version [CN]
+ - incorporated various crypt fixes from Zip version [CN]
+ - Amiga:  fixed globals stuff, lots of little stuff [Paul K]
+ - DOS/OS2/WIN32:  modified command-line \-to-/ conversion loop to use argc,
+    not depend on argv[] being terminated by NULL [Dale Lutz, CN]
+5.20h:
+ - Win32:  reversed order of unzip.h and windows.h to avoid G struct size
+    mismatch [Steve S]
+ - changed all remaining dllvoid references to zvoid [CN, Michael Lawler]
+ - updated all makefiles for unzpriv.h, consts.h (globals.c, list.c) [CN]
+ - OS/2:  cleaned up leftover __/OF oversights [Kai Uwe]
+ - VMS:  cleaned up leftover makefile oversights [Christian S, Mike F]
+ - Amiga:  fixed small newline-echo bug [Paul]
+ - fixed short/long printf format bug [Paul]
+ - VMS:  cleaned up VMS debug statements [Christian S]
+ - Atari:  lots of globals fixes, etc. [Harald]
+ - Windows:  general clean-up/final integration of Win GUI port [Mike W]
+ - MS-DOS:  various bugfixes, clean-ups, etc. to Paul's assembler changes and
+    to generic sources [Christian S]
+ - MS-DOS:  added work-around for GNU make 3.71 to djgpp1 target in Unix
+    Makefile; made 3.71 version the default [E-Yen Tan]
+ - changed all "zip-bugs" to "Zip-Bugs" in unzip.c and README (apparently some
+    mailers are fussy about the case of e-mail usernames) [Fred Lenk, CN]
+ - VMS:  removed last tabs from vmsdefs.h [Christian S]
+ - OS/2, MS-DOS:  fixed bug that disallowed 0x7f character in filenames [CN,
+    Julio Ruiz Albek]
+ - VMS:  fixed zipinfo -M bug and missing -b changes in vmscli.cld [Christian S]
+ - VMS:  fixed cmdline.obj bug in descrip.mms [Christian S]
+5.20i:
+5.20j:
+ - fixed UnZipSFX -x bug [Christian]
+ - VMS:  fixed MMK/MMS warning-death in dummy crypt.c; fixed typo in cmdline.c
+    [Christian, Hunter]
+ - OS/2:  changed orphan OS2DLL macro to OS2API [CN, Christian]
+5.20k:
+ - fixed missing end-comment delimiter in zipinfo.c [Mike W]
+ - fixed formatting in makefiles [Christian]
+ - fixed explode.c static/non-static function-declaration mismatches [Mike F]
+ - fixed missing set of braces in full crypt getch() stuff; removed extra left
+    parenthesis in unzpriv.h [Christian]
+ - Windows:  fixed/cleaned up password code
+ - added non-static function definition in crypt_dummy for Acorn compiler
+    [Sergio, Christian]
+ - Unix:  define PROTO for RS/6000 AIX [Antoine]
+5.20m:
+ - Mac:  re-added missing macgetch() function [Christian]
+ - Windows:  removed WIZUNZIPDLL stuff (top of extract.c); undef'd MORE [Mike W]
+ - Unix:  fixed Sun PCHAR_SPRINTF oversight [CN]
+ - Win32:  fixed missing `$' in makefile.wat [Paul]
+ - replaced overlooked memset() with memzero() in globals.c (also extract.c)
+    [CN, Kevin Fritz]
+ - various fixes to files shared with Zip [Christian]
+5.20n:
+ - fixed SPRINTF logic; now PCHAR_SPRINTF always safe [Christian]
+ - Atari:  commented out do_wild() for UnZipSFX; added typecasts [Christian]
+ - VM/CMS, MVS:  renamed some overlooked (uppercase) TTINP -> TTYIO [Christian]
+ - nuked Info() macro in screenlines() debug statements (infinite recursion);
+    added various typecasts [Christian]
+ - Windows:  wndproc.c, action.c, WIN_VERSION_DATE fixes [Mike W]
+5.20o:
+ - Unix:  changed Sparc -> SPARC in version() [CN]
+ - cut all output if -tqqq given on wildcard zipfiles; removed bogus blank
+    line(s) for certain other output [CN]
+ - inverted "unzip -v" code to print only NO_MORE if MORE *not* defined [CN]
+ - changed "extern long timezone" to "extern time_t timezone" in fileio.c and
+    unix.c [Wally Reiher]
+ - Amiga, DOS, Win32, generic and documentation fixes [Paul, Christian]
+ - "filename security" fix [Paul]
+ - OS/2:  makefile and globals fixes [Kai Uwe]
+ - MVS, VM/CMS:  fixed Trace() bugs [Christian]
+ - WinGUI:  G local/global memory fix [Mike W]
+5.20p:
+ - VM/CMS:  fixes to remove compiler warnings/errors and add correct(?) filename
+    mapping [Christian, Carl Forde]
+ - Amiga:  timezone fixes (removed invlocal() function) [Paul]
+ - Acorn:  added some required typecasts for compilation [Sergio]
+ - MS-DOS:  fixed overlong fUnZip command line in Watcom makefile [Javier
+    Manero]
+ - OS/2:   work-around for DosSetPathInfo()/HPFS386/Warp Server bug [Kai Uwe]
+ - Win32:  globals/REENTRANT fixes; minor Watcom makefile fix [Paul]
+ - only declare timezone variable if DECLARE_TIMEZONE defined [CN]
+5.20q:
+ - reversed FS_VFAT_ and MVS_ OS-made-by values according to old message to
+    PKWARE; fixed zi_long() and zi_short() string arrays [CN]
+ - left over VM/CMS, MVS and VMS patches [Christian, Carl Forde]
+ - changed first arg of fnfilter() to char* and added various typecasts [CN]
+ - added OF((void)) to globalsCtor() declaration in globals.h [Sergio, CN]
+ - Amiga:  more timezone fixes [Paul]
+ - DOS, Windows, etc.:  removed bogus ^V handling from filename-mapping [Paul]
+ - replaced duplicate code with dos_to_unix_time() call; formatting fixes
+    [Christian]
+ - MVS, VM/CMS:  fixed EBCDIC newline problem [Christian, Carl Forde]
+ - fixed "unzip -v" list bug when compression level is 100% [CN, Doug Dougherty]
+ - MS-DOS:  fixed makefile.bc, makefile.msc, unix/Makefile bugs [Jochen
+    Roderburg, CN, Christian]
+ - fixed error-checking in readbyte() (read() == -1 --> possibly serious error:
+    bail) [CN, Anthony Naggs 931231]
+ - Mac:  fixed a few "G" oopers, updated .hqx files [Antoine]
+ - fixed -l/-v "plural bug" (1 files -> 1 file) [CN]
+5.20r
+ - Windows:  minor fixes for wingui code [Mike W]
+ - OS/2:  fixed inherited-EAs bug (I think) [CN]
+5.20s:
+ - changed char * to uch * in zipinfo.c to avoid pointer mismatch [Antoine,
+    Sergio, Mike W, etc.]
+ - Acorn:  removed redundant mtime line [Sergio]
+ - VM/CMS, MVS:  tweak to EBCDIC stuff to match Zip [Christian]
+ - MS-DOS, OS/2, NT:  improved overwrite (unlink) code [Christian]
+ - MS-DOS/Novell:  finished work-around for Novell 16-bit overwrite-exes-in-path
+    bug (prepend "./" to filenames without any explicit path) [Christian]
+ - OS/2:  enabled ACL restoration only with -X option [Kai Uwe]
+ - fixed -l output format and added EAs/ACLs totals to summary line [CN]
+ - added explicit "*" to function pointers to work around Pyramid compiler bug
+    [CN, Kevin Fritz]
+ - Amiga:  final(?) timezone fixes [Paul]
+ - Unix:  ttyio.c work-around for Pyramid isatty(2) Zip bug [Onno]
+ - MS-DOS:  fixed install/uninstall targets in makefile.dj2 [Frank Donahoe]
+5.20t:
+ - added explicit "*" to remaining, overlooked G.message function pointers to
+    work around Pyramid compiler bug [CN, Kevin Fritz]
+ - QNX:  defined UNIX and SYSV if __QNX__ is defined [Chris H, CN]
+ - OS/2:  changed version() info from "OS/2 2.x" to "OS/2 2.x/3.x" [CN]
+ - OS/2:  ifdef'd out unused RCS strings in os2acl.c [CN]
+ - MS-DOS, OS/2 1.x:  fixed nasty help-screen buffer-overrun bug by boosting
+    rgchSmallBuffer2[] from 96 to 160 characters [CN, James Dumser]
+ - Win32/GUI:  added work-around code for Borland C++ 5.0 to win32.c [Mike W]
+5.20u:
+ - Acorn: various source and makefile cleanups/fixes [Sergio]
+ - OS/2:  actually allow -X option to be used :-) [Kai Uwe]
+ - WinGUI:  define timezone as _timezone for Borland compiler [Mike W]
+ - Unix:  added crc_gcc$O to clean target [James Dumser]
+ - Unix:  added silly work-around for Solaris compiler [CN, Jean-loup]
+ - tweaked various OS's usage screens for readability [CN]
+ - removed Zip copyright from shared Amiga source files [Christian, etc.]
+ - lots of OS-specific (*G.message)() fixes (may have fixed a nasty DOS stack-
+    overflow bug) [Christian]
+ - OS/2:  fixed comments in makefile.os2 and INSTALL [CN]
+ - MS-DOS:  moved NOVELL_BUG_WORKAROUND macro into msdos/doscfg.h [Christian]
+ - Unix:  updated Solaris package files [CN]
+5.20v:
+ - Amiga:  nuked two tabs, added couple of comments to filedate.c [CN, Paul]
+ - Amiga:  updated unzipsfx.1 to note failure of "zip -A" [CN, Paul]
+ - fixed (again!) bogus "trigraph" sequence in zipinfo.c comment [Jean-loup]
+ - Unix:  added typecast to zipinfo.c to avoid Solaris "<" warning [Jean-loup]
+ - Unix:  replaced work-around for Solaris "macro substitution" warning in
+    ZLSEEK macro [CN, Jean-loup]
+ - Win*:  fixed unzpriv.h definition of MSWIN for only when WIZUNZIP defined;
+    updated all WizUnZip makefiles [Mike W]
+ - MS-DOS:  various makefile.dj2 fixes [Frank Donahoe]
+ - replaced dummy crypt.c with gzip-tested version [Jean-loup]
+ - MS-DOS, Win32:  removed Example2 from usage screen to stay within 23-line
+    limit [CN, Christian]
+ - shared-sources updates:  Where, amiga/filedate.c, dummy crypt.c [Christian,
+    Paul, Onno, CN, etc.]
+5.20w:
+ - in zipinfo -v output with USE_EF_UX_TIME enabled, fixed UX printout to make
+    clear that it's corrected for local time, and added raw GMT version [CN,
+    Steve S]
+ - WinGUI:  updated help-file info [Mike W]
+ - updated all docs/dates/etc. for 27 April release [CN]
+5.20x:
+ - better fixes for zipinfo -v GMT/localtime code [Christian]
+ - Unix:  made linux_asm CFLAGS correspond to linux target [CN]
+ - MS-DOS:  noted MSC 7.0 timezone bug in BUGS [CN]
+ - OS/2:  final tweaks for DLL compilation [CN]
+ - OS/2:  removed stray USE_SMITH_CODE from makefile.os2 [CN]
+ - fixed missing "of" in ZipInfo usage screen [CN]
+ - OS/2:  added _tzset() call to process.c for IBM C Set, VAC++ timezones [CN]
+ - Windows:  fixed stderr message in DLL, disk-space long (-> ulong), lost
+    return values from process_zipfiles(), etc. [Mike W, Russell Lang]
+
+==================
+
+Revision history of vms.c (moved here to avoid duplication and to keep file-
+size down):
+
+     2.0   Mandrichenko    7-apr-1993
+            Implement PKWARE style VMS file attributes
+     2.0-1 Mandrichenko    10-apr-1993
+            ACL handling code added.
+     2.1   Mandrichenko    24-aug-1993
+            Get both PKWARE and new INFO-ZIP signatures as equivalent
+            Use vmsmunch.h instead of fatdef.h
+     2.2   Cave Newt       3-oct-1993
+            Merged GRR 5.1e changes with latest Igor version:  open_outfile,
+            close_outfile, check_for_newer, UpdateCRC, flush, no ZIPINFO,
+            ctype.h, pInfo->textmode, etc.  Also merged new do_wild/mapname/
+            checkdir routines from Igor and moved VMSmunch.h into vms.h.
+     2.2-1 Mandrichenko    14-dec-1993
+            Bug fixes in mapname/checkdir stuff.
+            _flush_stream() rewritten to fix some bugs.
+     2.2-2 Goathunter      3 Jan 94
+            Fixes for Alpha-VMS.
+     2.2-3 Cave Newt       11 Jan 94
+            Disabled version-check by default; enable with CHECK_VERSIONS.
+            Installed Igor's ctrl-Z patch.
+     2.2-4 Mandrichenko    18 Jan 94
+            Fixed auto-appending of ".zip" and inability to create second
+            level of directory structure.
+     2.2-5 Cave Newt, Mike Freeman  28 Jan 94
+            Changed close_outfile() to return void for compatibility;
+            fixed declaration of second parameter to flush() (ulg size);
+            changed str[n]icmp() to STR[N]ICMP().
+     2.2-6 Christian Spieler  9 Apr 94
+            Numerous bug fixes/improvements.
+     2.2-7 Cave Newt       11 Apr 94
+            Fixed version-number/semicolon bug.
+     2.3   Cave Newt       21 Jun 94
+            Added prototype version() routine.
+     2.3-1 Cave Newt       1 Jul 94
+            *Really* fixed version-number/semicolon bug.
+     2.3-2 Rodney Brown    10 Jul 94
+            Added VMS status/severity level (define RETURN_SEVERITY)
+     2.3-3 Charles Bailey  10 Aug 94
+            Fixed severity levels.
+     2.3-4 CN, CS, IM, RB  16 Aug 94
+            Further severity tweaks; do_wild() bugfix (CS)
+     2.3-5 CS, CN, IM, GH  18 Aug 94
+            Further do_wild() modifications and fixes.
+     2.3-6 Christian Spieler  23 Aug 94
+            Added lots of typecasts and fixed some initializations for DEC C.
+
+==================
+
+These changes occurred in beta versions 5.13a to 5.2xx.  This list may have 
+left out some bugfixes and even some features...the brain cell is going, 
+folks (as Mark would say).  Apologies, etc.
+
+Greg Roelofs (a.k.a. Cave Newt or "CN")

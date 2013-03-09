@@ -1,0 +1,267 @@
+/*    
+   Defrmap.c - speed up bitfields.
+
+   Copyright (C) 2003 Imre Leber
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+   If you have any questions, comments, suggestions, or fixes please
+   email me at:  imre.leber@worldonline.be
+*/
+
+#include <stdlib.h>
+
+#include "fte.h"
+#include "..\dtstruct\ClMovMap.h"
+#include "unfrgfls\IsFlFgtd.h"
+
+static BOOL FirstClusterMarker(RDWRHandle handle, 
+                               struct DirectoryPosition* pos,
+                               void** structure);
+static BOOL ContinousFileMarker(RDWRHandle handle, 
+                                struct DirectoryPosition* pos,
+                                void** structure);
+static BOOL ContinousClusterMarker(RDWRHandle handle, CLUSTER label,
+                                   SECTOR datsector, void** structure);                                
+                               
+
+static VirtualDirectoryEntry* FastSelectMap = NULL;
+static VirtualDirectoryEntry* NotFragmentedMap = NULL;
+
+BOOL CreateFastSelectMap(RDWRHandle handle)
+{
+     unsigned long LabelsInFat;
+     
+     LabelsInFat = GetLabelsInFat(handle);
+     if (!LabelsInFat) return FAIL;
+        
+     FastSelectMap = CreateVFSBitField(handle, LabelsInFat);
+     if (!FastSelectMap) return FAIL;
+
+     if (!WalkDirectoryTree(handle, FirstClusterMarker, (void**) NULL))
+	return FAIL;
+
+     return TRUE;
+}
+
+static BOOL FirstClusterMarker(RDWRHandle handle, 
+                               struct DirectoryPosition* pos,
+                               void** structure)
+{
+    CLUSTER cluster;
+    struct DirectoryEntry entry;
+    BOOL isMovable;
+    
+    if (structure);
+     
+    if (!GetDirectory(handle, pos, &entry))
+    {
+       return FAIL;
+    }
+
+    /*
+       Don't take LFN entries into consideration.
+    */
+    if (IsLFNEntry(&entry)) return TRUE;
+
+    /*
+       Be carefull for hidden or system files.
+    */
+    if ((entry.attribute & FA_HIDDEN) || (entry.attribute & FA_SYSTEM) ||
+        IsDeletedLabel(entry))
+    {
+       return TRUE;
+    }     
+    
+    cluster = GetFirstCluster(&entry);
+    if (cluster)
+    {
+       if (!IsClusterMovable(handle, cluster, &isMovable))
+          return FAIL;
+
+       if (isMovable)
+       {
+          if (!SetVFSBitfieldBit(FastSelectMap, cluster))
+	      return FAIL;
+       }
+    }
+    
+    return TRUE;
+}
+
+void DestroyFastSelectMap(void)
+{
+    if (FastSelectMap)
+    {
+       DestroyVFSBitfield(FastSelectMap);
+       FastSelectMap = NULL;
+    }
+}
+
+VirtualDirectoryEntry* GetFastSelectMap(void)
+{
+    return FastSelectMap;
+}
+
+BOOL SwapClustersInFastSelectMap(CLUSTER cluster1, CLUSTER cluster2)
+{
+     if (!FastSelectMap) return FALSE;
+     
+     if (!SwapVFSBitfieldBits(FastSelectMap, cluster1, cluster2))
+	 return FALSE;
+
+     if (NotFragmentedMap)
+        if (!SwapVFSBitfieldBits(NotFragmentedMap, cluster1, cluster2))
+	    return FALSE;
+
+     return TRUE;
+}
+
+BOOL CreateNotFragmentedMap(RDWRHandle handle)
+{
+     BOOL isMovable;
+     unsigned long LabelsInFat, i;
+
+     LabelsInFat = GetLabelsInFat(handle);
+     if (!LabelsInFat) return FAIL;
+        
+     NotFragmentedMap = CreateVFSBitField(handle, LabelsInFat);
+     if (!NotFragmentedMap) return FAIL;
+
+     if (!WalkDirectoryTree(handle, ContinousFileMarker, (void**) NULL))
+        return FAIL;
+
+     // The files that are not movable also count as not fragmented
+     for (i=0; i < LabelsInFat; i++)
+     {
+	 if (!IsClusterMovable(handle, i, &isMovable))
+	    return FAIL;
+
+	 if (!isMovable)
+	 {
+//	    if (!ClearVFSBitfieldBit(FastSelectMap, i))
+//	       return FAIL;
+	    if (!SetVFSBitfieldBit(NotFragmentedMap, i))
+	       return FAIL;
+	 }
+     }
+
+     return TRUE;
+}
+
+void DestroyNotFragmentedMap()
+{
+     if (NotFragmentedMap)
+     {
+	DestroyVFSBitfield(NotFragmentedMap);
+	NotFragmentedMap = NULL;
+     }
+}
+
+static BOOL ContinousFileMarker(RDWRHandle handle, 
+                                struct DirectoryPosition* pos,
+                                void** structure)
+{
+    CLUSTER cluster;
+    struct DirectoryEntry entry;
+    BOOL isMovable;
+    
+    if (structure);
+     
+    if (!GetDirectory(handle, pos, &entry))
+    {
+       return FAIL;
+    }
+
+    /*
+       Don't take LFN entries into consideration.
+    */
+    if (IsLFNEntry(&entry)) return TRUE;
+
+    /*
+       Be carefull for hidden or system files.
+    */
+    if ((entry.attribute & FA_HIDDEN) || (entry.attribute & FA_SYSTEM) ||
+        IsDeletedLabel(entry))
+    {
+       return TRUE;
+    }     
+    
+    cluster = GetFirstCluster(&entry);
+    if (cluster)
+    {
+       if (!IsClusterMovable(handle, cluster, &isMovable))
+          return FAIL;
+
+       if (isMovable)
+       {
+          switch (IsFileFragmented(handle, cluster))
+          {
+            case FALSE:
+                 if (!FileTraverseFat(handle, cluster, 
+                                      ContinousClusterMarker,
+                                      (void**) NULL))
+                 {
+                    return FAIL;
+                 }
+                 break;
+                 
+            case FAIL:
+                 return FAIL;
+          }
+       }
+    }
+    
+    return TRUE;     
+}     
+
+static BOOL ContinousClusterMarker(RDWRHandle handle, CLUSTER label,
+                                   SECTOR datasector, void** structure)  
+{
+    CLUSTER cluster;
+    
+    if (label);
+    if (structure);
+    
+    cluster = DataSectorToCluster(handle, datasector);
+    if (!cluster) return FAIL;
+      
+    if (!SetVFSBitfieldBit(NotFragmentedMap, cluster))
+	return FAIL;
+    if (!ClearVFSBitfieldBit(FastSelectMap, cluster))
+	return FAIL;
+    
+    return TRUE;
+}
+
+VirtualDirectoryEntry* GetNotFragmentedMap(void)
+{
+    return NotFragmentedMap; 
+}
+
+BOOL MarkFileAsContinous(CLUSTER place, unsigned long length)
+{
+     unsigned long i;
+     
+     for (i = 0; i < length; i++)
+     {
+	 if (!SetVFSBitfieldBit(NotFragmentedMap, place+i))
+	     return FALSE;
+	 if (!ClearVFSBitfieldBit(FastSelectMap, place+i))
+	     return FALSE;
+     }
+
+     return TRUE;
+}

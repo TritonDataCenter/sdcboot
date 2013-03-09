@@ -1,0 +1,5 @@
+MTCP
+
+MTCP stands for MicroTCP, and is a collection of tools using MTCP's own lightweight realmode TCP/IP protocol,
+instead of existing ones like WATTCP32. Please see each file's own documentation, though you'll likely
+be most interested in the DHCP and FTP programs. Unfortunately no WGET yet

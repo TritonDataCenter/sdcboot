@@ -1,0 +1,57 @@
+| This file prepares the unzip port for a Desktop C re-compile.
+| run it, and it will copy all the needed files into the correct
+| place.
+
+| acorn subdirectory
+cdir <obey$dir>.c
+cdir <obey$Dir>.h
+cdir <obey$Dir>.s
+copy <obey$Dir>.acorn/c  <obey$Dir>.c.acorn    ~C ~V D
+copy <obey$Dir>.riscos/c <obey$Dir>.c.riscos   ~C ~V D
+copy <obey$Dir>.riscos/h <obey$Dir>.h.riscos   ~C ~V D
+copy <obey$Dir>.swiven/h <obey$Dir>.h.swiven   ~C ~V D
+copy <obey$dir>.swiven/s <obey$Dir>.s.swiven   ~C ~V D
+
+| create directories.
+cdir <obey$Dir>.^.c
+cdir <obey$Dir>.^.h
+cdir <obey$Dir>.^.o
+
+| c files
+copy <obey$Dir>.^.api/c      <obey$Dir>.^.c.api         ~C ~V D
+copy <obey$Dir>.^.apihelp/c  <obey$Dir>.^.c.apihelp     ~C ~V D
+copy <obey$Dir>.^.crc32/c    <obey$Dir>.^.c.crc32       ~C ~V D
+copy <obey$Dir>.^.crctab/c   <obey$Dir>.^.c.crctab      ~C ~V D
+copy <obey$Dir>.^.crypt/c    <obey$Dir>.^.c.crypt       ~C ~V D
+copy <obey$Dir>.^.envargs/c  <obey$Dir>.^.c.envargs     ~C ~V D
+copy <obey$Dir>.^.explode/c  <obey$Dir>.^.c.explode     ~C ~V D
+copy <obey$Dir>.^.extract/c  <obey$Dir>.^.c.extract     ~C ~V D
+copy <obey$Dir>.^.fileio/c   <obey$Dir>.^.c.fileio      ~C ~V D
+copy <obey$Dir>.^.funzip/c   <obey$Dir>.^.c.funzip      ~C ~V D
+copy <obey$Dir>.^.globals/c  <obey$Dir>.^.c.globals     ~C ~V D
+copy <obey$Dir>.^.inflate/c  <obey$Dir>.^.c.inflate     ~C ~V D
+copy <obey$Dir>.^.list/c     <obey$Dir>.^.c.list        ~C ~V D
+copy <obey$Dir>.^.match/c    <obey$Dir>.^.c.match       ~C ~V D
+copy <obey$Dir>.^.process/c  <obey$Dir>.^.c.process     ~C ~V D
+copy <obey$Dir>.^.ttyio/c    <obey$Dir>.^.c.ttyio       ~C ~V D
+copy <obey$Dir>.^.unreduce/c <obey$Dir>.^.c.unreduce    ~C ~V D
+copy <obey$Dir>.^.unshrink/c <obey$Dir>.^.c.unshrink    ~C ~V D
+copy <obey$Dir>.^.unzip/c    <obey$Dir>.^.c.unzip       ~C ~V D
+copy <obey$Dir>.^.unzipstb/c <obey$Dir>.^.c.unzipstb    ~C ~V D
+copy <obey$Dir>.^.zipinfo/c  <obey$Dir>.^.c.zipinfo     ~C ~V D
+
+| headers
+copy <obey$Dir>.^.consts/h   <obey$Dir>.^.h.consts      ~C ~V D
+copy <obey$Dir>.^.crypt/h    <obey$Dir>.^.h.crypt       ~C ~V D
+copy <obey$Dir>.^.ebcdic/h   <obey$Dir>.^.h.ebcdic      ~C ~V D
+copy <obey$Dir>.^.globals/h  <obey$Dir>.^.h.globals     ~C ~V D
+copy <obey$Dir>.^.inflate/h  <obey$Dir>.^.h.inflate     ~C ~V D
+copy <obey$Dir>.^.tables/h   <obey$Dir>.^.h.tables      ~C ~V D
+copy <obey$Dir>.^.ttyio/h    <obey$Dir>.^.h.ttyio       ~C ~V D
+copy <obey$Dir>.^.unzip/h    <obey$Dir>.^.h.unzip       ~C ~V D
+copy <obey$Dir>.^.unzpriv/h  <obey$Dir>.^.h.unzpriv     ~C ~V D
+copy <obey$Dir>.^.version/h  <obey$Dir>.^.h.version     ~C ~V D
+copy <obey$Dir>.^.zip/h      <obey$Dir>.^.h.zip         ~C ~V D
+
+| makefile
+copy <obey$dir>.makefile     <obey$dir>.^.makefile      ~C ~V F

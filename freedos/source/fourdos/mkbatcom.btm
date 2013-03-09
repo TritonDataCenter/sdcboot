@@ -1,0 +1,7 @@
+setlocal
+set lang=
+if "%1" ne "" set lang=LANGUAGE=%1
+call msc6
+nmake %lang batcomp
+endlocal
+

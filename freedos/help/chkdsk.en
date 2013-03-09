@@ -1,0 +1,32 @@
+CHKDSK
+
+CHKDSK is a file structure checking tool for FAT12 and FAT16 drives/partitions.
+It can also repair errors such as crosslinked files and sectors
+
+
+---------------------------------------------------------
+Usage: 
+
+
+CHKDSK C:
+
+---------------------------------------------------------
+
+Features:
+* Repairs filesystem
+*
+
+
+Supported:
+* 8086+
+* FAT12 (floppy/diskette usually)
+* FAT16 (harddisk partitions up to 2 GB)
+*
+
+Not supported:
+* FAT32. Use DOSFSCK instead
+*
+
+Requirements:
+* 8086 or better processor
+* DOS

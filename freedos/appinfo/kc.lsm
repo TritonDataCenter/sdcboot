@@ -1,0 +1,14 @@
+Begin3
+Title:          KC
+Version:        1.10
+Entered-date:   29 Mar 2004
+Description:    KEY keyboard descriptor to KeybCB/KL compiler
+Keywords:       keyb layout KEY compiler freedos dos msdos
+Author:         Aitor SANTAMARIA MERINO (aitorsm_AT_inicia.es)
+Maintained-by:  Aitor SANTAMARIA MERINO (aitorsm_AT_inicia.es)
+Primary-site:   http://projects.freedos.net/keyb/
+Original-site: 
+http://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/dos/keyb/
+Platforms:      dos
+Copying-policy: GPL
+End

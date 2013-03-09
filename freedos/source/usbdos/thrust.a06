@@ -1,0 +1,1141 @@
+  JMP Main0 ;Skip over Data to Main Program
+
+
+;==============================================================================
+;NOTE: This program is written for and compiled with Eric Isaacson's A86
+;      assembly language compiler, using Options +P0 -F (8086/8088 CPU
+;      and no FPU).
+;==============================================================================
+
+
+;Changes version 1.16:
+;  Better detection of "bad" BIOS joystick drivers.  Did not detect a
+;    problem in initial release of USBJSTI (THRUST though the program was
+;    OK when it actually wasn't).
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;EQUATE/STRUCTURE/MACRO DEFINITIONS
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;EQUATES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;==============================================================================
+;Miscellaneous
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special Codes
+  ;----------------------------------------------------------------------------
+  No  EQU  0 ;Miscellaneous Yes/No tests
+  Yes EQU -1 ;      "        "  "    "
+
+
+;==============================================================================
+;CONsole/Screen Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special ASCII Characters
+  ;----------------------------------------------------------------------------
+  Tab       EQU  9 ;Tab
+  LF        EQU 10 ;Line Feed
+  FormFeed  EQU 12 ;FormFeed
+  CR        EQU 13 ;Carriage Return
+  EOF       EQU 26 ;End-of-File
+  Quote2    EQU 34 ;Double quote
+  Quote1    EQU 39 ;Single quote
+  BackSlash EQU 92 ;BackSlash (\)
+
+
+;==============================================================================
+;DOS Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special "hard-coded" DOS Device Handles.
+  ;These Handles are permanently hard-coded in DOS, and are always open.
+  ;There is no need to issue Find, Open, or Close calls to these
+  ;  devices - you can just use them at will.
+  ;----------------------------------------------------------------------------
+  StdInHandle  EQU 0 ;Standard Input Device Handle
+  StdOutHandle EQU 1 ;Standard Output Device Handle
+  StdErrHandle EQU 2 ;Standard Error Device Handle
+  StdAuxHandle EQU 3 ;Standard Auxiliary Device Handle (COM1 by default)
+  StdPrnHandle EQU 4 ;Standard Printer Device Handle (LPT1 by default)
+
+
+;==============================================================================
+;Program-specific
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Number of Timer TIcks between Screen Updates
+  ;If we update things too fast, the user may not be able to see
+  ;  what's going on.
+  ;----------------------------------------------------------------------------
+  WaitTicks EQU 2 ;Update the screen about 9 times a second
+
+  ;----------------------------------------------------------------------------
+  ;Miscellaneous Yes/No Tests (mostly for Buttons)
+  ;----------------------------------------------------------------------------
+  Off EQU  0
+  On  EQU -1
+
+  ;----------------------------------------------------------------------------
+  ;Joystick I/O Address and Mesaurement Parameters
+  ;----------------------------------------------------------------------------
+  GamePortDef EQU  0201h ;Game port address
+  MaxCount    EQU 10000  ;Maximum coordinate allowed
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;DATA
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;==============================================================================
+;Messages we write to the screen
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;This should be the first data at the top of the compiled file!
+  ;If it is, when the user types "TYPE THRUST.COM", this is what
+  ;  they will see (with no Beeps or Happy Faces).
+  ;----------------------------------------------------------------------------
+  Copyright:
+    DB CR
+    DB 'THRUST 1.16, (C) 1998-2009, Bret Johnson.',CR,LF
+    DB LF,0
+  HelpMsg:
+    DB CR
+    DB 'THRUST returns low-level information (raw numbers) about your game port',CR,LF
+    DB '  and joysticks.  This information will probably not be very useful unless you',CR,LF
+    DB '  understand how game ports and joysticks really work.  Read THRUST.DOC.',CR,LF
+    DB 'There are two methods THRUST can use to look at your joysticks.  Depending on',CR,LF
+    DB '  your exact hardware and software, one method may work better than the other.',CR,LF
+    DB "The first method uses the computer's BIOS.  If you are using a compatible",CR,LF
+    DB '  digital joystick driver (like my SDWRGMPD or USBJSTIK programs), THRUST',CR,LF
+    DB '  will automatically use the BIOS method.',CR,LF
+    DB 'The second method looks directly at the I/O port hardware.  THRUST uses the',CR,LF
+    DB '  direct hardware method by default if it does not find a compatible digital',CR,LF
+    DB '  joystick driver installed in memory.',CR,LF
+    DB 'To have THRUST use a specific method (BIOS or Direct I/O Port access), whether',CR,LF
+    DB '  there is a compatible digital joystick driver installed or not, use an',CR,LF
+    DB '  appropriate option on the command line:',CR,LF
+    DB LF
+    DB '    THRUST B                               (force BIOS method)',CR,LF
+    DB '    THRUST D #, THRUST P #, or THRUST I #  (force DIRECT I/O PORT method)',CR,LF
+    DB LF
+    DB '      The # (I/O Port Number) is optional, and can be a decimal (512-527)',CR,LF
+    DB '        or hexadecimal (200h-20Fh) port number.  The default is 201h (513),',CR,LF
+    DB '        which is the correct port for 99.99% of all computers.',CR,LF
+    DB 0,EOF
+
+Main0: JMP Main ;This avoids Beeping when the user does a "TYPE THRUST.COM"
+
+  HeaderMsg:
+    DB LF
+    DB 'Press a key on the keyboard to stop the test.',CR,LF
+    DB LF
+    DB '                 COORDINATES           BUTTONS',CR,LF
+    DB '   ACCESS    ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ   ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ',CR,LF
+    DB '   METHOD     AX   AY   BX   BY    A1 A2 B1 B2   15',CR,LF
+    DB ' ÄÄÄÄÄÄÄÄÄÄ  ÄÄÄÄ ÄÄÄÄ ÄÄÄÄ ÄÄÄÄ   ÄÄ ÄÄ ÄÄ ÄÄ   ÄÄ',CR,LF,0
+
+  BIOSMsg:    DB ' BIOS       ',0
+  DirectMsg:  DB ' Port ',0
+  WordString: DB '     ',0
+  OnString:   DB ' On',0
+  OffString:  DB ' ÄÄ',0
+  CrLfString: DB CR,LF,0
+  CrString:   DB CR,0
+  SpaceMsg2:  DB ' '
+  SpaceMsg:   DB ' ',0
+
+  HexString:  DB '0000h',0
+
+
+;==============================================================================
+;Program-specific Data
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Data to keep track of how we should look at the Joystick (Direct or BIOS)
+  ;----------------------------------------------------------------------------
+  ProgFlags   DB  0  ;Miscellaneous Yes/No Flags
+    DoBIOS   EQU 01h ;User wants us to use the BIOS method
+    DoDirect EQU 02h ;User wants us to use the DIRECT method
+
+  ;----------------------------------------------------------------------------
+  ;I/O Address of Gae Port (if accessing Directly).
+  ;Almost all Game Ports use Address 201h, which is the default.
+  ;  If it doesn't use port 201h, the user will need to provide us with the
+  ;  I/O Address.  The address provided must be the ACTUAL address, not the
+  ;  BASE address.  For example, the Base address for the standard game port
+  ;  (201h) is actually 200h (the range is 200h-207h).  Ports 200h and
+  ;  202h-207h are neve used for anything.  We can't assume that the actual
+  ;  port number is always Base+1, since it would theoretically be possible
+  ;  (and probably desirable) to use the entire 200h-207h for multiple (up to
+  ;  8 total) joysticks.
+  ;----------------------------------------------------------------------------
+  PortAddr DW GamePortDef
+
+  ;----------------------------------------------------------------------------
+  ;Joystick Coordinates as we are looking at it
+  ;----------------------------------------------------------------------------
+  ACX     DW   ? ;Joystick A, Coordinate X
+  ACY     DW   ? ;Joystick A, Coordinate Y
+  BCX     DW   ? ;Joystick B, Coordinate X
+  BCY     DW   ? ;Joystick B, Coordinate Y
+  A1      DB Off ;Joystick A, Button #1 status
+  A2      DB Off ;Joystick A, Button #2 status
+  B1      DB Off ;Joystick B, Button #1 status
+  B2      DB Off ;Joystick B, Button #2 status
+  Buttons DW   0 ;Joystick Button Status Nibble (from BIOS)
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;CODE
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;------------------------------------------------------------------------------
+;INITIALIZE AND RUN THE PROGRAM
+;Inputs:
+;Outputs: Outputs game port status until a key is pressed on the keyboard
+;Changes: Lots of stuff
+;------------------------------------------------------------------------------
+Main:
+  CLD                  ;Go forward with string functions
+  MOV  DX,Copyright    ;Write the
+  CALL WriteZCon       ;  Copyright Message
+  CALL FlushKbdBuff    ;Flush the keyboard buffer
+  CALL FixCmdLineCR    ;Change CR in command line tail to a 0
+  CALL ParseCmdLine    ;Parse the command line for switches
+                       ;Quits if user needs help
+  MOV  DX,HeaderMsg    ;Write the
+  CALL WriteZErr       ;  Header
+  MOV  DI,OFFSET ProgFlags ;Point [DI] at ProgFlags
+  JMP >M20             ;Don't delay this first time through
+M10:                   ;Keep looping to here
+  CALL WaitALittle     ;Wait for the next timer tick
+M20:                   ;Write the coordinate stuff
+  TEST B [DI],(DoBIOS+DoDirect) ;Is the user forcing to use a particular method?
+  JNZ >M40             ;If so, handle it
+M30:                   ;We're in automatic mode
+  CALL TestJoyBIOS     ;Test the Joystick BIOS for a Digital Driver
+  JNC >M50             ;If Digital Driver found, use BIOS method
+  JMP >M60             ;If not found, use Direct method
+M40:                   ;Not automatic
+  TEST B [DI],DoBIOS   ;Should we do BIOS or Direct?
+  JZ  >M60             ;If direct, jump to handle it
+M50:                   ;Do BIOS
+  MOV  DX,BIOSMsg      ;Write the
+  CALL WriteZErr       ;  BIOS Message
+  CALL GetBtnBIOS      ;Get the button status from the BIOS
+  CALL GetCoordsBIOS   ;Get the coordinates from the BIOS
+  JMP >M70             ;Continue
+M60:                   ;Do Direct
+  MOV  DX,DirectMsg    ;Write
+  CALL WriteZErr       ;  the
+  MOV  AX,PortAddr     ;  Port
+  CALL WriteWordHex    ;  Number
+  MOV  DX,SpaceMsg     ;Move
+  CALL WriteZErr       ;  over
+  MOV  BL,0Fh          ;Set the "all coordinates" mask
+  CALL GetCoordsDirect ;Get the current joystick info directly
+M70:                   ;We have the Joystick Data
+  CALL WriteCoords     ;Write the coordinate status to the screen
+  MOV  DX,SpaceMsg2    ;Write a couple of spaces
+  CALL WriteZErr       ;  to the screen
+  CALL WriteBtns       ;Write the button status to the screen
+  MOV  DX,CrString     ;Write a carriage return
+  CALL WriteZErr       ;  to the screen
+  CALL GetKey          ;Is there a key waiting for us?
+  JZ   M10             ;If not, keep testing the joystick
+M90:                   ;We're done!
+  MOV  DX,CrLfString   ;If we're done,
+  CALL WriteZErr       ;  start a new line
+Exit:
+  MOV  AX,4C00h        ;Service 4Ch (terminate program), Errorlevel=0
+  INT  21h             ;Do it
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO PARSE THE COMMAND LINE
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;PARSE THE COMMAND LINE FOR SWITCHES
+;Inputs:
+;Outputs: ProgFlags.DoBIOS, ProgFlags.DoDirect
+;         Writes Help Message and quits if errors are found
+;Changes:
+;------------------------------------------------------------------------------
+ParseCmdLine:
+  PUSH AX,BX,SI        ;Save used registers
+  MOV  SI,81h          ;Point at the command line tail
+  MOV  BX,OFFSET ProgFlags ;Point [BX] at ProgFlags
+P10:                   ;Loop to here for each character
+  LODSB                ;Get the next character
+  CALL Capitalize      ;Capitalize it
+  CMP  AL,' '          ;Is it a space?
+  JE   P10             ;If so, keep looking
+  OR   AL,AL           ;Is it the end of the command line?
+  JZ  >P90             ;If so, we're done
+P20:                   ;Test for B
+  CMP  AL,'B'          ;Is it B?
+  JNE >P30             ;If not, try the next possibility
+  OR   B [BX],DoBIOS   ;Force BIOS
+  CALL IsSpaceOrEOL    ;End of command-line?
+  JZ  >P90             ;If so, we're done
+  JMP >P70             ;If not, error
+P30:                   ;Test for D
+  CMP  AL,'D'          ;Is it D?
+  JE  >P35             ;If so, continue
+  CMP  AL,'P'          ;Is it P?
+  JE  >P35             ;If so, continue
+  CMP  AL,'I'          ;Is it I?
+  JNE >P70             ;If not, the user needs help
+P35:                   ;Do direct
+  OR   B [BX],DoDirect ;Force DIRECT
+  CALL IsSpaceOrEOL    ;End of command-line?
+  JZ  >P90             ;If so, we're done
+  CALL GetNumber       ;Look for a Port Number
+  JC  >P70             ;If none, error
+  CMP  AX,200h         ;Is the Port too small?
+  JB  >P70             ;If so, error
+  CMP  AX,020Fh        ;Is the Port too big?
+  JA  >P70             ;If so, error
+  MOV  PortAddr,AX     ;If OK, store the Port Number
+  CALL IsSpaceOrEOL    ;End of the command line?
+  JZ  >P90             ;If so, we're done
+P70:                   ;The user needs Help
+  MOV  DX,HelpMsg      ;Write the
+  CALL WriteZCon       ;  Help Message
+  JMP  Exit            ;Done
+P90:                   ;We're done
+  POP  SI,BX,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;REPLACE THE CARRIAGE RETURN AT THE END OF THE CMD LINE TAIL WITH A 0
+;Inputs:  CS = DS = PSP Segment
+;Outputs:
+;Changes: Last Byte of Command Tail
+;------------------------------------------------------------------------------
+FixCmdLineCR:
+  PUSH AX,CX,DI,ES   ;Save used registers
+  MOV  AL,CR         ;Look for a CR
+  MOV  CX,7Fh        ;Maximize Byte Counter
+  MOV  ES,DS         ;Point ES:[DI]
+  MOV  DI,81h        ;  at the Command Line Tail
+  REPNE SCASB        ;Look for the CR
+  MOV  B ES:[DI-1],0 ;Replace the CR with a 0
+  POP  ES,DI,CX,AX   ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CAPITALIZE A CHARACTER (Byte)
+;Inputs:  AL = character to be capitalized
+;Outputs: AL = capitalized character
+;Changes:
+;------------------------------------------------------------------------------
+Capitalize:
+  CMP  AL,'a'     ;Is it less than 'a'?
+  JB  >Z90        ;If so, quit
+  CMP  AL,'z'     ;Is it more than 'z'?
+  JA  >Z90        ;If so, quit
+  SUB  AL,'a'-'A' ;If between 'a' and 'z', capitalize it
+Z90:
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP OVER A COLON OR EQUALS, IF THERE
+;Inputs:  DS:[SI] = Command Line Pointer
+;Outputs: CF = Clear if Colon or Equals was found (and skipped)
+;              [SI] = First non-Space Character after the Colon/Equals
+;            = Set if No Colon or Equals was found
+;              [SI] = First non-Space Character after where we were looking
+;Changes:
+;------------------------------------------------------------------------------
+SkipColonEquals:
+  PUSH AX           ;Save used registers
+  CALL IsSpaceOrEOX ;Skip over the Spaces
+  JZ  >Q75          ;If End-of-Line, nothing to get
+  CMP  AL,':'       ;Is it a Colon?
+  JE  >Q80          ;If so, we're done
+  CMP  AL,'='       ;Is it an equals?
+  JE  >Q80          ;If so, we're done
+Q70:                ;No Colon/Equals Found
+  DEC  SI           ;Point back at the character
+Q75:                ;[SI] correct
+  STC               ;Set return flag
+  JMP >Q90          ;Done
+Q80:                ;Colon/Equals Found
+  CALL IsSpaceOrEOL ;Go to the next character
+  CLC               ;Set return flag
+Q90:                ;Done
+  POP  AX           ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP OVER SPACES TO FIND THE NEXT LEGITIMATE CHARACTER, TESTING FOR EOL
+;Inputs:  DS:[SI] = Command Line Pointer
+;Outputs: ZF = Set if EOL
+;               AL  = Unchanged
+;              [SI] = End-of-Line Character
+;            = Clear if not EOL
+;               AL  = First non-space character
+;              [SI] = Character AFTER the next non-space character
+;Changes:
+;------------------------------------------------------------------------------
+IsSpaceOrEOX:
+  CALL IsSpaceOrEOL ;Skip over the spaces
+  JZ  >X90          ;If end-of-line, we're done
+  LODSB             ;If not, get the next character
+  OR   AL,AL        ;Set return flag
+X90:                ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP OVER SPACES TO FIND LEGITIMATE CHARACTERS, AND TEST FOR EOL
+;Inputs:  DS:[SI] = Command Line Pointer
+;Outputs: ZF = Set if EOL
+;            = Clear if legitimate character
+;              [SI] = The Next non-Space Character
+;Changes:
+;------------------------------------------------------------------------------
+IsSpaceOrEOL:
+  PUSH AX     ;Save used registers
+L10:          ;Loop to here to skip over spaces
+  LODSB       ;Get the next character
+  CMP  AL,' ' ;Is it a space?
+  JE   L10    ;If so, get the next character
+  CMP  AL,Tab ;Is it a Tab?
+  JE   L10    ;If so, get the next character
+  DEC  SI     ;If not, point back at the character
+  OR   AL,AL  ;Set EOL flag
+  POP  AX     ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO GET A NUMBER FROM A STRING (HEX OR DECIMAL)
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;GET A NUMBER FROM A STRING (CAN BE DECIMAL OR HEX)
+;Inputs:  [SI] = String Pointer
+;Outputs: CF = Clear if we got a valid number
+;              AX = Number
+;            = Set if Error (no number found)
+;              AX = 0
+;Changes: SI points at next byte after the number
+;NOTES: A Hex String must start with '0x' and/or end in 'H'!
+;------------------------------------------------------------------------------
+GetNumber:
+  CALL IsSpaceOrEOL ;Skip past spaces
+  JZ  >N70          ;If End-of-Line, Error
+  CALL TestForHex   ;Is it a Hex Number?
+  JC  >N20          ;If not, try a decimal
+  CALL Test0xPrefix ;Skip over the 0x (C-style) prefix, if there
+  CALL GetHex       ;If so, get it
+  JNC >N80          ;If OK, we're done
+  JMP >N70          ;If not, Error
+N20:                ;Not Hex
+  CALL GetDecimal   ;Try a Decimal
+  JNC >N80          ;If OK, we're done
+N70:                ;Error
+  DEC  SI           ;Point back at the first character
+  STC               ;Set Error Flag
+  JMP >N90          ;Done
+N80:                ;OK
+  CLC               ;Set OK Flag
+N90:                ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AN ASCII STRING TO SEE IF IT IS A HEX STRING (ENDS IN H)
+;Inputs:  [SI] = String to test
+;Outputs: CF = Clear if it is a Hex String
+;            = Set if Error (not a Hex String)
+;Changes:
+;NOTES: A valid Hex String will contain numerals 0-9, A-F, and Underscores,
+;         and will end in an H.  It cannot contain spaces.
+;------------------------------------------------------------------------------
+TestForHex:
+  PUSH AX,SI        ;Save used registers
+  CALL Test0xPrefix ;Test for the 0x (C-style) prefix (changes SI)
+  JNC >H80          ;If so, it's Hex
+  MOV  AL,B [SI]    ;Get the first character
+  CALL IsHexNumber  ;A valid Hex Number?
+  JC  >H70          ;If not, Error
+H40:                ;Loop to here for each character
+  LODSB             ;Get the next character
+  CALL IsHexNumber  ;A valid Hex Number?
+  JNC  H40          ;If so, keep looking
+  CMP  AL,'_'       ;An Underscore?
+  JE   H40          ;If so, keep looking
+  CALL IsHexEnd     ;End of the Hex Number?
+  JZ  >H80          ;If so, we're done
+H70:                ;Not Hex
+  STC               ;Set error Flag
+  JMP >H90          ;Done
+H80:                ;Is Hex
+  CLC               ;Set OK Flag
+H90:                ;Done
+  POP  SI,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST FOR A 0x (C-STYLE) HEX PREFIX
+;Inputs:  [SI] = String to test
+;Outputs: CF = Set if not a 0x Prefix
+;              SI unchanged
+;            = Clear if not a 0x Prefix
+;              [SI] = Character after the 0x
+;Changes:
+;------------------------------------------------------------------------------
+Test0xPrefix:
+  PUSH AX,BX       ;Save used registers
+  MOV  BX,SI       ;Save original Pointer
+  LODSB            ;Get the next character
+  CMP  AL,'0'      ;Is it a 0?
+  JNE >X70         ;If not, it's not a Prefix
+X20:               ;Loop to here to skip over all zeroes
+  LODSB            ;Get the next charcter
+  CMP  AL,'0'      ;Is it another 0?
+  JE   X20         ;If so, keep skipping the zeroes
+  CALL Capitalize  ;If not, capitalize it
+  CMP  AL,'X'      ;Is it an X?
+  JNE >X70         ;If not, it's not a 0x Prefix
+  LODSB            ;Get the next charcter
+  CALL IsHexNumber ;Is it a Hex Number?
+  JNC >X80         ;If so, it's a 0x Prefix
+X70:               ;Not a 0x Prefix
+  MOV  SI,BX       ;Restore original pointer
+  STC              ;Set return flag
+  JMP >X90         ;Done
+X80:               ;Is a 0x Prefix
+  DEC  SI          ;Point back at the first hex number
+  CLC              ;Set return flag
+X90:               ;Done
+  POP  BX,AX       ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE NEXT SERIES OF HEX CHARACTERS, AND CONVERT THEM TO A NUMBER
+;Inputs:  [SI] = Command Line Pointer
+;Outputs: CF = Clear if OK
+;              AX = Character string converted to a number, ?? if not
+;            = Set if Error
+;              AX = Unchanged
+;Changes:
+;NOTES: The string can either have an H at the end or not, and this code
+;         will work.
+;------------------------------------------------------------------------------
+GetHex:
+  PUSH BX,CX,DX     ;Save used registers
+  MOV  DX,AX        ;Save original AX
+  XOR  BX,BX        ;Start with zero
+  MOV  CX,4         ;CL = bits to shift by, CH = Character Counter
+  XOR  AH,AH        ;Set High byte to 0
+D10:                ;Loop to here for each character
+  LODSB             ;Get the next character
+  CALL IsHexNumber  ;A valid Hex Number?
+  JNC >D20          ;If so, continue
+  CMP  AL,'_'       ;If no, is it an Underscore?
+  JE  >D45          ;If so, keep looking
+  JMP >D50          ;If not, we're done
+D20:                ;Valid Hex Number
+  INC  CH           ;Increment the character counter
+  SHL  BX,CL        ;Make room for the New Nibble
+  JNC >D40          ;If we're not too big yet, keep going
+  DEC  SI           ;If too big, Point back at bad character
+  JMP >D70          ;Error
+D40:                ;OK to add in new Nibble
+  ADD  BX,AX        ;Add in the new Nibble
+D45:                ;Done with this character
+  JMP  D10          ;Jump to get next character
+D50:                ;Done getting string
+  DEC  SI           ;Point back at the bad character
+  OR   CH,CH        ;Any valid characters at all?
+  JZ  >D70          ;If not, error
+  LODSB             ;Is the next character
+  CALL IsHexEnd     ;  an H?
+  JZ  >D80          ;If so, we're done
+  DEC  SI           ;If not, point back at the non-H
+  JMP >D80          ;Done
+D70:                ;There was an error
+  MOV  AX,DX        ;Restore original AX
+  STC               ;Mark the error flag
+  JMP >D90          ;And quit
+D80:                ;We have a good number
+  MOV  AX,BX        ;Put the value where it belongs
+  CLC               ;Mark the OK flag
+D90:                ;We're done
+  POP  DX,CX,BX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE NEXT SERIES OF NUMERIC CHARACTERS, AND CONVERT THEM TO A NUMBER
+;Inputs:  [SI] = Command Line Pointer
+;Outputs: AX = decimal character string converted to a number, ?? if not
+;         CF = Clear if AX is OK
+;            = Set if no decimal found
+;Changes: SI points at character after the number
+;------------------------------------------------------------------------------
+GetDecimal:
+  PUSH BX,CX,DX     ;Save used registers
+  XOR  AX,AX        ;Start with zero
+  XOR  BX,BX        ;  "    "    "   - accumulator
+  MOV  CX,10        ;CX = multiplier & digit limit comparer
+  CALL IsSpaceOrEOX ;Skip past the spaces
+  JZ  >D70          ;If End-Of-Line, there's an error
+  SUB  AL,'0'       ;If not, convert it to a number
+  CMP  AL,9         ;Is it really a number?
+  JA  >D70          ;If not, there's an error
+  DEC  SI           ;If so, step back to the number
+D10:                ;Loop to here for each character
+  LODSB             ;Get the next character
+  SUB  AL,'0'       ;Change it to 0-9 range
+  XOR  AH,AH        ;Extend byte to word
+  CMP  AX,CX        ;Is it a digit?
+  JAE >D80          ;If not, we're done
+  CMP  BX,6553      ;Is our number getting too big?
+  JB  >D20          ;If not, jump to store it
+  CMP  AL,5         ;If so, will this number make it too big?
+  JA  >D70          ;If so, there's an error
+D20:                ;Add the digit to our number
+  XCHG AX,BX        ;Swap accumulation into AX, new digit into BX
+  MUL  CX           ;Multiply the previous accumulation by 10
+  ADD  BX,AX        ;Add in the new digit
+  JMP  D10          ;Jump to get next character
+D70:                ;There was an error
+  STC               ;Mark the error flag
+  JMP >D90          ;And quit
+D80:                ;We have a good number
+  DEC  SI           ;Point back at the non-number
+  MOV  AX,BX        ;Put the value where it belongs
+  CLC               ;Mark the OK flag
+D90:                ;We're done
+  POP  DX,CX,BX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AN ASCII CHARACTER TO SEE IF IT IS A HEX NUMERAL (BETWEEN 0 AND F)
+;Inputs:  AL = ASCII Character to Test
+;Outputs: CF = Clear if it is a Number
+;              AL = ASCII Code converted to a real Number
+;            = Set if Error (not a Number)
+;              AL = Unchanged
+;Changes:
+;------------------------------------------------------------------------------
+IsHexNumber:
+  PUSH BX          ;Save used registers
+  MOV  BL,AL       ;Save the character in case we need to restore it
+  CALL IsNumber    ;A Decimal Number?
+  JNC >H85         ;If so, we're done
+  CALL Capitalize  ;If not, Capitalize it
+  CMP  AL,'A'      ;A Hex Number?
+  JB  >H70         ;If not, Error
+  CMP  AL,'F'      ;A Hex Number?
+  JBE >H80         ;If so, handle it
+H70:               ;Not a Number
+  MOV  AL,BL       ;Restore original character
+  STC              ;Set Error Flag
+  JMP >H90         ;Done
+H80:               ;A Number > 9
+  SUB  AL,('A'-10) ;Convert it to a real number
+  JMP >H90         ;Done
+H85:               ;OK (is a Number)
+  CLC              ;Set OK Flag
+H90:               ;Done
+  POP  BX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AN ASCII CHARACTER TO SEE IF IT IS A NUMERAL (BETWEEN 0 AND 9)
+;Inputs:  AL = ASCII Character to Test
+;Outputs: CF = Clear if it is a Number
+;              AL = ASCII Code converted to a real Number
+;            = Set if Error (not a Number)
+;              AL = Unchanged
+;Changes:
+;------------------------------------------------------------------------------
+IsNumber:
+  CMP  AL,'0' ;A Number?
+  JB  >N70    ;If not, Error
+  CMP  AL,'9' ;A Number?
+  JBE >N80    ;If so, handle it
+N70:          ;Not a Number
+  STC         ;Set Error Flag
+  JMP >N90    ;Done
+N80:          ;A number
+  SUB  AL,'0' ;Convert it to a real number
+  CLC         ;Set OK Flag
+N90:          ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AN ASCII CHARACTER TO SEE IF IT IS A PARTICULAR CHARACTER
+;Inputs:  AL = ASCII Character to Test
+;Outputs: ZF = Set if it is the appropriate character
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+IsHexEnd:
+  PUSH AX         ;Save used registers
+  CALL Capitalize ;Capitalize the Character
+  CMP  AL,'H'     ;See if it matches
+  POP  AX         ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO WRITE OUR OUTPUT TO THE SCREEN
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;Test FOR A DIGITAL JOYSTICK DRIVER
+;Inputs:
+;Outputs: CF = Clear if a digital driver is found
+;            = Set if not
+;Changes:
+;------------------------------------------------------------------------------
+TestJoyBIOS:
+  PUSH AX,BX  ;Save used registers
+  PUSH CX,DX  ;Save used registers
+  MOV  AH,84h ;Function 84h (Get joystick info)
+  MOV  DX,-1  ;Subfunction FFh (check for digital driver)
+  STC         ;Preset Error Flag
+  INT  15h    ;Do it
+  JC  >B70    ;If no digital driver found, we're done
+  OR   DX,DX  ;Second check for a digital driver
+  JZ  >B80    ;If so, we've found it
+B70:          ;No digital driver found
+  STC         ;Set return flag
+  JMP >B90    ;Done
+B80:          ;Found a digital driver
+  CLC         ;Set return flag
+B90:          ;We're done
+  POP  DX,CX  ;Restore used registers
+  POP  BX,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE CURRENT COORDINATE STATUS TO THE SCREEN
+;Inputs:  ACX, ACY, BCX, BCY
+;Outputs:
+;Changes: Writes to Screen
+;------------------------------------------------------------------------------
+WriteCoords:
+  PUSH AX,CX,DX,SI   ;Save used registers
+  MOV  SI,OFFSET ACX ;Point at the first coordinate
+  MOV  CX,4          ;Need to do 4 coordinates
+C10:                 ;Loop to here for each coordinate
+  LODSW              ;Get the coordinate
+  CALL WordToString  ;Write it
+  LOOP C10           ;Write all 4 coordinates
+  POP  SI,DX,CX,AX   ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE CURRENT BUTTON STATUS TO THE SCREEN
+;Inputs:  A1, A1, B1, B2, Buttons
+;Outputs:
+;Changes: Writes to Screen
+;------------------------------------------------------------------------------
+WriteBtns:
+  PUSH AX,CX,DX,SI  ;Save used registers
+  MOV  SI,OFFSET A1 ;Point at the first button
+  MOV  CX,4         ;Need to do 4 buttons
+B10:                ;Loop to here for each button
+  LODSB             ;Get the button status
+  MOV  DX,OffString ;Assume it's off
+  CMP  AL,Off       ;Is it really Off?
+  JE  >B20          ;If so, jump to write the string
+  MOV  DX,OnString  ;If not, point at the On String
+B20:                ;Write the button string
+  CALL WriteZErr    ;Write the string
+  LOOP B10          ;Write strings for all 4 buttons
+  MOV  AX,Buttons   ;Write the
+  CALL WordToString ;  15-button status
+  POP  SI,DX,CX,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WAIT FOR A FEW TIMER TICKS TO OCCUR
+;Inputs:
+;Outputs:
+;Changes:
+;------------------------------------------------------------------------------
+WaitALittle:
+  PUSH AX,BX,CX,DS  ;Save used registers
+  MOV  CX,WaitTicks ;Number of timer ticks to wait
+  MOV  AX,0040h     ;Point DS at the
+  MOV  DS,AX        ;  BIOS data area
+  MOV  BX,006Ch     ;BX = Pointer to Clock Counter in the BIOS Data Area
+W10:                ;Loop to here for each timer tick
+  MOV  AX,[BX]      ;Get the current clock counter
+W20:                ;Loop to here to wait for a timer tick to occur
+  CMP  AX,[BX]      ;Has the clock counter changed yet?
+  JE   W20          ;If not, keep waiting until it does change
+  LOOP W10          ;Keep waiting for the number of timer ticks we
+  POP  DS,CX,BX,AX  ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO DETERMINE IF THERE IS A KEY PRESS OR NOT
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;FLUSH KEYBOARD BUFFER
+;Inputs:
+;Outputs:
+;Changes: Flushes the Keyboard Buffer
+;------------------------------------------------------------------------------
+FlushKbdBuff:
+  PUSH AX     ;Save used registers
+F10:          ;Loop to here for each ASCII character
+  CALL GetKey ;Get the key from the keystroke buffer, if there is one
+  JNZ  F10    ;If we got one, see if there's another
+  POP  AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;READ KEYBOARD CHARACTER
+;Inputs:
+;Outputs: AL = ASCII value of keypress (or 0 if extended ASCII)
+;Outputs: AH = Keyboard scan code, or extended ASCII code
+;         AX = 0 if no key is waiting
+;Changes: ZF = Clear if key is in AX
+;              Set if no key was found (AX=0)
+;------------------------------------------------------------------------------
+GetKey:
+  MOV  AH,1  ;Service 1 (Keystroke waiting?)
+  INT  16h   ;Do It
+  JZ  >K80   ;If there is no key, we're done
+  XOR  AH,AH ;If there's a key waiting, Service 0 (Get keystroke)
+  INT  16h   ;Do It
+  JMP >K90   ;We're done
+K80:         ;No key waiting
+  XOR  AX,AX ;Make sure AX=0
+K90:         ;We're done
+  OR   AX,AX ;Set/Clear ZF
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO GET THE JOYSTICK COORDINATES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;GET AND STORE BUTTON AND COORDINATE STATUS (DIRECTLY FROM GAME PORT)
+;Inputs:  BL = Mask for which coordinates to test
+;              bit 0 = ACX, 1=ACY, 2=BCX, 3=BCY
+;Outputs: ES:A1, ES:A2, ES:B1, ES:B2
+;         ES:ACX, ES:ACY, ES:BCX, ES:BCY
+;          (0 if Joystick is missing or faulty)
+;Changes:
+;------------------------------------------------------------------------------
+GetCoordsDirect:
+  PUSH AX,BX,CX,DX   ;Save used
+  PUSH DI,SI,BP      ;  registers
+  MOV  DX,PortAddr   ;Point at our game port
+  IN   AL,DX         ;Get the current button status
+  CALL StoreBtns     ;Store it in memory
+  OR   BL,0Fh        ;Mask out buttons - just care about coordinates
+  MOV  DI,OFFSET ACX ;Point at our data area
+  MOV  CX,4          ;Need to store
+  XOR  AX,AX         ;  four zeroes
+  REP  STOSW         ;Do it
+  CLI                ;Disable interrupts
+  CALL GetTimer      ;Get starting timer counter
+  MOV  BP,AX         ;Store starting count in BP
+  OUT  DX,AL         ;Start one-shots
+  MOV  BH,BL         ;Assume bits will be same as our mask to start
+C10:                 ;Loop to here for each bump the timer count
+  CALL GetTimer      ;Get current timer counter
+  MOV  SI,BP         ;Calculate
+  SUB  SI,AX         ;  elapsed time (SI)
+  CMP  SI,MaxCount   ;Have we waited too long already?
+  JA  >C90           ;If so, we're done
+  IN   AL,DX         ;If not, read port status byte
+  AND  AL,BL         ;Get rid of buttons & unwanted coordinates
+  CMP  AL,BH         ;Has it changed since last time?
+  MOV  BH,AL         ;Save it for next time
+  JE   C10           ;If it hasn't changed since last time, keep waiting
+  XOR  AL,BL         ;If it has changed, see which bits have changed
+  MOV  AH,1          ;Start with the AX coordinate
+  MOV  DI,OFFSET ACX ;Point at our memory area
+  MOV  CX,4          ;Need to do 4 tests
+C20:                 ;Loop to here for each bit that may have changed
+  TEST AL,AH         ;Did this bit change?
+  JZ  >C30           ;If not, no need to save anything
+  MOV  ES:[DI],SI    ;If so, save it in memory
+C30:                 ;Move to the next bit to test it
+  SHL  AH,1          ;Point at next coordinate
+  ADD  DI,2          ;Point at next spot in memory
+  LOOP C20           ;Keep going until we've tested all the bits
+  NOT  AL            ;Convert 0's to 1's
+  AND  BL,AL         ;Get rid of these bytes in our mask
+  OR   BL,BL         ;Are we done yet?
+  JNZ  C10           ;If not, keep waiting
+C90:                 ;We have all the coordinates
+  STI                ;Enable interrupts
+  POP  BP,SI,DI      ;Restore used
+  POP  DX,CX,BX,AX   ;  registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET AND STORE BUTTON STATUS (USING BIOS)
+;Inputs:
+;Outputs: AL = Button status from BIOS
+;Changes: AH
+;------------------------------------------------------------------------------
+GetBtnBIOS:
+  PUSH BX,CX,DX  ;Save registers that the BIOS call may change
+;  MOV  AH,84h    ;Function 84h, subfunction DX=0
+  MOV  AX,8400h  ;Function 84h, subfunction DX=0
+                 ;  Initialize AL to ALl BUttons Pressed to detect bad BIOSes
+  XOR  DX,DX     ;   (get joystick button status)
+  STC            ;Preset error flag in case the BIOS is incompatible
+  INT  15h       ;Do it
+  JNC >B10       ;If no error, go ahead and store the buttons
+  OR   AL,0F0h   ;If error, mark the buttons as not pressed
+B10:             ;AL contains the button status
+  CALL StoreBtns ;Store them in memory
+  POP  DX,CX,BX  ;Restore registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET AND STORE COORDINATES (USING BIOS)
+;Inputs:
+;Outputs: ES:ACX, ES:ACY, ES:BCX, ES:BCY
+;Changes:
+;------------------------------------------------------------------------------
+GetCoordsBIOS:
+  PUSH AX,BX,CX      ;Save used registers
+  PUSH DX,DI         ;Save used registers
+  MOV  AH,84h        ;Function 84h, subfunction DX=1
+  MOV  DX,1          ;   (get joystick coordinates)
+  STC                ;Preset error flag in case the BIOS is incompatible
+  INT  15h           ;Do it
+  JNC >C10           ;If no error, jump to store the coordinates
+  XOR  AX,AX         ;If error,
+  XOR  BX,BX         ;  make all
+  XOR  CX,CX         ;  of the coordinates
+  XOR  DX,DX         ; zero
+C10:                 ;We have the coordinates
+  MOV  DI,OFFSET ACX ;Point at our data area
+  STOSW              ;Store ACX
+  MOV  AX,BX         ;Store
+  STOSW              ;  ACY
+  MOV  AX,CX         ;Store
+  STOSW              ;  BCX
+  MOV  AX,DX         ;Store
+  STOSW              ;  BCY
+  POP  DI,DX         ;Restore used registers
+  POP  CX,BX,AX      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;STORE THE CURRENT BUTTON STATUS IN MEMORY
+;Inputs:  AL = Current joystick button status
+;              Status is contained in high nibble of AL
+;                (bit 4 = A1, 5 = A2, 6 = B1, 7 = B2)
+;              Buttons are reverse logic (bit = 1 means button is NOT pressed
+;Outputs: ES:A1, ES:A2, ES:B1, ES:B2, ES:Buttons
+;Changes:
+;------------------------------------------------------------------------------
+StoreBtns:
+  PUSH AX,BX,CX,DI  ;Save used register
+  PUSH AX           ;Save the button status for a second
+  NOT  AL           ;Convert buttons from 1's to 0's
+  MOV  CL,4         ;Move the button status from the high nibble
+  SHR  AL,CL        ;  to the low nibble
+  XOR  AH,AH        ;Change it to a complete word
+  MOV  Buttons,AX   ;And store it
+  POP  AX           ;Restore the button status
+  MOV  DI,OFFSET A1 ;Point at our data area
+  MOV  CX,4         ;Need to do 4 buttons
+  MOV  AH,AL        ;Put our test byte in AH
+  MOV  BH,10h       ;Start with button A1
+S10:                ;Loop to here for each button
+  MOV  AL,Off       ;Assume the button is off
+  TEST AH,BH        ;Is it really off?
+  JNZ >S20          ;If so, AL is OK
+  MOV  AL,On        ;If not, AL should be On
+S20:                ;Store the On or Off for this button
+  STOSB             ;Store it
+  SHL  BH,1         ;Point at the next button
+  LOOP S10          ;Keep going 'til we've done all the buttons
+  POP  DI,CX,BX,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET CURRENT TIMER COUNTER FROM PORT 40h
+;Inputs:
+;Outputs: AX = Current timer counter word
+;Changes:
+;------------------------------------------------------------------------------
+GetTimer:
+  MOV  AL,00000110xb ;Channel 0, Latch Counter, Square Wave, Binary
+  OUT  43h,AL        ;Tell timer about it
+  IN   AL,40h        ;Get LSB of timer counter
+  MOV  AH,AL         ;Save it in AH for a second
+  IN   AL,40h        ;Get MSB of timer counter
+  XCHG AH,AL         ;Put things in the right order
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO WRITE THINGS (GENERICALLY) TO THE SCREEN
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;CONVERT WORD TO DECIMAL ASCII STRING, AND WRITE IT TO ERR
+;Inputs:  AX = Word to be converted and written
+;Outputs: Writes word to ERR device as a decimal ASCII string
+;Changes: WordString
+;------------------------------------------------------------------------------
+WordToString:
+  PUSH AX,BX,CX,DX,DI ;Save used registers
+  MOV  CX,4           ;Loop Counter (length of string - 1)
+  MOV  DI,WordString  ;Get address for character string
+  PUSH AX,DI          ;Save registers for a second
+  MOV  AL,' '         ;Fill the buffer
+  REP  STOSB          ;  with spaces
+  POP  DI,AX          ;Restore registers
+  XOR  BL,BL          ;Test for first non-zero character is false
+  MOV  CX,10000d      ;First divisor is 10,000
+W10:                  ;Loop to here for each character
+  XOR  DX,DX          ;So dividend won't be messed up
+  DIV  CX             ;Divide DX:AX by current divisor
+  OR   BL,BL          ;Has there already been a non-zero character?
+  JNZ >W20            ;If so, we need to write this character
+  OR   AX,AX          ;Is this the first non-zero character?
+  JNZ >W20            ;If so, we need to write it
+  CMP  CX,1           ;Is this the last character?
+  JNE >W30            ;If not, no need to write it
+W20:                  ;Write the character to our string
+  INC  BL             ;Test for first non-zero character is true
+  MOV  [DI],AL        ;Put the quotient into the string
+  ADD  B [DI],'0'     ;Convert it to ASCII
+W30:                  ;No need to write the character
+  MOV  AX,DX          ;Start loop with remainder of division
+  CMP  CX,1           ;Was this the last division to do?
+  JE  >W80            ;If so, we're done - jump to write it
+  PUSH AX,DX          ;If not, get ready to calculate new divisor
+  XOR  DX,DX          ;So dividend won't be messed up
+  MOV  AX,CX          ;Want to divide divisor in CX
+  MOV  CX,10          ;Want to divide by 10
+  DIV  CX             ;Divide it
+  MOV  CX,AX          ;Store it back in CX
+  POP  DX,AX          ;Return things to where they belong
+  INC  DI             ;Move to next character in string
+  JMP  W10            ;Start loop over again
+W80:                  ;Write the string to the screen
+  MOV  DX,WordString  ;Point to string
+  CALL WriteZErr      ;Write the string
+  POP  DI,DX,CX,BX,AX ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT BYTE, WORD, OR DWORD TO HEX CHARACTER STRING, AND WRITE IT
+;Inputs:  AL/AX = Nibble/Byte/Word to be written
+;         CLD must be set already!
+;Outputs: Writes to the Screen (ERR
+;Changes: HexString
+;------------------------------------------------------------------------------
+WriteWordHex:
+  PUSH DX,DI          ;Save used registers
+  MOV  DI,HexString   ;Point DS:[DI] at HexString
+  MOV  DX,DI          ;Point DS:[DX] at HexString
+  CALL Word2HexString ;  to a String
+  CALL WriteZErr      ;Write it
+  POP  DI,DX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT A BYTE OR WORD TO A HEXADECIMAL STRING (2 OR 4 CHARACTERS)
+;Inputs:  AX = Word to Convert to a Hex String
+;         DS = Local Data Area
+;         CLD already issued
+;Outputs: DS:[DI]
+;Changes: DI
+;------------------------------------------------------------------------------
+Word2HexString:
+  PUSH AX,BX,ES         ;Save used registers
+  MOV  BX,AX            ;Save original Word
+  MOV  ES,DS            ;Point ES:[DI] at
+  CALL Word2HexString00 ;Convert it
+  POP  ES,BX,AX         ;Restore used registers
+  RET
+
+Word2HexString00:
+  MOV  AL,BH            ;Convert High Byte
+  CALL Word2HexString10 ;  to ASCII
+  MOV  AL,BL            ;Work with Low Byte
+Word2HexString10:       ;Convert Byte to ASCII
+  AAM  10h              ;Separate Low & High Nibbles
+  XCHG AH,AL            ;Put High Nibble in AL
+  CALL Word2HexString20 ;Convert High Nibble to ASCII
+  XCHG AH,AL            ;Work with Low Nibble
+Word2HexString20:       ;Convert Nibble to ASCII
+  ADD  AL,90h           ;Convert BCD
+  DAA                   ;  to Decimal
+  ADC  AL,40h           ;Convert Decimal
+  DAA                   ;  to ASCII
+  STOSB                 ;Store the Nibble
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING TO CON OR TO ERR
+;Inputs:  DS:[DX] = Pointer to string
+;Outputs: Writes the string to CON or ERR
+;Changes:
+;------------------------------------------------------------------------------
+WriteZCon:             ;Write to CON
+  PUSH BX              ;Save used register
+  MOV  BX,StdOutHandle ;Write to STDOUT
+  JMP >Z10             ;Jump to do it
+WriteZErr:             ;Write to ERR
+  PUSH BX              ;Save used register
+  MOV  BX,StdErrHandle ;write to STDERR
+Z10:                   ;Write to CON or ERR
+  PUSH AX,CX           ;Save used registers
+  CALL CalcStrSizeDX   ;Calculate the size of the string (returns CX)
+  JZ  >Z80             ;If nothing to write, just quit
+  MOV  AH,40h          ;Function 40h (Write to Device)
+  INT  21h             ;Do it
+Z80:                   ;We're done
+  POP  CX,AX           ;Restore used registers
+  POP  BX              ;Restore used register
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE LENGTH OF AN ASCIIZ STRING
+;Inputs:  DS:[DX] = Pointer to the string
+;Outputs: CX = Length of the string
+;         ZF = Set if string is 0 length
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+CalcStrSizeDX:
+  PUSH AX,DI  ;Save used registers
+  PUSH ES     ;Save used registers
+  MOV  ES,DS  ;Point ES:[DI]
+  MOV  DI,DX  ; at the string
+  XOR  AL,AL  ;Look for a 0
+  MOV  CX,-1  ;Start with max count for REPNE
+  REPNE SCASB ;Find the end of the string
+  NOT  CX     ;Calculate the size
+  DEC  CX     ;  of the string (sets ZF)
+  POP  ES     ;Restore used registers
+  POP  DI,AX  ;Restore used registers
+  RET

@@ -1,0 +1,62 @@
+# Help Message
+#
+# Italian translation (CP850) based on version 3.3 by Roberto Mariottini
+#
+0.0:Move
+0.1:Sposta un file/directory in un'altra locazione.
+0.2:(C) 1997-2002 by Joe Cosentino
+0.3:(C) 2003-2004 by Imre Leber
+0.4:Sintassi: MOVE
+0.5:sorgente1[, sorgente2[,...]] destinazione
+0.6: sorgente     Il nome del file o directory che si vuole spostare (rinominare)
+0.7: destinazione Destinazione in cui spostare i file
+0.8:           Elimina la richiesta di conferma per sovrascrivere
+0.9:              un file esistente nella directory destinazione.
+0.10:          Causa una richiesta di conferma per sovrascrivere un
+0.11:              file esistente nella directory destinazione.
+0.12:           Verifica ogni file durante la scrittura per
+0.13:              assicurarsi che i file destinazione siano identici ai
+0.14:              file sorgente.
+0.15:Nota:
+0.16:Con questo comando si possono spostare directory 
+#
+# Various messages
+#
+1.0:non esiste!
+1.1:gi… esistente!
+1.2:Sovrascrivere il file
+1.3:Problema durante spostamento della directory
+1.4:Problema durante spostamento del file
+1.5:Parametro non valido
+1.6:Specificazione di unit… sorgente non valida 
+1.7:File destinazione non valido
+1.8: directory non esitente. Crearla?
+1.9:File sorgente non valido
+1.10:Impossibile creare la directory
+1.11:Il file non pu• essere copiato su s‚ stesso
+1.12:Impossibile spostare un file in una directory
+1.13:File gi… esistente
+1.14:Il file non pu• essere copiato su s‚ stesso
+1.15:Accesso negato
+1.16:Spazio su disco insufficiente nella destinazione
+1.17:Spazio su disco insufficiente
+1.18:Manca un parametro obbligatorio
+1.19:Specificazione di sorgente non valida 
+1.20:Percorso sorgente non trovato
+1.21:Percorso sorgente troppo lungo\n
+1.22:Percorso destinazione troppo lungo\n
+1.23:Specificazione di unit… destinazione non valida\n
+1.24:Percorso destinazione troppo lungo\n
+1.25:Impossibile aprire il file sorgente
+1.26:Impossibile creare il file destinazione
+1.27:Errore di scrittura sul file destinazione
+1.28:Impossibile creare la directory
+1.29:Spazio su disco insufficiente nella destinazione
+#
+# Y/N/All/None; Simple messages
+#
+2.0:S
+2.1:N
+2.2:Tutti
+2.3:Nessuno
+2.4:OK

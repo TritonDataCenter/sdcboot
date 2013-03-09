@@ -1,0 +1,85 @@
+Contents of the "wingui" sub-archive for UnZip 5.2 and later:
+
+  Contents       this file
+  README         notes about WizUnZip 3.0 development; compiler notes
+  wunzip16.bcc   makefile for compiling 16-bit WizUnZip GUI app with Borland C
+  wunzip32.bcc   makefile for compiling 32-bit WizUnZip GUI app with Borland C
+  wizunz32.msc   makefile for compiling 32-bit WizUnZip GUI app with Microsoft C
+  wizunzip.def   definitions file for 16-bit app
+  wizunz32.def   definitions file for 32-bit app
+  wizunzip.rc    resource file for WizUnZip
+
+  about.c        about dialog code
+  action.c       pre- and post-processing of "unzip" function
+  copyfile.c     copy/move/rename dialog code
+  helpids.h      help ID macros
+  iconbar.c      button toolbar code
+  kbdproc.c      just like it says
+  makedir.c      make-directory dialog code
+  password.c     password dialog code
+  password.h
+  pattern.c      pattern-select dialog code
+  pattern.h
+  rename.c       rename dialog code
+  rename.h
+  replace.c      replace dialog code
+  replace.h      
+  seldir.c       select-directory dialog code
+  sizewndw.c     size-window code
+  sound.c        sound dialog code and multimedia calls
+  sound.h        
+  status.c       displays in "status/display" listbox
+  updatelb.c     updates the main listbox
+  winit.c        WizUnZip initialization code
+  winsetup.c     primary setup code
+  wizunzip.c     main WizUnZip file; contains WinMain
+  wizunzip.h     main header file
+  wndproc.c      has most of WizUnZip's window procedures
+
+  wizunzip.rtf   source for help file
+  wizunzip.hpj   help project file
+  wizunzip.hlp   help file
+
+  about.dlg      about dialog template
+  copyfile.dlg   copy/move/delete dialog template
+  makedir.dlg    make-directory dialog template
+  password.dlg   password dialog template
+  pattern.dlg    select-by-pattern dialog template
+  rename.dlg     rename dialog template
+  replace.dlg    replace dialog template
+  seldir.dlg     select-unzip-to dialog template
+  sound.dlg      sound-options dialog template
+
+  wizunzip.wav   "unzipping" sound file (binary)
+
+  wizunzip.ico   main WizUnZip icon (binary)
+  unzipped.ico   "unzipped" icon (binary)
+  help.cur       help cursor (binary)
+
+  clrstat.bmp    button-bar bitmaps (binary)
+  comment.bmp
+  copy.bmp
+  copystat.bmp
+  deselall.bmp
+  display.bmp
+  erase.bmp
+  exit.bmp
+  export.bmp
+  extract.bmp
+  help.bmp
+  list.bmp
+  makedir.bmp
+  move.bmp
+  open-up.bmp
+  rename.bmp
+  selall.bmp
+  selpat.bmp
+  split.bmp
+  status.bmp
+  test.bmp
+  trash.bmp
+  unzipto.bmp
+
+Note that the MSC port has not been tested nearly as well as the Borland
+port.  Also note that Borland C++ 5.0 is a buggy load of...well, is buggy.
+Use Borland C++ 4.5 for best results.

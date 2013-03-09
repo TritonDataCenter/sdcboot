@@ -1,0 +1,58 @@
+# FreeDOS Updater's translation file
+#
+# Translated by: Florian Xaver (flox@drdos.org)
+# Language:      Deutsch (German)
+# FDUPDATE ver:  0.53
+# Codepage:      850
+# # # # # # # #
+
+### Help screen ###
+0.1:Mit FreeDOS Updater bleibt Ihr FreeDOS-System auf neuestem Stand!
+0.2:Es werden folgende Packete benîtigt:
+0.3:WGETX oder CURL - zum Downloaden
+0.4:FDPKG - zum Installieren/Lîschen von Programmen
+0.5:Verwendung: FDUPDATE [/new] [/h]
+0.6:/new - Erlaubt das Neuinstallieren von Programmen vom Server (Repository).
+0.7:/h   - Zeigt die Hilfe an.
+
+### Retrieving package lists ###
+1.1:Checkt installierte Programme...
+1.2:Beendet
+1.3:Downloaden von der Packet-/Programmliste...
+
+### Requirements checking ###
+2.1:Sie brauchen die 'DOSDIR'-Umgebungsvariabel. :-(
+2.2:Sie brauchen die 'TEMP'-Umgebungsvariabel. :-(
+
+### Setting the update server URL ###
+3.1:Update vom Server:
+# The whole message below is "Using the fallback update server at <DefaultServer>
+3.4:Der folgende Fallback-Update-Server wird verwendet:
+3.5:Download-Programm:
+3.6:Es wird der standardmÑ·ige Download-Befehl verwendt:
+
+### Updating software ###
+# Note: The message below can't be longer than 36 characters!
+4.1:Es gibt verschiedene Versionen!
+# Note: The message below can't be longer than 16 characters!
+4.2:Lokales Packet:
+# Note: The message below can't be longer than 16 characters!
+4.3:Remote-Packet:
+# Note: The message below can't be longer than 28 characters!
+4.4:Soll upgedatet werden? [J/N]
+# Note: The letter below must be in upper-case! It's used as the key for "Yes"
+4.5:J
+# Note: The whole message below is "Finished. <num> package(s) have been updated."
+4.6:Beendet.
+4.7:Packet(e) wurden upgedated.
+# Note: The message below is displayed if no updates were available on the server.
+4.8:Keine Updates verfÅgbar!
+
+### Installing new software ###
+# Note: The message below can't be longer than 78 characters!
+5.1:Rauf/Runter & PgUp/PgDn: Programme anzeigen   Enter: installieren   Esc: Ende
+# Note: The word below is displayed before the page's number (eg. "Page: 3")
+5.2:Seite
+# Note: The whole message below is "<package> has been installed!"
+5.3:wurde installiert!
+5.4:Kein neues Packet/Programm wurde installiert!

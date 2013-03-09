@@ -1,0 +1,12 @@
+Contents of the "acorn" subdirectory for UnZip 5.2 and later:
+
+  acorn.c.acorn     Acorn-specific resources.
+  acorn.c.riscos    Mainly file-handling routines for FileCore-based filing
+                    systems.
+  acorn.Contents    This file.
+  acorn.h.riscos
+  acorn.h.swiven
+  acorn.ReadMe      Read this before compiling.
+  acorn.RunMe1st    Obey file to move files into suitable place for compilation
+                    on RISC OS machines.
+  acorn.s.swiven    SWI veneers

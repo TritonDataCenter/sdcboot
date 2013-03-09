@@ -1,0 +1,37 @@
+CTMOUSE
+
+Cutemouse is an opensource generic/universal driver
+for mice 
+
+
+---------------------------------------------------------
+
+Usage example #1 :
+CTMOUSE
+
+
+---------------------------------------------------------
+
+Features:
+* Load to enable mouse in semi-graphical programs such as EDIT, ARACHNE etc
+
+
+Supported:
+* 8086+
+* scroll wheel optional
+* ball, optical, laser
+* left button, right button
+* button swap (for lefthanded people)
+* legacy USB ports (BIOS support enabled)
+*
+
+Not supported:
+* USB mouse without legacy support
+* Jostick
+* Additional buttons
+* wireless pointing device?
+*
+
+Requirements:
+* Mouse pointer device connected to PS/2 or serial port
+* 

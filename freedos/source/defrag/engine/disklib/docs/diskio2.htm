@@ -1,0 +1,359 @@
+<HTML>
+<HEAD>
+<META NAME="ROBOTS" CONTENT="NOFOLLOW">
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<META NAME="GENERATOR" CONTENT="Mozilla/4.05 [en] (Win16; I) [Netscape]">
+<META NAME="Description" CONTENT="Sector level disk drive interfacing in C">
+<META NAME="robots" CONTENT="nofollow">
+<TITLE>Sector level disk drive interfacing in C</TITLE>
+</HEAD>
+<BODY>
+23-Aug-1998
+<BR>&nbsp;
+<CENTER>
+<H2>
+Sector level disk drive interfacing for IBM PCs and Compatibles in C</H2></CENTER>
+
+<CENTER>
+<H3>
+Part II</H3></CENTER>
+<A HREF="#12.0">10.0 Summary of Part I</A>
+<BR><A HREF="#11.0">11.0 Introduction to Part II</A>
+<BR><A HREF="#12.0">12.0 Standard/Non-Standard Drive Types</A>
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#12.1">12.1 Removable Media</A>
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#12.2">12.2 Fixed Media</A>
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#12.2.1">12.2.1 Drive Partitioning</A>
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#12.2.2">12.2.2 Remote Media</A>
+<BR><A HREF="#13.0">13.0 More on the BIOS</A>
+<BR>&nbsp;&nbsp;&nbsp; <A HREF="#13.1">13.1 Drive Parameters</A>
+<BR><A HREF="#14.0">14.0 Programs using the BIOS</A>
+<BR><A HREF="#15.0">15.0 About Part III</A>
+<BR><A HREF="#ref">References</A>
+<BR>&nbsp;
+<H2>
+<A NAME="10.0"></A>10.0&nbsp;&nbsp;&nbsp; Summary of Part I</H2>
+Before reading sectors the drive type and sector size must be determined;
+the drive type for which function to read with and the sector size for
+the sector contents. There are no hard and fast rules for determining drive
+type - you start with assumptions and adjust things according to results.
+You can assume a default sector size but this may not work for anything
+but floppy drives.
+<BR>&nbsp;
+<BR>The drive geometry (track, sector and head sizes) is determined by
+the using DOS function calls (although using DOS is not the only way and
+can not always be relied upon as will be seen later). DOS data parameters
+(root sector location, cluster size, etc.) can be calculated from the basic
+parameters that DOS provides.
+
+<P>The way the sectors are to be read is determined based upon media type
+and operating system.
+
+<P>Here is a brief summary:
+<BR>&nbsp;
+<CENTER><TABLE CELLSPACING=2 CELLPADDING=2 WIDTH="90%" BGCOLOR="#FFCCCC" >
+<TR ALIGN=LEFT VALIGN=TOP>
+<TD>Get drive and sector size</TD>
+
+<TD>GET DEVICE PARAMETERS (DPB)</TD>
+
+<TD>&nbsp;</TD>
+</TR>
+
+<TR>
+<TD>&nbsp;</TD>
+
+<TD>GET FREE SPACE&nbsp;</TD>
+
+<TD>if DPB does not exist</TD>
+</TR>
+
+<TR ALIGN=LEFT VALIGN=TOP>
+<TD>Determine sector I/O function</TD>
+
+<TD>INT 25/26</TD>
+
+<TD>floppy/hard drives for DOS/WinNT&nbsp;
+<BR>floppy drives for Win31&nbsp;
+<BR>loadable devices</TD>
+</TR>
+
+<TR ALIGN=LEFT VALIGN=TOP>
+<TD>&nbsp;</TD>
+
+<TD>BIOS (INT 13)</TD>
+
+<TD>floppy/hard drives for DOS/Win31&nbsp;
+<BR>floppy drives for WinNT</TD>
+</TR>
+
+<TR>
+<TD>&nbsp;</TD>
+
+<TD>IOCTL</TD>
+
+<TD>floppy drives</TD>
+</TR>
+
+<TR ALIGN=LEFT VALIGN=TOP>
+<TD>Read BOOT sector</TD>
+
+<TD>&nbsp;</TD>
+
+<TD>if DPB does not exist&nbsp;
+<BR>if removable media</TD>
+</TR>
+
+<TR>
+<TD>Calculate DOS data</TD>
+
+<TD>&nbsp;</TD>
+
+<TD>&nbsp;</TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H2>
+<A NAME="11.0"></A>11.0&nbsp;&nbsp;&nbsp; Introduction to Part II</H2>
+In these sections I'll first offer a brief look at the variety of drive
+types, removable media and drive partitioning - just to supply some background
+- there's no need to go into great detail. I will also provide a working
+program or two.
+<BR>&nbsp;
+<CENTER><TABLE CELLSPACING=2 CELLPADDING=2 COLS=1 WIDTH="70%" BGCOLOR="#FFCCCC" >
+<CAPTION><B>DISCLAIMER</B></CAPTION>
+
+<TR>
+<TD ALIGN=CENTER><B><TT>I HAVE TRIED VERY HARD TO KEEP THESE DOCUMENTS
+CORRECT BUT</TT></B>&nbsp;
+<BR><B><TT>I CANNOT GIVE ANY GARAUNTEES THAT THERE ARE NOT ANY ERRORS</TT></B></TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H2>
+<A NAME="12.0"></A>12.0&nbsp;&nbsp;&nbsp; Standard/Non-Standard Drive Types</H2>
+In the beginning, there was one. And the one was a 160K floppy. But things
+change.
+
+<P>Today's PCs have basically only two standard drive types: floppy and
+hard. AKA removable and fixed. But standard drive types are what the BIOS
+says are standard. As the BIOS evolved it supported more and more drive
+types, yet BIOSes will always lag behind the evolution of storage devices.
+
+<P>To support non-standard drives, and drives larger than DOS was developed
+for, DOS allows for people to write loadable device drivers to provide
+it with a way of thinking that non-standard drives are standard ones.
+
+<P>What all this means is that if the drive type is not directly supported
+by the BIOS, the BIOS can not be used to access the drive, you have to
+use DOS.
+<H3>
+<A NAME="12.1"></A>12.1&nbsp;&nbsp;&nbsp; Removable Media</H3>
+Removable media, floppy drives in particular, presents a problem in that
+non-default media may be in the drive. For example, placing a 720K floppy
+in a 1.4M disk drive. DOS is presented with the default drive type by the
+BIOS, the type indicated in the BIOS (CMOS) setup. The DOS function GET
+DEVICE PARAMETERS just returns information that DOS has set up in memory
+during the BOOT process - it does not read the media. To accommodate differing
+media types you must check whether or not the drive supports removable
+media.
+
+<P>Removable media will almost certainly always be floppies. However, other
+types of removable media are increasing in popularity.
+<BR>&nbsp;
+<H3>
+<A NAME="12.2"></A>12.2&nbsp;&nbsp;&nbsp; Fixed Media</H3>
+
+<H4>
+<A NAME="12.2.1"></A>12.2.1&nbsp;&nbsp;&nbsp; Drive Partitioning</H4>
+Fixed drives, for various reasons such as sizes, are presented to DOS as
+a partition, or a logical device. What this means is that not always will
+a fixed drive available to DOS be a single, specific device defined by
+a physical geometry. A drive to DOS can be only part of a hard drive (a
+drive partitioned into 2 or more logical drives). Also, although not very
+often under DOS, a drive can be two or more hard drives.
+
+<P>As with removable media, fixed media must still be looked at carefully
+before accessing. The rule of thumb is always: Do not assume everything.
+<H4>
+<A NAME="12.2.2"></A>12.2.2&nbsp;&nbsp;&nbsp; Remote Media</H4>
+Also under the fixed drive category are remote drives. These are CD-ROMs
+and network drives. (Although CD-ROMs share both removable and fixed drive
+characteristics they are treated as remote drives by DOS).
+
+<P>Remote drives are generally not accessible at the sector level. (Although
+CD-ROMs can be, I will not address them until much later in these tutorials).
+<BR>&nbsp;
+<H2>
+<A NAME="13.0"></A>13.0&nbsp;&nbsp;&nbsp; More on the BIOS</H2>
+The BIOS can be used for floppy drives and physical hard drives. If a hard
+drive is partitioned it still can only be read as a physical drive - for
+example, if there is only one hard drive and it is partitioned into two
+drives, C: and D:, the BIOS will not be aware of the D: drive. (more on
+this later)
+<H3>
+<A NAME="13.1"></A>13.1&nbsp;&nbsp;&nbsp; Drive Parameters</H3>
+In Part I all of the BIOS calls used the DOS CRTL function <TT><FONT SIZE=+1>_bios_disk()</FONT></TT>.
+That function does not, however, provide you with a way to get the drive
+parameters from the BIOS. To do that you have to roll your own with <TT><FONT SIZE=+1>int86()</FONT></TT>.
+
+<P>The structure of a BIOS call is loading the CPU registers with appropriate
+values and then issuing the interrupt. The registers for BIOS is:
+
+<P>To Call:
+<BLOCKQUOTE><TT>AH&nbsp;&nbsp;&nbsp;&nbsp; 08h</TT>
+<BR><TT>DL&nbsp;&nbsp;&nbsp;&nbsp; {drive} where {drive} is a zero based
+drive number</TT>
+<BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; with bit 7 clear for floppy
+drives and bit 7 set for hard drives.</TT></BLOCKQUOTE>
+Returns:
+<BLOCKQUOTE><TT>AH&nbsp;&nbsp;&nbsp;&nbsp; error code if carry set</TT>
+<BR><TT>CH&nbsp;&nbsp;&nbsp;&nbsp; tracks (low 8 bits of)</TT>
+<BR><TT>CL&nbsp;&nbsp;&nbsp;&nbsp; sectors (in bits 0-5) and high bits
+of tracks (in bits 6-7)</TT>
+<BR><TT>DH&nbsp;&nbsp;&nbsp;&nbsp; heads</TT></BLOCKQUOTE>
+And in C:
+
+<P><TT><FONT SIZE=+1>int int13getparam(int disk, int *t, int *s, int *h)</FONT></TT>
+<BR><TT><FONT SIZE=+1>{</FONT></TT>
+<BR><TT><FONT SIZE=+1>int tmp;</FONT></TT>
+<BR><TT><FONT SIZE=+1>union REGS regs;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.x.ax = 0x0800;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* get drive parameters */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; regs.h.dl = (unsigned char)adjdrv(disk);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; int86(0x13,&amp;regs,&amp;regs);</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; if (regs.x.cflag)</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return (int)regs.h.ah;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; if (regs.h.bl == 0)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* no drive connected/not found */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return -1;</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; *h = regs.h.dh;</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; *t = regs.h.ch;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* low bits only */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; tmp = *s = regs.h.cl;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* has high bits of track also */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; *s &amp;= 0x3f;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* mask off track high bits */</FONT></TT>
+<BR><TT><FONT SIZE=+1>&nbsp;&nbsp; *t += (tmp >> 6) &lt;&lt; 8;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* shift and add track high bits */</FONT></TT>
+
+<P><TT><FONT SIZE=+1>&nbsp;&nbsp; return 0;</FONT></TT>
+<BR><TT><FONT SIZE=+1>}</FONT></TT>
+
+<P><TT>/* floppys: 0 - 7Fh, hards: 80h - FFh */</TT>
+
+<P><TT>int adjdrv(int drv)</TT>
+<BR><TT>{</TT>
+<BR><TT>&nbsp;&nbsp; if (drv > 2)</TT>
+<BR><TT>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return drv + (0x80 - 3);</TT>
+<BR><TT>&nbsp;&nbsp; return drv - 1;</TT>
+<BR><TT>}</TT>
+
+<P>What's funny here is how the BIOS provides you with the number of tracks.
+Due to some strange technique, probably lost to history, probably by some
+"clever IBM engineer", the number of tracks is split up between two registers
+and shared with the register for the number sectors per track: The CH register
+contains the low 8 bits of the number of tracks, and the CL register holds
+sectors per track in it's lower 6 bits, and it's upper 2 bits are the high
+2 bits for the number of tracks. Whew... Here's it visually:
+<BR>&nbsp;
+<CENTER><TABLE CELLSPACING=2 CELLPADDING=2 BGCOLOR="#33CCFF" >
+<TR>
+<TD><TT><FONT SIZE=+1>CL</FONT></TT></TD>
+
+<TD><TT><FONT SIZE=+1>CH</FONT></TT></TD>
+</TR>
+
+<TR>
+<TD><TT><FONT SIZE=+1>7 6 5 4 3 2 1 0</FONT></TT></TD>
+
+<TD><TT><FONT SIZE=+1>7 6 5 4 3 2 1 0</FONT></TT></TD>
+</TR>
+
+<TR>
+<TD><TT><FONT SIZE=+1>t t h h h h h h</FONT></TT></TD>
+
+<TD><TT><FONT SIZE=+1>t t t t t t t t</FONT></TT></TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<BR>One other thing of note is the check for <TT><FONT SIZE=+1>BL</FONT></TT>
+being equal to zero. I have not seen it documented, but at least one BIOS
+(mine, a version by AWARD) will return with the carry flag NOT set but
+with <TT><FONT SIZE=+1>BL</FONT></TT> zero if the drive does not exist.
+(<TT><FONT SIZE=+1>BL</FONT></TT> normally contains a value, greater than
+or equal to one, indicating the drive type.)
+
+<P>Note also here that I used <TT><FONT SIZE=+1>int</FONT></TT>s for the
+drive parameter arguments rather than the <TT><FONT SIZE=+1>typedef UINT16</FONT></TT>
+I have used before. The reason is that C performs automatic type conversions
+rather well in this situation.
+<BR>&nbsp;
+<CENTER><TABLE COLS=1 WIDTH="70%" BGCOLOR="#FFCCCC" >
+<TR>
+<TD ALIGN=CENTER>It is the register size limits that causes the "528MB
+Barrrier" for PC hard disks. Get Hale Landis's "
+<A HREF="http://www.diskwarez.com/texts/allhiw.zip">How
+it Works</A>" documents for more information about this and how it was
+solved.&nbsp;</TD>
+</TR>
+</TABLE></CENTER>
+&nbsp;
+<H2>
+<A NAME="14.0"></A>14.0&nbsp;&nbsp;&nbsp; Programs using the BIOS</H2>
+For more on <TT><FONT SIZE=+1>INT 13h</FONT></TT> I have expanded the <TT><FONT SIZE=+1>INT
+13h</FONT></TT> interface by adding error handling (function call retries),
+error diagnostics (an error string rather than a number), and provides
+a <TT><FONT SIZE=+1>_bios_disk()</FONT></TT> "front end" which does the
+read, write, reset and status functions all in one place. <TT><FONT SIZE=+1>
+<A HREF="http://www.diskwarez.com/diskio/int13.c">INT13.C</A></FONT></TT>
+
+<P>For use with <TT><FONT SIZE=+1>INT13.C</FONT></TT> is a program that
+creates an "industry standard" floppy image, or writes an image to a floppy.
+Most similar programs I have encountered (such as <TT><FONT SIZE=+1>RAWRITE</FONT></TT>
+and <TT><FONT SIZE=+1>FDIMAGE</FONT></TT>) only write an image file to
+a floppy. This program will do either.
+<A HREF="http://www.diskwarez.com/diskio/f2dd2f.c">F2DD2F.C</A>
+
+<P>You can get them both <A HREF="http://www.diskwarez.com/diskio/f2dd2f.zip">archived</A>. Note
+that this program ONLY supports the default disk type (whatever your BIOS
+is setup for). For those interested, here is <TT><FONT SIZE=+1>
+<A HREF="http://www.diskwarez.com/diskio/rawrite2.c">RAWRITE.C</A></FONT></TT>,
+the most widely used file-to-disk program, and then there's another called
+<TT><FONT SIZE=+1><A HREF="http://www.diskwarez.com/diskio/fdimage.c">FDIMAGE.C</A></FONT></TT>.
+<BR>&nbsp;
+<BR>My simple BIOS disk editor, <A HREF="http://www.diskwarez.com/diskbug.htm">DISKBUG</A>, also
+uses <TT><FONT SIZE=+1>INT13.C</FONT></TT>.
+<BR>&nbsp;
+<H2>
+<A NAME="15.0"></A>15.0&nbsp;&nbsp;&nbsp; About Part III</H2>
+To finish up these Tutorials I have code for reading the FAT and Directories
+(like for mapping every file on the disk), and then there are physical
+to logical translations (like translating an absolute sector to the physical
+Track, Head and Sector). However, I need to re-write the code for better
+compatibility.
+
+<P>If you are interested in FAT, Directories and sector translation code
+you can get the <A HREF="http://www.diskwarez.com/disked/v325/source.zip">DISKED source code</A>
+-- it's all there albiet probably not easily discernible. For parsing just
+the FAT there is code for it in the libraries
+<A HREF="http://www.diskwarez.com/d_disk.htm">D_DISK</A>
+and
+<A HREF="http://www.diskwarez.com/disklib.htm">DISKLIB</A>
+.
+<BR>&nbsp;
+<H2>
+<A NAME="ref"></A>References</H2>
+"MS-DOS(r) Programmer's Reference", Microsoft Press
+<BR>"IBM ROM BIOS Quick Reference", Ray Duncan, Microsoft Press
+<BR>"DOS and BIOS Functions Quick Reference", QUE Corp.
+<BR>"The Official Spinrite II Companion", John M. Goodman, Ph.D., IDG Books
+<BR>"The x86/MSDOS Interrupt List", Ralf Brown, http://www.pobox.com/~ralf
+
+<P>
+<HR WIDTH="100%">
+<BR>&nbsp;
+</BODY>
+</HTML>

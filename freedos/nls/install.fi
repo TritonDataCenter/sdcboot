@@ -1,0 +1,29 @@
+0.0:Asennusohjelman versio %s, Copyright (C) 1998-2000 Jim Hall\n
+0.1:Tämä on ilmainen ohjelma, ja olet tervetullut levittämään sitä\n
+0.2:tiettyjen rajoituksien alla; tiedosto COPYING sisältää lisätietoa.\n
+0.3:Asennusohjelma EI SISÄLLÄ MITÄÄN TAKUITA\n
+0.4:Asennus suoritettu onnistuneesti.\n
+0.5:Asennuksessa tapahtui %u virhettä ja %u ei vakavaa virhettä.\n
+1.0:Paina mitä tahansa näppäintä jatkaaksesi
+1.1:Missä asennustiedostot ovat? (mistä asennetaan?)
+1.2:Mikä on asennuksen kohde? (mihin asennetaan?)
+2.0:ei
+2.1:kyllä
+2.2:Haluatko asentaa tämän levykesarjan?
+2.3:Jatketaanko asennusta tältä levykkeeltä?
+2.4:Asennetaanko tämä paketti?
+3.0:Levykesarja: 
+3.1:Ylätason asennuksessa
+3.2:Asennetaan sarjoja: 
+3.3:Paketti: 
+3.4:Ei voida löytää tiedostoa tältä asennuslevykkeeltä!
+3.5:Asennus suoritettu tältä levykesarjalta.
+3.6:VIRHE!  PAKOLLISEN paketin asennus epäonnistui.
+3.7:VAROITUS!  YLIMÄÄRÄISEN paketin asennus epäonnistui.
+3.8:Sinulla ei ehkä ole oikeaa asennuslevykettä asemassa.
+3.9:Tarkista kahdesti, että sinulla on oikea levyke ja yritä uudelleen.
+3.10:If you are installing other disk series, please insert
+3.11:levy #1 seuraavasta sarjasta nyt asemassa.
+4.0:YLIMÄÄRÄINEN
+4.1:PAKOLLINEN
+4.2:OHITETTU

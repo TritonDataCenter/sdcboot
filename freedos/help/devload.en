@@ -1,0 +1,32 @@
+DEVLOAD
+
+DEVLOAD is a commandline device driver loading program,
+in case you don't like loading drivers in CONFIG.SYS.
+
+Please be aware that memory drivers usually won't like
+being loaded this way, resulting in a hanging/crashing system
+
+
+---------------------------------------------------------
+
+Usage example #1 :
+DEVLOAD C:\DOS\UIDE.SYS /D:FDCD0001 /N1 /N3 /B
+
+
+---------------------------------------------------------
+
+Features:
+* Safely load most device drivers
+* UMB loading supported
+
+Supported:
+* 8086+
+
+Not supported:
+* memory drivers usually
+* unloading
+*  
+
+Requirements:
+* valid file which happens to be a DOS device driver 
+*

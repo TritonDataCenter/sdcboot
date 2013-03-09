@@ -1,0 +1,29 @@
+This is the release history for HELP:
+--------------------------------------------------------------------------
+
+Version 3.5: This is really a version of DOS FASTHELP, so I've changed
+ the program name to represent that.  Also, updated help.de by Achim
+ Sondermann, and added help.hu by Nagy Daniel.
+
+Version 3.4a: Added help.de, contributed by achim_sondermann
+
+Version 3.4: Better handles a non-existent HELPPATH variable.  Rather
+ than immediately using a default path, we look it up based on the path
+ to the FDHELP program.
+
+Version 3.3: Internationalization LANG support by Abrahan Sanjuas
+ Fontan.  You can now SET LANG=xx to display help files in a preferred
+ language.  NOTE THAT THIS NOW CHANGES HOW 'HELP' WILL LOOK FOR HELP
+ FILES.  All your help files will now need to have an extension that
+ indicates the language.  This is not the same as language catalogs.
+
+Version 3.2: added help.lv, by Neons <neons_lv@inbox.lv>
+
+Version 3.1: added help.ru, contributed by Ilya Vasilyev <arvi@online.ru>
+
+Version 3: added international support using "Cats" library
+
+Version 2: re-write to be cleaner code
+
+Version 1: First version, released as part of the FreeDOS Utilities
+ package in 1994.

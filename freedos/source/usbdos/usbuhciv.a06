@@ -1,0 +1,1877 @@
+;==============================================================================
+;NOTE: This program is written for and compiled with Eric Isaacson's A86
+;      assembly language compiler, using Options +P0 -F (8086 CPU and
+;      no FPU).
+;==============================================================================
+
+;==============================================================================
+;NOTE: This is actually the source code for two different output files:
+;        USBUHCI.OVL & USBUHCIL.OVL.
+;      The various programs are compiled by using A86 invocation
+;        variables on the command-line.
+;      If the LITE invocation varliable is set, this will create USBUHCIL.OVL.
+;      If LITE is not set, this will create USBUHCI.OVL.
+;==============================================================================
+
+;==============================================================================
+;This is compiled into a Data File (USBUHCI{L}.OVL, which is
+;  used by USBUHCI{L}.COM.  Those programs are getting too big
+;  to fit into a single 64kB segment, so we are moving most of the strings
+;  we write to this file.  Strings take up a LOT of room, so moving them
+;  here will create more room for "real" code and data in the executable files.
+;==============================================================================
+
+
+  ORG 0 ;Compile as Binary File, not .COM Executable
+
+
+;฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿฿
+;EQUATE/STRUCTURE/MACRO DEFINITIONS
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+;EQUATES
+;ฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑฑ
+
+  ;----------------------------------------------------------------------------
+  ;Command Line Options with no single-character equivalents
+  ;----------------------------------------------------------------------------
+  OptionHostStatus    EQU  1 ;Host Status
+  OptionFLStatus      EQU  2 ;Frame List Status
+  OptionTDStatus      EQU  3 ;Transfer Descriptor Status
+  OptionQHStatus      EQU  4 ;Queue Head Status
+  OptionADStatus      EQU  5 ;Address Data Status
+  OptionNDStatus      EQU  6 ;New Device Data Status
+  OptionDescriptor    EQU  7 ;Show Descriptors from last Device
+  OptionErrLvl        EQU  8 ;Write ErrorLevel Table
+
+  OptionReset         EQU 10 ;Reset
+  OptionSuspend       EQU 11 ;Suspend
+  OptionResume        EQU 12 ;Resume
+  OptionPwrOn         EQU 13 ;Power On
+  OptionPwrOff        EQU 14 ;Power Off
+  OptionPwrReset      EQU 15 ;Power Reset
+
+  OptionResetBad      EQU 16 ;Reset all Bad Devices on All Hosts
+
+  OptionDebug         EQU 17 ;Host Debug Mode
+  OptionSingleStep    EQU 18 ;Host Single Step
+
+  OptionTiming        EQU 20 ;Change Frame Timing
+
+  OptionSetConfig     EQU 21 ;Set Device Configuration Value
+  OPtionRmtWakeup     EQU 22 ;Change Remote Wakeup Setting
+  OptionTestMode      EQU 23 ;Change Test Mode Setting
+
+  OptionUserIO        EQU 25 ;User-assigned I/O Base Address
+  OptionUserIRQ       EQU 26 ;User-assigned IRQ
+  OptionDisableLegacy EQU 27 ;User OK'd us to Disable Legacy Support
+  OptionDisableOther  EQU 28 ;User OK'd us to Disable Other Control Program
+  OptionBeep          EQU 29 ;Beep Speaker when Bad Device is found
+  OptionProgDebug     EQU 30 ;Display Program Debugging Strings
+
+;  OptionTest          EQU 31
+
+
+  ;----------------------------------------------------------------------------
+  ;Transfer Descriptor Types
+  ;----------------------------------------------------------------------------
+  TDTypeAvailable      EQU  00h ;Available (Invalid/Empty TD)
+  TDTypeReserved       EQU  01h ;Reserved, but not in use yet
+  TDTypeIsoch          EQU  02h ;Isochronous
+  TDTypeInterrupt1Time EQU  03h ;1-Time Interrupt
+  TDTypeInterruptPer   EQU  04h ;Periodic Interrupt
+  TDTypeControlSetup   EQU  05h ;Control Setup Packet
+  TDTypeControlData    EQU  06h ;Control Data Packet
+  TDTypeControlStatus  EQU  07h ;Control Status packet
+  TDTypeBulk           EQU  08h ;Bulk
+
+  ;----------------------------------------------------------------------------
+  ;Transfer Descriptor Packet Type
+  ;----------------------------------------------------------------------------
+  TDPacketIn    EQU   69h ;Token for IN Packet
+  TDPacketOut   EQU  0E1h ;Token for OUT Packet
+  TDPacketSetup EQU   2Dh ;Token for SETUP Packet
+
+  ;----------------------------------------------------------------------------
+  ;Special ASCII Characters
+  ;----------------------------------------------------------------------------
+  LF  EQU 10 ;Line Feed
+  CR  EQU 13 ;Carriage Return
+  EOF EQU 26 ;End-of-File
+
+
+;==============================================================================
+;String Identifier Codes
+;==============================================================================
+  MinSID            EQU 0FF00h ;Minimum SID value Allowed
+ ;---------------------
+ ;Miscellaneous Strings
+ ;---------------------
+  SIDCrLf           EQU 0FF00h
+  SIDYes2Msg        EQU 0FF01h
+  SIDNo2Msg         EQU 0FF02h
+  SIDSpace4         EQU 0FF03h
+  SIDSpace3         EQU 0FF04h
+  SIDSpace2         EQU 0FF05h
+  SIDSpace          EQU 0FF06h
+  SIDYesMsgY        EQU 0FF07h
+  SIDNoMsgN         EQU 0FF08h
+  SIDDblLine        EQU 0FF09h
+  SIDNAMsg          EQU 0FF0Ah
+
+  SIDPause          EQU 0FF10h
+  SIDPauseN         EQU 0FF11h
+  SIDPauseD         EQU 0FF12h
+  SIDNoSuptFile     EQU 0FF13h
+  SIDSyntax         EQU 0FF14h
+  SIDFLHeader       EQU 0FF15h
+  SIDEllipses       EQU 0FF16h
+  SIDQHHeader       EQU 0FF17h
+  SIDQHTypeCtl      EQU 0FF18h
+  SIDQHTypeBulk     EQU 0FF19h
+  SIDQHTypeInt      EQU 0FF1Ah
+
+  SIDTDHeader0      EQU 0FF20h
+  SIDTDHeader1      EQU 0FF21h
+  SIDTDHeader2      EQU 0FF22h
+  SIDTDTypeTbl      EQU 0FF23h
+  SIDTDPktTypeTbl   EQU 0FF24h
+  SIDTDPktTypeNA    EQU 0FF25h
+  SIDOneTimeInt     EQU 0FF26h
+  SIDPeriodicInt    EQU 0FF27h
+  SIDBulk           EQU 0FF28h
+  SIDIsoch          EQU 0FF29h
+  SIDControl        EQU 0FF2Ah
+
+  SIDSetupStage     EQU 0FF30h
+  SIDDataStage      EQU 0FF31h
+  SIDStatusStage    EQU 0FF32h
+  SIDDvcNotYet      EQU 0FF33h
+  SIDDvcAddr        EQU 0FF34h
+  SIDDvcConfig      EQU 0FF35h
+  SIDDvcNoMore      EQU 0FF36h
+  SIDAliasHdr       EQU 0FF37h
+  SIDParseCmd       EQU 0FF38h
+  SIDParseEnv       EQU 0FF39h
+  SIDParseStdIn     EQU 0FF3Ah
+
+  SIDParseErr       EQU 0FF40h
+  SIDParseErrEnv    EQU 0FF41h
+  SIDParseErr2      EQU 0FF42h
+  SIDInitializing1  EQU 0FF43h
+  SIDInitializing2  EQU 0FF44h
+  SIDEnvironment    EQU 0FF45h
+  SIDInstall1       EQU 0FF46h
+  SIDInstallAuto    EQU 0FF47h
+  SIDInstallHigh    EQU 0FF48h
+  SIDInstallHole    EQU 0FF49h
+  SIDInstallNorm    EQU 0FF4Ah
+  SIDInstallLast    EQU 0FF4Bh
+
+  SIDDOSVer         EQU 0FF50h
+  SIDNo386          EQU 0FF51h
+  SIDNoPCI          EQU 0FF52h
+  SIDNoUHCI         EQU 0FF53h
+  SIDNotReal        EQU 0FF54h
+  SIDLegacyCont     EQU 0FF55h
+  SIDAlreadyRun     EQU 0FF56h
+  SIDTooManyHosts   EQU 0FF57h
+  SIDNoEnviron      EQU 0FF58h
+  SIDStdInMemory    EQU 0FF59h
+  SIDStdInTooBig    EQU 0FF5Ah
+
+  SIDAssignIRQ      EQU 0FF60h
+  SIDAssignIO       EQU 0FF61h
+  SIDWrongVer       EQU 0FF62h
+  SIDUninstall      EQU 0FF63h
+  SIDNoUninstall    EQU 0FF64h
+  SIDNotFirstInst   EQU 0FF65h
+  SIDSharedIRQ      EQU 0FF66h
+  SIDDvc0Owner      EQU 0FF67h
+  SIDNotInMem       EQU 0FF68h
+  SIDCantStopHost   EQU 0FF69h
+  SIDUpdate         EQU 0FF6Ah
+  SIDNoStart        EQU 0FF6Bh
+  SIDInternalErr    EQU 0FF6Ch
+
+  SIDMoreLeft       EQU 0FF70h
+  SIDMoreRight      EQU 0FF71h
+  SIDSwitchList     EQU 0FF72h
+  SIDSwitchList2    EQU 0FF73h
+  SIDSwitchListYN   EQU 0FF74h
+  SIDErrLvlHdr      EQU 0FF75h
+  SIDErrLvlTbl      EQU 0FF76h
+ ;---------------
+ ;Debugging Codes
+ ;---------------
+  SIDProgDebug      EQU 0FF80h
+  SIDBusDevFunc     EQU 0FF81h
+  SIDPCISearchIdx   EQU 0FF82h
+  SIDIRQNumber      EQU 0FF83h
+  SIDBaseIO         EQU 0FF84h
+  SIDFrameListAddr  EQU 0FF85h
+  SIDStopHost       EQU 0FF86h
+  SIDEnBusMaster    EQU 0FF87h
+  SIDDisSMIFlags    EQU 0FF88h
+  SIDEnResumeDet    EQU 0FF89h
+  SIDRedirGenInts   EQU 0FF8Ah
+  SIDRedirUSBInt    EQU 0FF8Bh
+
+  SIDResetHost      EQU 0FF90h
+  SIDSetFLAddress   EQU 0FF91h
+  SIDFrameTiming    EQU 0FF92h
+  SIDStartFrame     EQU 0FF93h
+  SIDEnIRQFlags     EQU 0FF94h
+  SIDDisSMIGen      EQU 0FF95h
+  SIDEnIRQGen       EQU 0FF96h
+  SIDStartHost      EQU 0FF97h
+  SIDVerifyHost     EQU 0FF98h
+  SIDInitRootHub    EQU 0FF99h
+  SIDVerifyIRQ      EQU 0FF9Ah
+ ;-------------------------
+ ;Uninstall Debugging Codes
+ ;-------------------------
+  SIDRestoreUSBInt  EQU 0FFA0h
+  SIDRestorePort1   EQU 0FFA1h
+  SIDRestorePort2   EQU 0FFA2h
+  SIDEnSMIFlags     EQU 0FFA3h
+  SIDEnSMIGen       EQU 0FFA4h
+  SIDRestoreIRQ     EQU 0FFA5h
+  SIDRestorePCI     EQU 0FFA6h
+  SIDRestoreGenInts EQU 0FFA7h
+ ;-----------------
+ ;Reset Bad Devices
+ ;-----------------
+  SIDResetBad       EQU 0FFB0h
+  SIDNoBads         EQU 0FFB1h
+  SIDErrorBads      EQU 0FFB2h
+ ;-------------------------
+ ;Report Descriptor Strings
+ ;-------------------------
+  SIDRptNoDvc0      EQU 0FFC0h
+  SIDRptNoDvc1      EQU 0FFC1h
+  SIDRptNoDvc2      EQU 0FFC2h
+  SIDRptNoData      EQU 0FFC3h
+ ;----------------------
+ ;Downloaded Descriptors
+ ;----------------------
+  SIDDescrNoDvc     EQU 0FFD0h
+  SIDDescrNoData    EQU 0FFD1h
+
+
+;==============================================================================
+;Signature String & Version
+;  MUST be at offset 0 in file!!
+;==============================================================================
+OvlSignature:
+  DB 'USBUHCI'
+ #IF LITE
+  DB 'L'
+ #ENDIF
+  DB '.OVL'
+
+OvlVerText:   ;Must be exactly 6 bytes long!
+  DB ' 00.14'
+
+StopTyping:
+  DB EOF ;To stop the beeps and happy faces if the user TYPEs the file
+
+Version:
+  DW 000Eh ;Must match USBUHCI{L} version, NOT BCD
+           ;Beginning w/ Version 0.12, when we started using AMIS,
+           ;  this is no longer BCD.
+
+
+;==============================================================================
+;String & Table Offset Lookups
+;MUST immediately follow Signature String & Version Number!!
+;==============================================================================
+LookupTbl:
+ ;---------------------
+ ;Miscellaneous Strings
+ ;---------------------
+  DB (SIDCrLf AND 00FFh)
+    DW CrLfMsg
+  DB (SIDYes2Msg AND 00FFh)
+    DW Yes2Msg
+  DB (SIDNo2Msg AND 00FFh)
+    DW No2Msg
+  DB (SIDSpace4 AND 00FFh)
+    DW Space4Msg
+  DB (SIDSpace3 AND 00FFh)
+    DW Space3Msg
+  DB (SIDSpace2 AND 00FFh)
+    DW Space2Msg
+  DB (SIDSpace AND 00FFh)
+    DW SpaceMsg
+  DB (SIDYesMsgY AND 00FFh)
+    DW YesMsgY
+  DB (SIDNoMsgN AND 00FFh)
+    DW NoMsgN
+  DB (SIDDblLine AND 00FFh)
+    DW DblLineMsg
+  DB (SIDNAMsg AND 00FFh)
+    DW NAMsg
+  DB (SIDPause AND 00FFh)
+    DW PauseMsg
+  DB (SIDPauseN AND 00FFh)
+    DW PauseNMsg
+  DB (SIDPauseD AND 00FFh)
+    DW PauseDMsg
+  DB (SIDNoSuptFile AND 00FFh)
+    DW NoSuptFileMsg
+  DB (SIDSyntax AND 00FFh)
+    DW SyntaxMsg
+  DB (SIDFLHeader AND 00FFh)
+    DW FLHeaderMsg
+  DB (SIDEllipses AND 00FFh)
+    DW EllipsesMsg
+  DB (SIDQHHeader AND 00FFh)
+    DW QHHeaderMsg
+  DB (SIDQHTypeCtl AND 00FFh)
+    DW QHTypeControlMsg
+  DB (SIDQHTypeBulk AND 00FFh)
+    DW QHTypeBulkMsg
+  DB (SIDQHTypeInt AND 00FFh)
+    DW QHTypeIntMsg
+  DB (SIDTDHeader0 AND 00FFh)
+    DW TDHeaderMsg0
+  DB (SIDTDHeader1 AND 00FFh)
+    DW TDHeaderMsg1
+  DB (SIDTDHeader2 AND 00FFh)
+    DW TDHeaderMsg2
+  DB (SIDTDTypeTbl AND 00FFh)
+    DW TDTypeMsgTbl
+  DB (SIDTDPktTypeTbl AND 00FFh)
+    DW TDPktTypeMsgTbl
+  DB (SIDTDPktTypeNA AND 00FFh)
+    DW TDPktTypeNAMsg
+  DB (SIDOneTimeInt AND 00FFh)
+    DW OneTimeIntMsg
+  DB (SIDPeriodicInt AND 00FFh)
+    DW PeriodicIntMsg
+  DB (SIDBulk AND 00FFh)
+    DW BulkMsg
+  DB (SIDIsoch AND 00FFh)
+    DW IsochMsg
+  DB (SIDControl AND 00FFh)
+    DW ControlMsg
+  DB (SIDSetupStage AND 00FFh)
+    DW SetupStageMsg
+  DB (SIDDataStage AND 00FFh)
+    DW DataStageMsg
+  DB (SIDStatusStage AND 00FFh)
+    DW StatusStageMsg
+  DB (SIDDvcNotYet AND 00FFh)
+    DW DvcNotYetMsg
+  DB (SIDDvcAddr AND 00FFh)
+    DW DvcAddrMsg
+  DB (SIDDvcConfig AND 00FFh)
+    DW DvcConfigMsg
+  DB (SIDDvcNoMore AND 00FFh)
+    DW DvcNoMoreMsg
+  DB (SIDAliasHdr AND 00FFh)
+    DW AliasHdrMsg
+  DB (SIDParseCmd AND 00FFh)
+    DW ParseCmdMsg
+  DB (SIDParseEnv AND 00FFh)
+    DW ParseEnvMsg
+  DB (SIDParseStdIn AND 00FFh)
+    DW ParseStdInMsg
+  DB (SIDParseErr AND 00FFh)
+    DW ParseErrMsg
+  DB (SIDParseErrEnv AND 00FFh)
+    DW ParseErrEnv
+  DB (SIDParseErr2 AND 00FFh)
+    DW ParseErrMsg2
+  DB (SIDInitializing1 AND 00FFh)
+    DW InitializingMsg1
+  DB (SIDInitializing2 AND 00FFh)
+    DW InitializingMsg2
+  DB (SIDEnvironment AND 00FFh)
+    DW EnvMsg
+  DB (SIDInstall1 AND 00FFh)
+    DW InstallMsg1
+  DB (SIDInstallAuto AND 00FFh)
+    DW InstallMsgAuto
+  DB (SIDInstallHigh AND 00FFh)
+    DW InstallMsgHigh
+  DB (SIDInstallHole AND 00FFh)
+    DW InstallMsgHole
+  DB (SIDInstallNorm AND 00FFh)
+    DW InstallMsgNorm
+  DB (SIDInstallLast AND 00FFh)
+    DW InstallMsgLast
+  DB (SIDDOSVer AND 00FFh)
+    DW DOSVerMsg
+  DB (SIDNo386 AND 00FFh)
+    DW No386Msg
+  DB (SIDNoPCI AND 00FFh)
+    DW NoPCIMsg
+  DB (SIDNoUHCI AND 00FFh)
+    DW NoUHCIMsg
+  DB (SIDNotReal AND 00FFh)
+    DW NotRealMsg
+  DB (SIDLegacyCont AND 00FFh)
+    DW LegacyContMsg
+  DB (SIDAlreadyRun AND 00FFh)
+    DW AlreadyRunMsg
+  DB (SIDTooManyHosts AND 00FFh)
+    DW TooManyHostsMsg
+  DB (SIDNoEnviron AND 00FFh)
+    DW NoEnvironMsg
+  DB (SIDStdInMemory AND 00FFh)
+    DW StdInMemoryMsg
+  DB (SIDStdInTooBig AND 00FFh)
+    DW StdInTooBigMsg
+  DB (SIDAssignIRQ AND 00FFh)
+    DW AssignIRQMsg
+  DB (SIDAssignIO AND 00FFh)
+    DW AssignIOMsg
+  DB (SIDWrongVer AND 00FFh)
+    DW WrongVerMsg
+  DB (SIDUninstall AND 00FFh)
+    DW UninstallMsg
+  DB (SIDNoUninstall AND 00FFh)
+    DW NoUninstallMsg
+  DB (SIDNotFirstInst AND 00FFh)
+    DW NotFirstInstMsg
+  DB (SIDSharedIRQ AND 00FFh)
+    DW SharedIRQMsg
+  DB (SIDDvc0Owner AND 00FFh)
+    DW Dvc0OwnerMsg
+  DB (SIDNotInMem AND 00FFh)
+    DW NotInMemMsg
+  DB (SIDCantStopHost AND 00FFh)
+    DW CantStopHostMsg
+  DB (SIDUpdate AND 00FFh)
+    DW UpdateMsg
+  DB (SIDNoStart AND 00FFh)
+    DW NoStartMsg
+  DB (SIDInternalErr AND 00FFh)
+    DW InternalErrMsg
+  DB (SIDMoreLeft AND 00FFh)
+    DW MoreLeftMsg
+  DB (SIDMoreRight AND 00FFh)
+    DW MoreRightMsg
+  DB (SIDSwitchList AND 00FFh)
+    DW SwitchList
+  DB (SIDSwitchList2 AND 00FFh)
+    DW SwitchList2
+  DB (SIDSwitchListYN AND 00FFh)
+    DW SwitchListYesNo
+  DB (SIDErrLvlHdr AND 00FFh)
+    DW ErrLvlHdr
+  DB (SIDErrLvlTbl AND 00FFh)
+    DW ErrLvlTbl
+ ;-----------------
+ ;Debugging Strings
+ ;-----------------
+  DB (SIDProgDebug AND 00FFh)
+    DW ProgDebugMsg
+  DB (SIDBusDevFunc AND 00FFh)
+    DW BusDevFuncMsg
+  DB (SIDPCISearchIdx AND 00FFh)
+    DW PCISearchIdxMsg
+  DB (SIDIRQNumber AND 00FFh)
+    DW IRQNumberMsg
+  DB (SIDBaseIO AND 00FFh)
+    DW BaseIOMsg
+  DB (SIDFrameListAddr AND 00FFh)
+    DW FrameListAddrMsg
+  DB (SIDStopHost AND 00FFh)
+    DW StopHostMsg
+  DB (SIDEnBusMaster AND 00FFh)
+    DW EnBusMasterMsg
+  DB (SIDDisSMIFlags AND 00FFh)
+    DW DisSMIFlagsMsg
+  DB (SIDEnResumeDet AND 00FFh)
+    DW EnResumeDetMsg
+  DB (SIDRedirGenInts AND 00FFh)
+    DW RedirGenIntsMsg
+  DB (SIDRedirUSBInt AND 00FFh)
+    DW RedirUSBIntMsg
+  DB (SIDResetHost AND 00FFh)
+    DW ResetHostMsg
+  DB (SIDSetFLAddress AND 00FFh)
+    DW SetFLAddressMsg
+  DB (SIDFrameTiming AND 00FFh)
+    DW FrameTimingMsg
+  DB (SIDStartFrame AND 00FFh)
+    DW StartFrameMsg
+  DB (SIDEnIRQFlags AND 00FFh)
+    DW EnIRQFlagsMsg
+  DB (SIDDisSMIFlags AND 00FFh)
+    DW DisSMIFlagsMsg
+  DB (SIDDisSMIGen AND 00FFh)
+    DW DisSMIGenMsg
+  DB (SIDEnIRQGen AND 00FFh)
+    DW EnIRQGenMsg
+  DB (SIDStartHost AND 00FFh)
+    DW StartHostMsg
+  DB (SIDVerifyHost AND 00FFh)
+    DW VerifyHostMsg
+  DB (SIDInitRootHub AND 00FFh)
+    DW InitRootHubMsg
+  DB (SIDVerifyIRQ AND 00FFh)
+    DW VerifyIRQMsg
+ ;---------------------------
+ ;Uninstall Debugging Strings
+ ;---------------------------
+  DB (SIDRestoreUSBInt AND 00FFh)
+   DW RestoreUSBIntMsg
+  DB (SIDRestorePort1 AND 00FFh)
+   DW RestorePort1Msg
+  DB (SIDRestorePort2 AND 00FFh)
+   DW RestorePort2Msg
+  DB (SIDEnSMIFlags AND 00FFh)
+   DW EnSMIFlagsMsg
+  DB (SIDEnSMIGen AND 00FFh)
+   DW EnSMIGenMsg
+  DB (SIDRestoreIRQ AND 00FFh)
+   DW RestoreIRQMsg
+  DB (SIDRestorePCI AND 00FFh)
+   DW RestorePCIMsg
+  DB (SIDRestoreGenInts AND 00FFh)
+   DW RestoreGenIntsMsg
+ ;-----------------
+ ;Reset Bad Devices
+ ;-----------------
+  DB (SIDResetBad AND 00FFh)
+   DW ResetBadMsg
+  DB (SIDNoBads AND 00FFh)
+   DW NoBadsMsg
+  DB (SIDErrorBads AND 00FFh)
+   DW ErrorBadsMsg
+ ;-----------------
+ ;Report Descriptor
+ ;-----------------
+  DB (SIDRptNoDvc0 AND 00FFh)
+   DW RptNoDvcMsg0
+  DB (SIDRptNoDvc1 AND 00FFh)
+   DW RptNoDvcMsg1
+  DB (SIDRptNoDvc2 AND 00FFh)
+   DW RptNoDvcMsg2
+  DB (SIDRptNoData AND 00FFh)
+   DW RptNoDataMsg
+ ;----------------------
+ ;Downloaded Descriptors
+ ;----------------------
+  DB (SIDDescrNoDvc AND 00FFh)
+   DW DescrNoDvc
+  DB (SIDDescrNoData AND 00FFh)
+   DW DescrNoData
+
+  DB -1
+    DW -1 ;End of Table
+
+
+;==============================================================================
+;Various Strings we need to write
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Miscellaneous strings needed to print numbers and such to the screen
+  ;----------------------------------------------------------------------------
+  CrLfMsg:    DB CR,LF,0
+  Yes2Msg:    DB 'Y ',0
+  No2Msg:     DB '. ',0
+  Space4Msg:  DB ' '
+  Space3Msg:  DB ' '
+  Space2Msg:  DB ' '
+  SpaceMsg:   DB ' ',0
+  YesMsgY:    DB 'Yes',0
+  NoMsgN:     DB ' No',0
+  DblLineMsg: DB 'อ',0
+  NAMsg:      DB "n/a",0
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to Pause the screen
+  ;----------------------------------------------------------------------------
+  PauseMsg:
+    DB CR,LF
+    DB ' MORE   (Esc stops Pausing, Ctrl-C stops Completely, any other Continues)',CR,0
+  PauseNMsg:
+    DB ' MORE                                                                    ',CR,LF,0
+  PauseDMsg:
+    DB '                                                                               ',CR,0
+
+  ;----------------------------------------------------------------------------
+  ;Error Message for when the Support File is not found
+  ;----------------------------------------------------------------------------
+  NoSuptFileMsg:
+    DB 'Error! Need Support File ',0
+
+
+;==============================================================================
+;Syntax Help Screens
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Syntax Help Strings (if user asks for, or otherwise needs, Help)
+  ;----------------------------------------------------------------------------
+  SyntaxMsg:
+    DB  CR,'SYNTAX: '
+
+  #IF !LITE
+    DB 'USBUHCI '
+  #ELSE
+    DB 'USBUHCIL '
+  #ENDIF
+
+   DB '[Options]',CR,LF
+   DB  LF
+   DB '  /?      อ Show this HELP screen',CR,LF
+   DB '  /A      อ Show all ALIASES for these command line Options',CR,LF
+   DB '  /ErrLvl อ Show all ErrorLevels (DOS Return Codes)',CR,LF
+   DB '  /U      อ UNINSTALL from memory',CR,LF
+   DB '  /L:Y|N  อ Force installation into LOW memory (default = No)',CR,LF
+   DB  LF
+   DB '  /Index #       อ Use UHCI Host with PCI INDEX # (default = 0)',CR,LF
+   DB '  /IOAddr #      อ Use I/O base ADDR # (100h-FFE0h, divisible by 32)',CR,LF
+   DB '  /IRQ #         อ Use IRQ # (3-15, default = 9)',CR,LF
+   DB '  /DisableLegacy อ Disable Legacy Keyboard/Mouse support',CR,LF
+   DB '  /DisableOther  อ Disable Other Control program',CR,LF
+   DB '  /P:#           อ Pause # deciSeconds before finding Root Devices (0-255)',CR,LF
+   DB '  /Beep:Y|N      อ BEEP Speaker when bad Device is found (default = Yes)',CR,LF
+   DB '  /PD[:#]        อ Display Program Debug messages during install and uninstall',CR,LF
+   DB '                      # = Milliseconds to delay each step (0-2000, default = 0)',CR,LF
+   DB  LF
+   DB '  /Run #     อ Run (Resume/Enable) Device Address # ฟ',CR,LF
+ #IF !LITE
+   DB '  /Stop #    อ Stop (Disable) Device Address #      ด  0-1   = Host/Root Hub',CR,LF
+   DB '  /Reset #   อ Reset Device Address #               ด  2-127 = Attached Dvc',CR,LF
+   DB '  /Suspend # อ Suspend Device Address #             ด128-255 = All Hosts',CR,LF
+ #ELSE
+   DB '  /Stop #    อ Stop (Disable) Device Address #      ด 0-1 =  Host/Root Hub',CR,LF
+   DB '  /Reset #   อ Reset Device Address #               ด 2-17  = Attached Dvc',CR,LF
+   DB '  /Suspend # อ Suspend Device Address #             ด18-255 = All Hosts',CR,LF
+ #ENDIF
+   DB '  /Resume #  อ Resume (not Enable) Device Address # ู',CR,LF
+   DB  LF
+   DB '  /PowerOn #    อ Power On Device Address #    ฟ',CR,LF
+ #IF !LITE
+   DB '  /PowerOff #   อ Power Off Device Address #   ด 2-127',CR,LF
+ #ELSE
+   DB '  /PowerOff #   อ Power Off Device Address #   ด 2-17',CR,LF
+ #ENDIF
+   DB '  /PowerReset # อ Power Reset Device Address # ู',CR,LF
+   DB  LF
+ #IF !LITE
+   DB '  /SC:D# C# อ Set Configuration of Device D# (2-127) to value C# (0-255)',CR,LF
+   DB '  /RW:# Y|N อ Enable/disable Remote Wakeup on Device # (2-127)',CR,LF
+   DB '  /TM:# Y|N อ Enable/disable Test Mode on Device # (2-127)',CR,LF
+ #ELSE
+   DB '  /SC D# C# อ Set Configuration of Device D# (2-17) to value C# (0-255)',CR,LF
+   DB '  /RW:# Y|N อ Enable/disable Remote Wakeup on Device # (2-17)',CR,LF
+   DB '  /TM:# Y|N อ Enable/disable Test Mode on Device # (2-17)',CR,LF
+ #ENDIF
+   DB  LF
+   DB '  /Timing #    อ Set Timing to # Bits/Frame (11936-12063, default = 12000)',CR,LF
+   DB '  /Debug, /SST อ Debug/SingleStep the Host',CR,LF
+   DB  LF
+   DB '  /Host       อ Show Status of Host (PCI/USB/Root Hub)',CR,LF
+   DB '  /FL         อ Show Status of Frame List',CR,LF
+   DB '  /QH         อ Show Status of Queue Heads',CR,LF
+ #IF !LITE
+   DB '  /TD [#]     อ Show Status of Transfer Descriptor(s), optional Idx # (0-255)',CR,LF
+ #ELSE
+   DB '  /TD [#]     อ Show Status of Transfer Descriptor(s), optional Idx # (0-79)',CR,LF
+ #ENDIF
+   DB '  /AD         อ Show Status of Addressed Devices',CR,LF
+   DB '  /ND         อ Show Status of New Device Notification Entries',CR,LF
+ #IF !LITE
+   DB '  /Descr [:#] อ Show Descriptors for Device Address # (2-127)',CR,LF
+ #ELSE
+   DB '  /Descr [:#] อ Show Descriptors for Device Address # (2-17)',CR,LF
+ #ENDIF
+   DB '                   If no Address is provided, shows Last Enumerated Device',CR,LF
+ #IF !LITE
+   DB '  /R A# I#    อ Show HID Report Descr for Dvc Addr A# (2-127), Intf I# (0-255)',CR,LF
+ #ELSE
+   DB '  /R A# I#    อ Show HID Report Descr for Dvc Addr A# (2-17), Intf I# (0-255)',CR,LF
+ #ENDIF
+   DB  LF
+   DB '  /RB อ Reset all Bad Devices on all Hosts'
+   DB 0
+
+
+;==============================================================================
+;Strings to Print the Frame List
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to print the Frame List Status to the screen
+  ;----------------------------------------------------------------------------
+  FLHeaderMsg:
+    DB '      FRAME LIST ENTRIES',CR,LF
+    DB '      ออออออออออออออออออ   Q T                   Q T                   Q T',CR,LF
+    DB '                           u r                   u r                   u r',CR,LF
+    DB '  Index  ฤAddressฤฤ ฤIndxฤ e m ฤAddressฤฤ ฤIndxฤ e m ฤAddressฤฤ ฤIndxฤ e m',CR,LF
+    DB '  อออออ  อออออออออออออออออออออ อออออออออออออออออออออ อออออออออออออออออออออ',CR,LF
+    DB 0
+
+  EllipsesMsg:
+    DB '...',0
+
+
+;==============================================================================
+;Strings to Print the Queue Heads
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to Print Queue Head Status to the screen
+  ;----------------------------------------------------------------------------
+  QHHeaderMsg:
+    DB '         QUEUE HEADS          ออออLink Pointerอออออ  ออElement Pointerออออ',CR,LF
+    DB '         อออออออออออ                            Q T                    Q T',CR,LF
+    DB '                                                u r                    u r',CR,LF
+    DB '  Index   Address     Type    ฤAddressฤฤ ฤIndxฤ e m  ฤAddressฤฤ ฤTypeฤ e m',CR,LF
+    DB '  อออออ  ออออออออออ  อออออออ  อออออออออออออออออออออ  อออออออออออออออออออออ',CR,LF
+    DB 0
+
+  QHTypeControlMsg:
+    DB  'Control',0
+  QHTypeBulkMsg:
+    DB  'Bulk',0 ;This will be followed by a Number
+  QHTypeIntMsg:
+    DB  'Int ',0 ;This will be followed by a Number
+
+
+;=============================================================================
+;Strings and Tables to Print the Transfer Descriptors
+;==============================================================================
+
+  TDHeaderMsg0:
+    DB  'TRANSFER DESCRIPTOR #',0
+  TDHEaderMsg1:
+    DB  '                                Packt  On  Dvc End  Max   Act  User     Data   ',CR,LF
+    DB  '  Index  Address       Type     Type  Hold Adr Pt   Len   Len  PktID   Buffer  ',CR,LF
+    DB  '  อออออ ออออออออออ ออออออออออออ อออออ ออออ อออ อออ อออออ อออออ อออออ ออออออออออ',CR,LF
+    DB  '  ',0
+
+  TDHeaderMsg2:
+    DB  '  ออConfigอออ   อออออErrorsอออออ',CR,LF
+    DB  '  A I L   D D   E      S B B C S',CR,LF
+    DB  '  c s o   e a   r      t a u R t   อออออLink Pointerออออ',CR,LF
+    DB  '  t o S I p t   r S  N a b f C f                     Q T',CR,LF
+    DB  '  i c p O t a   C P  A l b E T E                     u r',CR,LF
+    DB  '  v h d C h 1   t D  K l l r O r   ฤAddressฤฤ ฤIndxฤ e m',CR,LF
+    DB  '  ฤฤฤฤฤฤฤฤฤฤฤ   ฤฤฤ  ฤฤฤฤฤฤฤฤฤฤฤ   อออออออออออออออออออออ',CR,LF
+    DB  '  ',0
+
+  TDTypeMsgTbl:
+    DB  TDTypeIsoch
+     DB 'Isochronous ',0
+    DB  TDTypeAvailable
+     DB 'Available   ',0
+    DB  TDTypeReserved
+     DB 'Reserved    ',0
+    DB  TDTypeInterrupt1Time
+     DB 'One-Time Int',0
+    DB  TDTypeInterruptPer
+     DB 'Periodic Int',0
+    DB  TDTypeControlSetup
+     DB 'Ctrl Setup  ',0
+    DB  TDTypeControlData
+     DB 'Ctrl Data   ',0
+    DB  TDTypeControlStatus
+     DB 'Ctrl Status ',0
+    DB  TDTypeBulk
+     DB 'Bulk        ',0
+    DW  -1 ;End of Table
+
+  TDPktTypeMsgTbl:
+    DB  0
+     DB 'n/a  ',0
+    DB  TDPacketSetup
+     DB 'Setup',0
+    DB  TDPacketIn
+     DB 'In   ',0
+    DB  TDPacketOut
+     DB 'Out  ',0
+    DW  -1 ;End of Table
+
+  TDPktTypeNAMsg:
+    DB ' ?',0
+
+  OneTimeIntMsg:
+    DB '                  Trans ',CR,LF
+    DB '         Seconds  Handle',CR,LF
+    DB '        Remaining Number',CR,LF
+    DB '        อออออออออ ออออออ',CR,LF
+    DB '          ',0
+
+  PeriodicIntMsg:
+    DB '                               Total Queue Trans ',CR,LF
+    DB '        Period Frame  Specific Trans Head  Handle',CR,LF
+    DB '         (ms)  Number Frame    Bytes Index Number',CR,LF
+    DB '        ออออออ ออออออ ออออออออ อออออ อออออ ออออออ',CR,LF
+    DB '         ',0
+
+  BulkMsg:
+    DB '        Total Seconds  Queue Last  Trans ',CR,LF
+    DB '        Trans  until   Head  TD in Handle',CR,LF
+    DB '        Bytes Time-Out Index Queue Number',CR,LF
+    DB '        อออออ ออออออออ อออออ อออออ ออออออ',CR,LF
+    DB '        ',0
+
+; #IF !LITE
+  IsochMsg:
+    DB '                               Pkts   Bytes  Trans ',CR,LF
+    DB '        Sequence Period Frame  per    per    Handle',CR,LF
+    DB '         Number   (ms)  Number Period Period Number',CR,LF
+    DB '        ออออออออ ออออออ ออออออ ออออออ ออออออ ออออออ',CR,LF
+    DB '         ',0
+; #ENDIF
+
+  ControlMsg:
+    DB '                Seconds          Trans ',CR,LF
+    DB '        Current  until   Retries Handle',CR,LF
+    DB '         Stage  Time-Out  Left   Number',CR,LF
+    DB '        อออออออ ออออออออ อออออออ ออออออ',CR,LF
+    DB '        ',0
+
+  SetupStageMsg:
+    DB 'Setup  ',0
+  DataStageMsg:
+    DB 'Data   ',0
+  StatusStageMsg:
+    DB 'Status ',0
+
+
+;==============================================================================
+;Strings to Print the Descriptors
+;==============================================================================
+
+  DvcNotYetMsg:
+    DB 'No Devices have been attached yet.',CR,LF
+    DB 'There are no Descriptors available to view.',0
+  DvcAddrMsg:
+    DB 'DEVICE ADDRESS: ',0
+  DvcConfigMsg:
+    DB 'CONFIGURATION:  ',0
+  DvcNoMoreMsg:
+    DB ' is no longer attached!',CR,LF,0
+
+
+;==============================================================================
+;Strings to Print Aliases
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to print Command Line Aliases to the screen
+  ;----------------------------------------------------------------------------
+  AliasHdrMsg:
+    DB 'ALIASES FOR COMMAND-LINE OPTIONS',CR,LF,0
+
+
+;==============================================================================
+;Various Status/Error Strings
+;==============================================================================
+
+  ParseCmdMsg:
+    DB CR,LF
+   #IF !LITE
+    DB 'Error in the command-line Options for USBUHCI:',CR,LF,0
+   #ELSE
+    DB 'Error in the command-line Options for USBUHCIL:',CR,LF,0
+   #ENDIF
+
+  ParseEnvMsg:
+    DB CR,LF
+   #IF !LITE
+    DB 'Error in the Environment variable "USBUHCI":',Cr,LF,0
+   #ELSE
+    DB 'Error in the Environment variable "USBUHCIL":',Cr,LF,0
+   #ENDIF
+
+  ParseStdInMsg:
+    DB CR,LF
+   #IF !LITE
+    DB 'Error in the redirected input file ("USBUHCI < {FileName}"):',CR,LF,0
+   #ELSE
+    DB 'Error in the redirected input file ("USBUHCIL < {FileName}"):',CR,LF,0
+   #ENDIF
+
+  ParseErrMsg:
+    DB '^ Error',CR,LF,LF,0
+
+  ParseErrEnv:
+   #IF !LITE
+    DB 'Reset the Environment variable (type "SET USBUHCI=") and then',CR,LF,0
+  ParseErrMsg2:
+    DB 'Type "USBUHCI ?" for Help.',CR,LF,0
+   #ELSE
+    DB 'Reset the Environment variable (type "SET USBUHCIL=") and then',CR,LF,0
+  ParseErrMsg2:
+    DB 'Type "USBUHCIL ?" for Help.',CR,LF,0
+   #ENDIF
+
+  InitializingMsg1:
+    DB 'Initializing Universal Host Controller #',0
+
+  InitializingMsg2:
+    DB '.  This may take several seconds...',CR,LF,LF,0
+
+  EnvMsg:
+    DB 'Environment: ',0
+
+  InstallMsg1:
+   #IF !LITE
+    DB 'USBUHCI has been ',0
+   #ELSE
+    DB 'USBUHCIL has been ',0
+   #ENDIF
+
+  InstallMsgAuto:
+    DB 'automatically ',0
+
+  InstallMsgHigh:
+    DB 'installed into Upper Memory.',0
+
+  InstallMsgHole:
+    DB 'installed into a Low Memory "Hole".',0
+
+  InstallMsgNorm:
+    DB 'installed into Low Memory.',0
+
+  InstallMsgLast:
+    DB CR,LF
+   #IF !LITE
+    DB 'Type "USBUHCI U" to Uninstall USBUHCI from memory.',CR,LF,0
+   #ELSE
+    DB 'Type "USBUHCIL U" to Uninstall USBUHCIL from memory.',CR,LF,0
+   #ENDIF
+
+  NotRealMsg:
+    DB 'This program only works in Real DOS.',CR,LF
+    DB LF
+    DB 'The CPU must be running in Real Mode, or in Protected (V86) Mode with a',CR,LF
+    DB '  VCPI-compliant Memory Manager (like EMM386).',CR,LF
+    DB 'It will NOT run in a multi-tasking environment (like Windows).',0
+
+  LegacyContMsg:
+    DB CR,LF
+    DB 'The USB Host Controller currently has "Legacy Support" enabled.',CR,LF
+    DB 'This means that there is probably a USB Keyboard and/or a USB Mouse currently',CR,LF
+    DB '  installed and enabled in the computer BIOS.',CR,LF
+    DB LF
+    DB 'If you continue installing this program, and do not also install the',CR,LF
+    DB '  appropriate Keyboard and/or Mouse drivers, your computer may not function',CR,LF
+    DB '  properly (if at all).',CR,LF
+    DB LF
+    DB 'Are you ABSOLUTELY SURE you want to continue installing this program (Y/N)? ',0
+
+  AlreadyRunMsg:
+    DB CR,LF
+    DB 'Another program is currently controlling the USB Bus.',CR,LF
+    DB 'If you continue with this installation, the other program will stop working.',CR,LF
+    DB  LF
+    DB 'Are you ABSOLUTELY SURE you want to continue with the installation (Y/N)? ',0
+
+  TooManyHostsMsg:
+    DB 'There are too many USB Host Drivers already installed in memory.',CR,LF
+    DB 'You can only have a maximum of 16 USB Hosts running at the same time.',0
+
+  NoEnvironMsg:
+    DB 'There is no DOS Environment.',CR,LF
+    DB 'There is something WIERD going on here!',0
+
+  StdInMemoryMsg:
+    DB 'There is not enough available memory to run this program!',0
+
+  AssignIRQMsg:
+    DB 'Assigned IRQ to USB Controller: ',0
+
+  AssignIOMsg:
+    DB 'Assigned Base I/O Address to USB Controller: ',0
+
+  WrongVerMsg:
+    DB 'An incompatible version of USB Driver was found in memory.',CR,LF
+    DB 'Please UNINSTALL the other version before continuing.',0
+
+  UninstallMsg:
+   #IF !LITE
+    DB 'USBUHCI has been Uninstalled from memory.',CR,LF
+   #ELSE
+    DB 'USBUHCIL has been Uninstalled from memory.',CR,LF
+   #ENDIF
+    DB LF
+    DB 'If BIOS Legacy Support (for a USB Keyboard/Mouse) was turned on before',CR,LF
+    DB '  you installed this program, and the Legacy Support includes',CR,LF
+    DB '  "Plug-and-Play" operation, it should be working again now.',CR,LF
+    DB 'You may need to unplug and reinsert the Keyboard/Mouse back into the',CR,LF
+    DB '  USB Port to make sure it reinitializes properly, however.',0
+
+  NoUninstallMsg:
+   #IF !LITE
+    DB 'Unable to Uninstall USBUHCI from memory, but the Host is Stopped.',CR,LF
+   #ELSE
+    DB 'Unable to Uninstall USBUHCIL from memory, but the Host is Stopped.',CR,LF
+   #ENDIF
+    DB "Remove any TSR's installed after this program and try again.",0
+
+  NotFirstInstMsg:
+   #IF !LITE
+    DB 'There is currently more than one Instance of USBUHCI in Memory, and you are',CR,LF
+    DB '  trying to Remove the First Instance.  The First Instance cannot be removed',CR,LF
+    DB '  from Memory until all other Instances are removed.',CR,LF
+    DB 'The Host is Stopped, but USBUHCI has NOT been removed from Memory.',CR,LF
+    DB 'Remove any Instances of USBUHCI installed after this one and try again.',0
+   #ELSE
+    DB 'There is currently more than one Instance of USBUHCIL in Memory, and you are',CR,LF
+    DB '  trying to Remove the First Instance.  The First Instance cannot be removed',CR,LF
+    DB '  from Memory until all other Instances are removed.',CR,LF
+    DB 'The Host is Stopped, but USBUHCIL has NOT been removed from Memory.',CR,LF
+    DB 'Remove any Instances of USBUHCIL installed after this one and try again.',0
+   #ENDIF
+
+  SharedIRQMsg:
+   #IF !LITE
+    DB 'The IRQ being used by USBUHCI is being "shared" by another program',CR,LF,
+    DB '  that was installed into memory after USBUHCI was.',CR,LF
+   #ELSE
+    DB 'The IRQ being used by USBUHCIL is being "shared" by another program',CR,LF,
+    DB '  that was installed into memory after USBUHCIL was.',CR,LF
+   #ENDIF
+    DB 'Most likely, that other program is also a USB-related program.',CR,LF
+    DB 'You will need to Uninstall the other program from memory first,',CR,LF
+    DB '  and then come back and try to Uninstall this one again.',0
+
+  Dvc0OwnerMsg:
+   #IF !LITE
+    DB 'There is currently at least one other USB-Related program installed in Memory',CR,LF
+    DB '  that is Dependent on USBUHCI.  If you remove USBUHCI from Memory,',CR,LF
+   #ELSE
+    DB 'There is currently at least one other USB-Related program installed in Memory',CR,LF
+    DB '  that is Dependent on USBUHCIL.  If you remove USBUHCIL from Memory,',CR,LF
+   #ENDIF
+    DB '  the other program may stop working correctly, or may even cause the',CR,LF
+    DB '  computer to crash.',CR,LF
+    DB 'Remove all other USB-related Programs from Memory and then try again.',0
+
+  CantStopHostMsg:
+    DB  LF
+    DB 'Unable to Stop the Host Controller from running.',CR,LF
+    DB 'Cannot continue with Uninstallation.',0
+
+  UpdateMsg:
+    DB  LF
+   #IF !LITE
+    DB 'Resident USBUHCI has been updated with new information.',0
+   #ELSE
+    DB 'Resident USBUHCIL has been updated with new information.',0
+   #ENDIF
+
+  NoStartMsg:
+    DB 'The USB Host Controller failed to Initialize properly.',CR,LF
+    DB 'Aborting Installation.',CR,LF
+    DB 'This could be related to an invalid IRQ#.',0
+
+  MoreLeftMsg:
+    DB '<<-More}  ',0
+
+  MoreRightMsg:
+    DB '  {More->>',0
+
+  ResetBadMsg:
+    DB 'Resetting Bad Host-Device ',0
+
+  NoBadsMsg:
+    DB 'There are no Bad Devices to Reset on any of the Hosts!',0
+
+  ErrorBadsMsg:
+    DB '  ERROR!',0
+
+
+;==============================================================================
+;Command Line Options Table
+;==============================================================================
+
+  SwitchList:
+    DB 'Help',0
+    DB  0, '?'
+      ; ^       Beginning-of-List Marker
+      ;    ^    Code to use
+
+    DB 'UseLowMemory',0
+    DB 'UseLowMem',0
+    DB 'UseLowerMemory',0
+    DB 'UseLowerMem',0
+    DB 'UseLow',0
+    DB  0, 'L'
+
+    DB 'UnSuspend',0
+    DB  0, OptionResume
+
+    DB 'UninstallDebug',0
+    DB 'UninstallDbg',0
+    DB  0, OptionProgDebug
+
+    DB 'Uninstall',0
+    DB  0, 'U'
+
+    DB 'UHCIStatus',0
+    DB 'UHCI',0
+    DB  0, OptionHostStatus
+
+    DB 'TstMode',0
+    DB  0, OptionTestMode
+
+    DB 'TransferDescriptorStatus',0
+    DB 'TransferDescriptors',0
+    DB 'TransferDescriptor',0
+    DB  0, OptionTDStatus
+
+    DB 'TM',0
+    DB  0, OptionTestMode
+
+    DB 'TestMode',0
+    DB  0, OptionTestMode
+
+;    DB 'Test',0
+;    DB  0, OptionTest
+
+    DB 'TDStatus',0
+    DB 'TD',0
+    DB  0, OptionTDStatus
+
+    DB 'Timing',0
+    DB  0, OptionTiming
+
+    DB 'Suspend',0
+    DB  0, OptionSuspend
+
+    DB 'Stop',0
+    DB  0, 'D'
+
+    DB 'Step',0
+    DB  0, OptionSingleStep
+
+    DB 'Start',0
+    DB  0, 'E'
+
+    DB 'SST',0
+    DB  0, OptionSingleStep
+
+    DB 'Speed',0
+    DB  0, OptionTiming
+
+    DB 'Sounds',0
+    DB 'Sound',0
+    DB  0, OptionBeep
+
+    DB 'SingleStep',0
+    DB  0, OptionSingleStep
+
+    DB 'SetConfigValue',0
+    DB 'SetConfigVal',0
+    DB 'SetConfigurationValue',0
+    DB 'SetConfigurationVal',0
+    DB 'SetConfiguration',0
+    DB 'SetConfig',0
+    DB  0, OptionSetConfig
+
+    DB 'SC',0
+    DB  0, OptionSetConfig
+
+    DB 'RW',0
+    DB  0, OptionRmtWakeup
+
+    DB 'Run',0
+    DB  0, 'E'
+
+    DB 'RptDescriptor',0
+    DB 'RptDescr',0
+    DB 'Rpt',0
+    DB  0, 'R'
+
+    DB 'RootStatus',0
+    DB  0, OptionHostStatus
+
+    DB 'RootPause',0
+    DB  0, 'P'
+
+    DB 'RootHubStatus',0
+    DB  0, OptionHostStatus
+
+    DB 'RootHubPause',0
+    DB  0, 'P'
+
+    DB 'RootHubDelay',0
+    DB  0, 'P'
+
+    DB 'RootHub',0
+    DB  0, OptionHostStatus
+
+    DB 'RootDelay',0
+    DB  0, 'P'
+
+    DB 'Root',0
+    DB  0, OptionHostStatus
+
+    DB 'RmtWakeup',0
+    DB 'RmtWake',0
+    DB  0, OptionRmtWakeup
+
+    DB 'Resume',0
+    DB  0, OptionResume
+
+    DB 'RestartBadDvcs',0
+    DB 'RestartBadDvc',0
+    DB 'RestartBadDevices',0
+    DB 'RestartBadDevice',0
+    DB 'RestartBad',0
+    DB  0, OptionResetBad
+
+    DB 'Restart',0
+    DB  0, OptionReset
+
+    DB 'ResetBadDvcs',0
+    DB 'ResetBadDvc',0
+    DB 'ResetBadDevices',0
+    DB 'ResetBadDevice',0
+    DB 'ResetBad',0
+    DB  0, OptionResetBad
+
+    DB 'Reset',0
+    DB  0, OptionReset
+
+    DB 'ReportDescriptor',0
+    DB 'ReportDescr',0
+    DB 'Report',0
+    DB  0, 'R'
+
+    DB 'ReplugBadDvcs',0
+    DB 'ReplugBadDvc',0
+    DB 'ReplugBadDevices',0
+    DB 'ReplugBadDevice',0
+    DB 'ReplugBad',0
+    DB  0, OptionResetBad
+
+    DB 'Replug',0
+    DB  0, OptionReset
+
+    DB 'RebootBadDvcs',0
+    DB 'RebootBadDvc',0
+    DB 'RebootBadDevices',0
+    DB 'RebootBadDevice',0
+    DB 'RebootBad',0
+    DB  0, OptionResetBad
+
+    DB 'Reboot',0
+    DB  0, OptionReset
+
+    DB 'Remove',0
+    DB  0, 'U'
+
+    DB 'RemoteWakeup',0
+    DB 'RemoteWake',0
+    DB  0, OptionRmtWakeup
+
+    DB 'RB',0
+    DB  0, OptionResetBad
+
+    DB 'QueueStatus',0
+    DB 'QueueHeadStatus',0
+    DB 'QueueHeads',0
+    DB 'QueueHead',0
+    DB 'Queue',0
+    DB 'QHStatus',0
+    DB 'QH',0
+    DB  0, OptionQHStatus
+
+    DB 'PwrReset',0
+    DB  0, OptionPwrReset
+
+    DB 'PwrOn',0
+    DB  0, OptionPwrOn
+
+    DB 'PwrOff',0
+    DB  0, OptionPwrOff
+
+    DB 'PwrCycle',0
+    DB  0, OptionPwrReset
+
+    DB 'ProgramDebug',0
+    DB 'ProgramDbg',0
+    DB 'ProgDebug',0
+    DB 'ProgDbg',0
+    DB  0, OptionProgDebug
+
+    DB 'PrgDebug',0
+    DB 'PrgDbg',0
+    DB  0, OptionProgDebug
+
+    DB 'PowerReset',0
+    DB  0, OptionPwrReset
+
+    DB 'PowerOn',0
+    DB  0, OptionPwrOn
+
+    DB 'PowerOff',0
+    DB  0, OptionPwrOff
+
+    DB 'PowerCycle',0
+    DB  0, OptionPwrReset
+
+    DB 'PD',0
+    DB  0, OptionProgDebug
+
+    DB 'PCIStatus',0
+    DB 'PCI',0
+    DB  0, OptionHostStatus
+
+    DB 'PCISearchIndex',0
+    DB 'PCISearch',0
+    DB 'PCIIndex',0
+    DB  0, 'I'
+
+    DB 'Pause',0
+    DB  0, 'P'
+
+    DB 'Out',0
+    DB  0, 'U'
+
+    DB 'OptionAliases',0
+    DB 'OptionAlias',0
+    DB  0, 'A'
+
+    DB 'On',0
+    DB  0, 'E'
+
+    DB 'Off',0
+    DB  0, 'D'
+
+    DB 'NoOtherProgram',0
+    DB 'NoOtherControlProgram',0
+    DB 'NoOther',0
+    DB  0, OptionDisableOther
+
+    DB 'NoLegacySupport',0
+    DB 'NoLegacySupt',0
+    DB 'NoLegacy',0
+    DB  0, OptionDisableLegacy
+
+    DB 'NewDeviceNotifyStatus',0
+    DB 'NewDvcNotifyStatus',0
+    DB 'NewDeviceNotificationNStatus',0
+    DB 'NewDvcNotificationStatus',0
+    DB 'NewDeviceStatus',0
+    DB 'NewDvcStatus',0
+    DB 'NDStatus',0
+    DB 'ND',0
+    DB  0, OptionNDStatus
+
+    DB 'LowMemory',0
+    DB 'LowMem',0
+    DB 'LowerMemory',0
+    DB 'LowerMem',0
+    DB 'Low',0
+    DB  0, 'L'
+
+    DB 'IRQNumber',0
+    DB 'IRQNum',0
+    DB 'IRQ#',0
+    DB 'IRQ',0
+    DB  0, OptionUserIRQ
+
+    DB 'IOSpace',0
+    DB 'IOBaseAddress',0
+    DB 'IOBaseAddr',0
+    DB 'IOBase',0
+    DB 'IOAddrSpace',0
+    DB 'IOAddressSpace',0
+    DB 'IOAddress',0
+    DB 'IOAddr',0
+    DB 'IO',0
+    DB  0, OptionUserIO
+
+    DB 'IntfDescriptor',0
+    DB 'IntfDescr',0
+    DB 'Intf',0
+    DB  0, OptionDescriptor
+
+    DB 'InterfaceDescriptor',0
+    DB 'InterfaceDescr',0
+    DB 'Interface',0
+    DB  0, OptionDescriptor
+
+    DB 'InstallDebug',0
+    DB 'InstallDbg',0
+    DB  0, OptionProgDebug
+
+    DB 'InitializeDebug',0
+    DB 'InitializeDbg',0
+    DB 'InitDebug',0
+    DB 'InitDbg',0
+    DB  0, OptionProgDebug
+
+    DB 'Index',0
+    DB 'Idx',0
+    DB  0, 'I'
+
+    DB 'HostStatus',0
+    DB 'HostControllerStatus',0
+    DB 'HostController',0
+    DB 'Host',0
+    DB  0, OptionHostStatus
+
+    DB 'Hlp',0
+    DB  0, '?'
+
+    DB 'HIDRptDescriptor',0
+    DB 'HIDRptDescr',0
+    DB 'HIDRpt',0
+    DB 'HIDReportDescriptor',0
+    DB 'HIDReportDescr',0
+    DB 'HIDReport',0
+    DB  0, 'R'
+
+    DB 'Halt',0
+    DB  0, 'D'
+
+    DB 'H',0
+    DB  0, '?'
+
+    DB 'FrameTiming',0
+    DB 'FrameLength',0
+    DB  0, OptionTiming
+
+    DB 'FrameStatus',0
+    DB 'FrameListStatus',0
+    DB 'FrameList',0
+    DB 'Frames',0
+    DB 'Frame',0
+    DB 'FLStatus',0
+    DB 'FL',0
+    DB  0, OptionFLStatus
+
+    DB 'ForceLowMemory',0
+    DB 'ForceLowMem',0
+    DB 'ForceLowerMemory',0
+    DB 'ForceLowerMem',0
+    DB 'ForceLow',0
+    DB  0, 'L'
+
+    DB 'ErrorLvlTbl',0
+    DB 'ErrorLvlTable',0
+    DB 'ErrorLvls',0
+    DB 'ErrorLvl',0
+    DB 'ErrorLevelTbl',0
+    DB 'ErrorLevelTable',0
+    DB 'ErrorLevels',0
+    DB 'ErrorLevel',0
+    DB  0, OptionErrLvl
+
+    DB 'ErrLvlTbl',0
+    DB 'ErrLvlTable',0
+    DB 'ErrLvls',0
+    DB 'ErrLvl',0
+    DB 'ErrLevelTbl',0
+    DB 'ErrLevelTable',0
+    DB 'ErrLevels',0
+    DB 'ErrLevel',0
+    DB  0, OptionErrLvl
+
+    DB 'ErLvlTbl',0
+    DB 'ErLvlTable',0
+    DB 'ErLvls',0
+    DB 'ErLvl',0
+    DB 'ErLevelTbl',0
+    DB 'ErLevelTable',0
+    DB 'ErLevels',0
+    DB 'ErLevel',0
+    DB  0, OptionErrLvl
+
+    DB 'EndPointDescriptor',0
+    DB 'EndPointDescr',0
+    DB 'EndPoint',0
+    DB  0, OptionDescriptor
+
+    DB 'EndPtDescriptor',0
+    DB 'EndPtDescr',0
+    DB 'EndPt',0
+    DB  0, OptionDescriptor
+
+    DB 'Enable',0
+    DB  0, 'E'
+
+    DB 'DvcDescriptor',0
+    DB 'DvcDescr',0
+    DB 'Dvc',0
+    DB  0, OptionDescriptor
+
+    DB 'DisableOtherProgram',0
+    DB 'DisableOtherControlProgram',0
+    DB 'DisableOther',0
+    DB  0, OptionDisableOther
+
+    DB 'DisableLegacySupport',0
+    DB 'DisableLegacySupt',0
+    DB 'DisableLegacy',0
+    DB  0, OptionDisableLegacy
+
+    DB 'Disable',0
+    DB  0, 'D'
+
+    DB 'DeviceDescriptor',0
+    DB 'DeviceDescr',0
+    DB 'Device',0
+    DB  0, OptionDescriptor
+
+    DB 'DescriptorStatus',0
+    DB 'Descriptors',0
+    DB 'Descriptor',0
+    DB 'Descrs',0
+    DB 'Descr',0
+    DB  0, OptionDescriptor
+
+    DB 'Delay',0
+    DB  0, 'P'
+
+    DB 'DebugProgram',0
+    DB 'DebugProg',0
+    DB 'DebugPrg',0
+    DB  0, OptionProgDebug
+
+    DB 'Debug',0
+    DB  0, OptionDebug
+
+    DB 'DbgProgram',0
+    DB 'DbgProg',0
+    DB 'DbgPrg',0
+    DB  0, OptionProgDebug
+
+    DB 'Dbg',0
+    DB  0, OptionDebug
+
+    DB 'ControllerStatus',0
+    DB 'Controller',0
+    DB  0, OptionHostStatus
+
+    DB 'ConfigurationDescriptor',0
+    DB 'ConfigurationDescr',0
+    DB 'Configuration',0
+    DB  0, OptionDescriptor
+
+    DB 'ConfigDescriptor',0
+    DB 'ConfigDescr',0
+    DB 'Config',0
+    DB  0, OptionDescriptor
+
+    DB 'CommandLineAliases',0
+    DB 'CommandLineAlias',0
+    DB  0, 'A'
+
+    DB 'CmdLineAliases',0
+    DB 'CmdLineAlias',0
+    DB  0, 'A'
+
+    DB 'ChangeConfigValue',0
+    DB 'ChangeConfigVal',0
+    DB 'ChangeConfigurationValue',0
+    DB 'ChangeConfigurationVal',0
+    DB 'ChangeConfiguration',0
+    DB 'ChangeConfig',0
+    DB  0, OptionSetConfig
+
+    DB 'BypassOtherProgram',0
+    DB 'BypassOtherControlProgram',0
+    DB 'BypassOther',0
+    DB  0, OptionDisableOther
+
+    DB 'BypassLegacySupport',0
+    DB 'BypassLegacySupt',0
+    DB 'BypassLegacy',0
+    DB  0, OptionDisableLegacy
+
+    DB 'Beeps',0
+    DB 'Beep',0
+    DB  0, OptionBeep
+
+    DB 'Aliases',0
+    DB 'Alias',0
+    DB  0, 'A'
+
+    DB 'ADStatus',0
+    DB 'AddressDataStatus',0
+    DB 'AddressData',0
+    DB 'Addresses',0
+    DB 'AD',0
+    DB  0, OptionADStatus
+
+    DB 0            ;End of list
+
+
+  ;----------------------------------------------------------------------------
+  ;Special Parameters for Command Line Options (ones with Addresses)
+  ;----------------------------------------------------------------------------
+
+  SwitchList2:
+    DB 'UHCIHost',0
+    DB 'UHCI',0
+    DB  0, 1
+
+    DB 'RootHub',0
+    DB 'Root',0
+    DB  0, 1
+
+    DB 'Host',0
+    DB  0, 1
+
+    DB 'AllHosts',0
+    DB  0, -1
+
+    DB 0            ;End of list
+
+  ;----------------------------------------------------------------------------
+  ;Switches for Yes/No Options
+  ;----------------------------------------------------------------------------
+  SwitchListYesNo:
+    DB  'Yes',0
+    DB  'Y',0
+    DB   0, 'Y'
+
+    DB  'True',0
+    DB  'T',0
+    DB   0, 'Y'
+
+    DB  'On',0
+    DB   0, 'Y'
+
+    DB  'Off',0
+    DB   0, 'N'
+
+    DB  'No',0
+    DB  'N',0
+    DB   0, 'N'
+
+    DB  'False',0
+    DB  'F',0
+    DB   0, 'N'
+
+    DB  'Enabled',0
+    DB  'Enable',0
+    DB   0, 'Y'
+
+    DB  'Disabled',0
+    DB  'Disable',0
+    DB   0, 'N'
+
+    DB  '1',0
+    DB   0, 'Y'
+
+    DB  '0',0
+    DB   0, 'N'
+
+    DB  0            ;End of list
+
+
+;==============================================================================
+;ErrorLevel Tables & Strings
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;ErrorLevels, and Table for ErrorLevel Description Strings
+  ;----------------------------------------------------------------------------
+  ;Command-line/User problems
+  ErLvlOption       EQU  1 ;Bad Option on the command line
+  ErLvlStdIn        EQU  2 ;StdIn file is too big
+  ErLvlLegacy       EQU  3 ;Legacy Support enabled, and user won't continue
+  ErLvlAlreadyRun   EQU  4 ;Another driver has control of the USB Bus
+  ;Memory/File problems
+  ErLvlMemory       EQU  5 ;Memory problem with the computer
+  ErLvlNotRealMode  EQU  6 ;Not in Real Mode or VCPI not installed
+  ErLvlNoOvl        EQU  7 ;Could not find Overlay File
+  ;Hardware/Compatibility problems
+  ErLvlDOSVer       EQU  8 ;DOS Version too old
+  ErLvlNo386        EQU  9 ;Not a 386+ CPU
+  ErLvlNoPCI        EQU 10 ;No PCI Bus Installed
+  ErLvlNoUHCI       EQU 11 ;No UHCI-compatible Controller found
+  ErLvlNoStart      EQU 12 ;Host failed to Initialize Properly
+  ;Program Install problems
+  ErLvlTooManyHosts EQU 13 ;Too Many Hosts Already Installed
+  ErLvlVersion      EQU 14 ;Another version of the program already installed
+  ;Program Uninstall problems
+  ErLvlNotInMem     EQU 15 ;Not in memory yet, can't perform Request
+  ErLvlCantStopHost EQU 16 ;Could not stop the Host
+  ErLvlNotFirstInst EQU 17 ;Not first Instance while Uninstalling
+  ErLvlSharedIRQ    EQU 18 ;Another program is sharing the IRQ that we Enabled
+  ErLvlDvc0Owner    EQU 19 ;Last Host, with Registered Device 0 Owners
+  ;Internal problems
+  ErLvlInternal     EQU 20 ;Internal processing error - shouldn't happen!
+
+  ErrLvlHdr:
+    DB  CR,LF
+    DB '                         ERRORLEVELS (DOS RETURN CODES)',CR,LF
+    DB '  ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ',CR,LF
+    DB 0
+
+  ErrLvlTbl:
+    DB 0
+       DB "No Error.",0
+    DB ErLvlOption
+       DB "Bad Command-line Option.",0
+    DB ErLvlStdIn
+       StdInTooBigMsg:
+      #IF !LITE
+       DB 'The Redirected Input Option File ("USBUHCI < {FileName}") is too big.',0
+      #ELSE
+       DB 'The Redirected Input Option File ("USBUHCIL < {FileName}") is too big.',0
+      #ENDIF
+    DB ErLvlLegacy
+       DB "Legacy Support is installed, and the user wants to stop.",0
+    DB ErLvlAlreadyRun
+       DB "Another Driver is managing the USB Bus, and the user wants to stop.",0
+    DB ErLvlMemory
+       DB "Memory problem with the computer.",0
+    DB ErLvlNotRealMode
+       DB "The CPU must be in real mode, or a VCPI memory manager must be installed.",0
+    DB ErLvlNoOvl
+      #IF !LITE
+       DB "Overlay File USBUHCI.OVL not found or incompatible.",0
+      #ELSE
+       DB "Overlay File USBUHCIL.OVL not found or incompatible.",0
+      #ENDIF
+    DB ErLvlDOSVer
+       DOSVerMsg:
+       DB "You must be using DOS version 3.00 or later to use this program.",0
+    DB ErLvlNo386
+       No386Msg:
+       DB "The CPU in the computer must be at least an 80386.",0
+    DB ErLvlNoPCI
+       NoPCIMsg:
+       DB "Could not find a PCI-compatible BIOS.",0
+    DB ErLvlNoUHCI
+       NoUHCIMsg:
+       DB 'There is no UHCI-compatible USB Host Controller Installed.',0
+    DB ErLvlNoStart
+       DB "The USB Host Controller failed to Initialize properly.",0
+    DB ErLvlTooManyHosts
+       DB "There are too many Host Drivers already installed (maximum 16).",0
+    DB ErLvlVersion
+       DB "An incompatible USB Driver is already installed in memory.",0
+    DB ErLvlNotInMem
+      NotInMemMsg:
+      #IF !LITE
+       DB "USBUHCI is not installed in memory yet -- can't perform Request.",0
+      #ELSE
+       DB "USBUHCIL is not installed in memory yet -- can't perform Request.",0
+      #ENDIF
+    DB ErLvlCantStopHost
+      DB "Unable to stop the Host Controller from running.",0
+    DB ErLvlNotFirstInst
+      #IF !LITE
+       DB "Can't uninstall: An instance of USBUHCI was installed after this one.",0
+      #ELSE
+       DB "Can't uninstall: An instance of USBUHCIL was installed after this one.",0
+      #ENDIF
+    DB ErLvlSharedIRQ
+       DB "Can't uninstall: Another program is sharing the IRQ that we enabled.",0
+    DB ErLvlDvc0Owner
+       DB "Can't uninstall: Another program is still registered as a Device0 Owner.",0
+    DB ErLvlInternal
+       InternalErrMsg:
+       DB "Internal processing error - contact Bret Johnson!",0
+    DB -1,-1 ;End of Table
+
+;==============================================================================
+;Debugging Strings
+;==============================================================================
+
+  ProgDebugMsg:
+    DB 'DEBUG: ',0
+  BusDevFuncMsg:
+    DB 'PCI Bus-Dev-Func: ',0
+  PCISearchIdxMsg:
+    DB 'PCI Search Index:       ',0
+  IRQNumberMsg:
+    DB 'IRQ Number:             ',0
+  BaseIOMsg:
+    DB 'Base I/O Address:      ',0
+  FrameListAddrMsg:
+    DB 'Frame List Addr:  ',0
+  StopHostMsg:
+    DB 'Stopping Host',0
+  EnBusMasterMsg:
+    DB 'Enabling I/O Access & Bus Mastering',0
+  EnResumeDetMsg:
+    DB 'Enabling Resume/Connect Detection',0
+  RedirGenIntsMsg:
+    DB 'Redirecting General Interrupts',0
+  RedirUSBIntMsg:
+    DB 'Redirecting Host IRQ Interrupt',0
+  ResetHostMsg:
+    DB 'Resetting Host',0
+  SetFLAddressMsg:
+    DB 'Setting Frame List Address',0
+  FrameTimingMsg:
+    DB 'Setting Frame Timing',0
+  StartFrameMsg:
+    DB 'Setting Starting Frame Number',0
+  EnIRQFlagsMsg:
+    DB 'Enabling IRQ Flags',0
+  DisSMIFlagsMsg:
+    DB 'Disabling SMI Flags',0
+  DisSMIGenMsg:
+    DB 'Disabling SMI# Generation',0
+  EnIRQGenMsg:
+    DB 'Enabling IRQ Generation',0
+  StartHostMsg:
+    DB 'Starting Host',0
+  VerifyHostMsg:
+    DB 'Verifying Host is Running',0
+  InitRootHubMsg:
+    DB 'Initializing Root Hub',0
+  VerifyIRQMsg:
+    DB 'Verifying IRQ Generation'
+    DB CR,LF,0
+
+
+;==============================================================================
+;Uninstall Debugging Strings
+;==============================================================================
+
+  RestoreUSBIntMsg:
+    DB 'Restoring Host IRQ Interrupt',0
+  RestorePort1Msg:
+    DB 'Restoring Root Hub Port 1 Status',0
+  RestorePort2Msg:
+    DB 'Restoring Root Hub Port 2 Status',0
+  EnSMIFlagsMsg:
+    DB 'Enabling SMI Flags',0
+  EnSMIGenMsg:
+    DB 'Enabling SMI# Generation',0
+  RestoreIRQMsg:
+    DB 'Restoring IRQ Number',0
+  RestorePCIMsg:
+    DB 'Restoring PCI Configuration',0
+  RestoreGenIntsMsg:
+    DB 'Restoring General Interrupts'
+    DB CR,LF,0
+
+
+;==============================================================================
+;Report Descriptor Strings
+;==============================================================================
+
+  RptNoDvcMsg0:
+    DB 'Device Address #',0
+  RptNoDvcMsg1:
+    DB ', Interface #',0
+  RptNoDvcMsg2:
+    DB ' does not exist or is not a',CR,LF
+    DB '  Human Interface Device.',0
+  RptNoDataMsg:
+    DB 'Unable to obtain HID Report Descriptor data from Device #',0
+
+;==============================================================================
+;Downloaded Descriptor Strings
+;==============================================================================
+  DescrNoDvc:
+    DB ' does not exist.',0
+  DescrNoData:
+    DB 'Unable to obtain Descriptor Data from Device #',0

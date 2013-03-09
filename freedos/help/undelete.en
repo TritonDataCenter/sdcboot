@@ -1,0 +1,23 @@
+FreeDOS Undelete - (C) Copyright 2001-2002 Eric Auer <eric@coli.uni.sb.de>
+Undelete is free software; it is distributed under the terms of the GNU
+General Public License. See COPYING for details.
+         
+SYNOPSIS: undelete [action] [what] [destination] [optional size]
+         
+Possible [action]s:               
+
+syssave Saves the 1st or 2nd copy of the FAT, boot sector or root
+        directory. Select fat1, fat2, boot, or root in [what].
+follow  Looks for a (possibly deleted) file starting at the cluster
+        [what] and saves data to a file given as [destination]. The     
+        output of DIRSAVE helps you to find the right cluster number.
+dirsave Like FOLLOW, but saves a directory to a file. Directory [what]
+        must be given by absolute path starting with \ OR by cluster
+        number. Also shows a technical directory listing on the screen.
+
+Specifying [size] is not needed, but you can override the autodetection
+by specifying [size] (in clusters for FOLLOW, in sectors for DIRSAVE).
+
+[Destination] must be on another drive than the current drive. Data is
+always read/recovered from the drive from which undelete is invoked.
+

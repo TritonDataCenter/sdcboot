@@ -1,0 +1,1764 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 03CB6H 03CB7H _TEXT              CODE
+ 03CB7H 03F44H 0028EH DEFRAG_TEXT        CODE
+ 03F45H 04199H 00255H OS_ID_TEXT         CODE
+ 0419AH 04210H 00077H DOSEMU_TEXT        CODE
+ 04211H 042A0H 00090H CHECKOS_TEXT       CODE
+ 042A1H 04432H 00192H XMS_TEXT           CODE
+ 04433H 04679H 00247H CMDEFINT_TEXT      CODE
+ 0467AH 04FB7H 0093EH CHKARGS_TEXT       CODE
+ 04FB8H 05575H 005BEH OVLIMPL_TEXT       CODE
+ 05576H 058FDH 00388H MENU_TEXT          CODE
+ 058FEH 05AE6H 001E9H COPYRIGT_TEXT      CODE
+ 05AE7H 05DDEH 002F8H MAPLEGND_TEXT      CODE
+ 05DDFH 06201H 00423H SORTBOX_TEXT       CODE
+ 06202H 06959H 00758H METHODS_TEXT       CODE
+ 0695AH 06B21H 001C8H SELDRVBX_TEXT      CODE
+ 06B22H 06DDBH 002BAH MSGBXS_TEXT        CODE
+ 06DDCH 06FC9H 001EEH DEFRDONE_TEXT      CODE
+ 06FCAH 071CAH 00201H RECOMENT_TEXT      CODE
+ 071CBH 0727FH 000B5H HLPDIALG_TEXT      CODE
+ 07280H 07421H 001A2H STOPDFRG_TEXT      CODE
+ 07422H 075F0H 001CFH ASKFRXMS_TEXT      CODE
+ 075F1H 076DBH 000EBH EVENT_TEXT         CODE
+ 076DCH 07704H 00029H ALTKEY_TEXT        CODE
+ 07705H 07935H 00231H HIMOUSE_TEXT       CODE
+ 07936H 07AE5H 001B0H DRAWSCR_TEXT       CODE
+ 07AE6H 08443H 0095EH LOWVIDEO_TEXT      CODE
+ 08444H 08556H 00113H SCRCLIP_TEXT       CODE
+ 08557H 089A7H 00451H SCRMASK_TEXT       CODE
+ 089A8H 08E12H 0046BH DRVMAP_TEXT        CODE
+ 08E13H 092F6H 004E4H CMDBTN_TEXT        CODE
+ 092F7H 0939BH 000A5H FRAME_TEXT         CODE
+ 0939CH 09417H 0007CH HLINE_TEXT         CODE
+ 09418H 09496H 0007FH LABEL_TEXT         CODE
+ 09497H 09D72H 008DCH WINMAN_TEXT        CODE
+ 09D73H 09EB7H 00145H TIMLABEL_TEXT      CODE
+ 09EB8H 09EF4H 0003DH ICTRLVLS_TEXT      CODE
+ 09EF5H 09F8BH 00097H EXTEVENT_TEXT      CODE
+ 09F8CH 09F8CH 00000H CMNCTRLS_TEXT      CODE
+ 09F8CH 0A258H 002CDH SLCTBTN_TEXT       CODE
+ 0A259H 0A66CH 00414H VSCRCTRL_TEXT      CODE
+ 0A66DH 0AC93H 00627H LOLSTBX_TEXT       CODE
+ 0AC94H 0AF94H 00301H DRVSLTBX_TEXT      CODE
+ 0AF95H 0B05BH 000C7H WNDWCLSR_TEXT      CODE
+ 0B05CH 0B4D2H 00477H LOVIEW_TEXT        CODE
+ 0B4D3H 0BA8EH 005BCH HELPVIEW_TEXT      CODE
+ 0BA8FH 0BED6H 00448H MSDEFINT_TEXT      CODE
+ 0BED7H 0BF2BH 00055H KEEPDOS_TEXT       CODE
+ 0BF2CH 0C494H 00569H ACTIONS_TEXT       CODE
+ 0C495H 0C53DH 000A9H SCRLOG_TEXT        CODE
+ 0C53EH 0C54FH 00012H LOGPRINT_TEXT      CODE
+ 0C550H 0C94BH 003FCH HLPREAD_TEXT       CODE
+ 0C94CH 0C9B5H 0006AH HLPSYSID_TEXT      CODE
+ 0C9B6H 0CA0EH 00059H IDXSTACK_TEXT      CODE
+ 0CA0FH 0CDE1H 003D3H HLPLNPRS_TEXT      CODE
+ 0CDE2H 0D04AH 00269H HLPPARSE_TEXT      CODE
+ 0D04BH 0D749H 006FFH HLPFNCS_TEXT       CODE
+ 0D74AH 0D7F8H 000AFH CHECKSUM_TEXT      CODE
+ 0D7F9H 0D8E0H 000E8H INFOFAT_TEXT       CODE
+ 0D8E1H 0DB3BH 0025BH FLLDRVMP_TEXT      CODE
+ 0DB3CH 0DCC3H 00188H DEFRFACT_TEXT      CODE
+ 0DCC4H 0DF29H 00266H MRKUNMVE_TEXT      CODE
+ 0DF2AH 0DF58H 0002FH IFATSIZE_TEXT      CODE
+ 0DF59H 0E01EH 000C6H REFILCNT_TEXT      CODE
+ 0E01FH 0E087H 00069H CHKVOL_TEXT        CODE
+ 0E088H 0E1B7H 00130H DESCCHK_TEXT       CODE
+ 0E1B8H 0E231H 0007AH DESCIFAT_TEXT      CODE
+ 0E232H 0E3E4H 001B3H DFATCHK_TEXT       CODE
+ 0E3E5H 0E430H 0004CH CHECKFAT_TEXT      CODE
+ 0E431H 0E4ACH 0007CH SORTTREE_TEXT      CODE
+ 0E4ADH 0E563H 000B7H SORTCFGF_TEXT      CODE
+ 0E564H 0E82BH 002C8H SSORTDIR_TEXT      CODE
+ 0E82CH 0EA92H 00267H SRTENTRS_TEXT      CODE
+ 0EA93H 0ED32H 002A0H CMPFNCS_TEXT       CODE
+ 0ED33H 0EEF2H 001C0H MEMSORT_TEXT       CODE
+ 0EEF3H 0F075H 00183H RDENTRS_TEXT       CODE
+ 0F076H 0F289H 00214H WRENTRS_TEXT       CODE
+ 0F28AH 0F311H 00088H SORTFAT_TEXT       CODE
+ 0F312H 0F40CH 000FBH DFRAGFAT_TEXT      CODE
+ 0F40DH 0F67EH 00272H DFRGDRVR_TEXT      CODE
+ 0F67FH 10276H 00BF8H FLLDFRG_TEXT       CODE
+ 10277H 10848H 005D2H ORDRDFRG_TEXT      CODE
+ 10849H 10E18H 005D0H CRUNCH_TEXT        CODE
+ 10E19H 1140BH 005F3H DEFRMAP_TEXT       CODE
+ 1140CH 11A58H 0064DH UNFRAG_TEXT        CODE
+ 11A59H 11B4CH 000F4H ISFLFGTD_TEXT      CODE
+ 11B4DH 11EE9H 0039DH POWALKTR_TEXT      CODE
+ 11EEAH 123A3H 004BAH QUICKTRY_TEXT      CODE
+ 123A4H 12E62H 00ABFH RELOCFIL_TEXT      CODE
+ 12E63H 130CEH 0026CH CLMOVMAP_TEXT      CODE
+ 130CFH 1316DH 0009FH VLHANDLE_TEXT      CODE
+ 1316EH 13223H 000B6H GTDRVNMS_TEXT      CODE
+ 13224H 1325DH 0003AH REBOOT_TEXT        CODE
+ 1325EH 132CBH 0006EH DEFRPARS_TEXT      CODE
+ 132CCH 132D5H 0000AH SCANDRV_TEXT       CODE
+ 132D6H 132F3H 0001EH OPTIDISK_TEXT      CODE
+ 132F4H 1332BH 00038H SORTDIRS_TEXT      CODE
+ 1332CH 13340H 00015H CHKDSKI_TEXT       CODE
+ 13341H 13420H 000E0H CALLBACK_TEXT      CODE
+ 13421H 13492H 00072H ARGVARS_TEXT       CODE
+ 13493H 1349CH 0000AH FATSIZE_TEXT       CODE
+ 1349DH 134C4H 00028H CUSTERR_TEXT       CODE
+ 134C5H 13CB3H 007EFH RDWRSECT_TEXT      CODE
+ 13CB4H 148A4H 00BF1H BOOT_TEXT          CODE
+ 148A5H 14C4BH 003A7H DIRECT_TEXT        CODE
+ 14C4CH 14CC9H 0007EH DRIVE_TEXT         CODE
+ 14CCAH 15C1EH 00F55H FAT_TEXT           CODE
+ 15C1FH 15C43H 00025H FTEERR_TEXT        CODE
+ 15C44H 1605DH 0041AH SUBDIR_TEXT        CODE
+ 1605EH 162E0H 00283H FSINFO_TEXT        CODE
+ 162E1H 163F0H 00110H LOWFAT32_TEXT      CODE
+ 163F1H 16980H 00590H BACKUP_TEXT        CODE
+ 16981H 16D32H 003B2H WALKTREE_TEXT      CODE
+ 16D33H 16E4BH 00119H CPYSCT_TEXT        CODE
+ 16E4CH 16F4EH 00103H DIRCNT_TEXT        CODE
+ 16F4FH 17573H 00625H FNDCIDIR_TEXT      CODE
+ 17574H 17820H 002ADH FNDCIFAT_TEXT      CODE
+ 17821H 17991H 00171H GTNTHCST_TEXT      CODE
+ 17992H 17CC3H 00332H NTHENTRY_TEXT      CODE
+ 17CC4H 17DB3H 000F0H NTHFLCLT_TEXT      CODE
+ 17DB4H 184E8H 00735H RELOCCLT_TEXT      CODE
+ 184E9H 18743H 0025BH ADCPDIRS_TEXT      CODE
+ 18744H 187ECH 000A9H CLCFSIZE_TEXT      CODE
+ 187EDH 18DD4H 005E8H FREESPAC_TEXT      CODE
+ 18DD5H 1A90CH 01B38H VFILESYS_TEXT      CODE
+ 1A90DH 1B2C6H 009BAH RELOCSQC_TEXT      CODE
+ 1B2C7H 1B6FEH 00438H BUFSHIFT_TEXT      CODE
+ 1B6FFH 1B9A1H 002A3H PATHCONV_TEXT      CODE
+ 1B9A2H 1BF6EH 005CDH APMLIB_TEXT        CODE
+ 1BF6FH 1C090H 00122H SCTCACHE_TEXT      CODE
+ 1C091H 1C1B5H 00125H PHSCACHE_TEXT      CODE
+ 1C1B6H 1C318H 00163H LOGCACHE_TEXT      CODE
+ 1C319H 1CE65H 00B4DH BLKCACHE_TEXT      CODE
+ 1CE66H 1CF86H 00121H WRTBACK_TEXT       CODE
+ 1CF87H 1D047H 000C1H READ_TEXT          CODE
+ 1D048H 1D0BBH 00074H WRITE_TEXT         CODE
+ 1D0BCH 1D198H 000DDH FTEMEM_TEXT        CODE
+ 1D199H 1D342H 001AAH BITFIELD_TEXT      CODE
+ 1D343H 1D60FH 002CDH VFSBTFLD_TEXT      CODE
+ 1D610H 1D6FDH 000EEH VFSARRAY_TEXT      CODE
+ 1D700H 1D700H 00000H _FARDATA           FAR_DATA
+ 1D700H 1D700H 00000H _OVERLAY_          OVRINFO
+ 1D700H 1D717H 00018H _INIT_             INITDATA
+ 1D718H 1D718H 00000H _INITEND_          INITDATA
+ 1D718H 1D718H 00000H _EXIT_             EXITDATA
+ 1D718H 1D718H 00000H _EXITEND_          EXITDATA
+ 1D720H 1D720H 00000H _1STUB_            STUBSEG
+ 1D720H 20C07H 034E8H _DATA              DATA
+ 20C08H 20C08H 00000H _CVTSEG            DATA
+ 20C08H 20C08H 00000H _SCNSEG            DATA
+ 20C08H 20C1EH 00017H XMS_DATA           DATA
+ 20C20H 24931H 03D12H _BSS               BSS
+ 24932H 24932H 00000H _BSSEND            ENDBSS
+ 24940H 249BFH 00080H _STACK             STACK
+ 249C0H 249D1H 00012H DPMITST_TEXT       
+ 249D2H 249DBH 0000AH EXTMEM_TEXT        
+ 249DCH 249ECH 00011H XMS_TEXT           
+ 249EDH 24A1AH 0002EH KEYBOARD_TEXT      
+ 24A1BH 24A1CH 00002H MOUSE_DATA         
+ 24A1DH 24BB4H 00198H MOUSE_TEXT         
+ 24BB5H 24BB6H 00002H SCREEN_DATA        
+ 24BB7H 24E02H 0024CH SCREEN_TEXT        
+ 24E03H 24E26H 00024H LOWTIME_TEXT       
+ 24E27H 24E88H 00062H LOLOGMAN_TEXT      
+ 24E89H 24E90H 00008H SWITCHCH_TEXT      
+ 24E91H 24E97H 00007H CRITICAL_DATA      
+ 24E98H 24EF2H 0005BH CRITICAL_TEXT      
+ 24EF3H 24EF4H 00002H GTCDEX_DATA        
+ 24EF5H 24F49H 00055H GTCDEX_TEXT        
+
+  Address         Publics by Name
+
+ 1D72:0000       DATASEG@
+ 0000:0206       DGROUP@
+ 0000:3996       F_LDIV@
+ 0000:39A5       F_LMOD@
+ 0000:399D       F_LUDIV@
+ 0000:39AD       F_LUMOD@
+ 0000:3A44       F_LXLSH@
+ 0000:397C       F_LXMUL@
+ 0000:3A65       F_LXURSH@
+ 0000:3A86       F_PADD@
+ 0000:3AB5       F_PSUB@
+ 0000:3AE6       F_SCOPY@
+ 24BB:024A       GetScreenAddress
+ 0000:3996       LDIV@
+ 0000:39A5       LMOD@
+ 0000:399D       LUDIV@
+ 0000:39AD       LUMOD@
+ 0000:3A44       LXLSH@
+ 0000:397C       LXMUL@
+ 0000:3A65       LXURSH@
+ 0000:3993       N_LDIV@
+ 0000:39A2       N_LMOD@
+ 0000:399A       N_LUDIV@
+ 0000:39AA       N_LUMOD@
+ 0000:3A41       N_LXLSH@
+ 0000:3B02       N_LXMUL@
+ 0000:3A62       N_LXURSH@
+ 0000:3A83       N_PADD@
+ 0000:3B19       N_PCMP@
+ 0000:3AB2       N_PSUB@
+ 0000:3AE3       N_SCOPY@
+ 0000:3A86       PADD@
+ 0000:3AB5       PSUB@
+ 0000:3AE6       SCOPY@
+ 0000:01F0       _abort
+ 0000:1BE6       _absread
+ 0000:1C4D       _abswrite
+ 0000:026B       _access
+ 184E:0009       _AdaptCurrentAndPreviousDirs
+ 1D0B:008C       _AllocateBootSector
+ 1D0B:00AB       _AllocateDirectoryEntry
+ 1D0B:00CA       _AllocateFSInfo
+ 1D0B:0055       _AllocateSector
+ 1D0B:0066       _AllocateSectors
+ 249E:000D       _AltKeyDown
+ 076D:000C       _AltKeyPressed
+ 0770:00F5       _AnyButtonPressed
+ 1B9A:05B8       _APMGetVer
+ 1B9A:0576       _APMIsInstalled
+ 1B9A:0002       _apmlib
+ 1D72:710E       _APMVerMax
+ 1D72:710F       _APMVerMin
+ 0EA9:0291       _AscendingFilter
+ 0742:0155       _AskForXMSManager
+ 0620:0609       _AskOptimizationMethod
+ 0000:02A6       _atexit
+ 0000:1D29       _atoi
+ 0000:1CB4       _atol
+ 1342:003A       _AutomaticallyExit
+ 163F:0001       _BackupBoot
+ 163F:0511       _BackupFat
+ 03CB:0250       _BadOption
+ 0BF2:0058       _BeginOptimization
+ 0000:1D3A       _biosequip
+ 0000:1D3D       _biosmemory
+ 0000:1D40       _biostime
+ 17DB:012A       _BreakFatMapReference
+ 1BF6:00F3       _CacheActive
+ 1C31:015C       _CacheBlockSector
+ 1BF6:0059       _CacheIsCorrupt
+ 1BF6:0068       _CacheSector
+ 0D74:0040       _CalculateCheckSum
+ 1874:0004       _CalculateFileSize
+ 187E:054C       _CalculateFreeSpace
+ 13CB:0A4E       _CalculateNewSerialNumber
+ 1D72:22C6       _CancelButton
+ 24EF:0005       _CDEXinstalled
+ 07AE:05BE       _ChangeCharColor
+ 24BB:01A5       _ChangeCursorPos
+ 0000:1D53       _chdir
+ 0421:0001       _CheckDefragEnvironment
+ 0E1B:0008       _CheckDescriptorInFat
+ 1332:000C       _CheckDiskIntegrity
+ 09EF:0005       _CheckExternalEvent
+ 0E3E:0005       _CheckFAT
+ 1605:009E       _CheckFSInfo
+ 0D04:057A       _CheckHelpClick
+ 0D04:0652       _CheckHelpEnter
+ 0C55:017B       _CheckHelpFile
+ 0D04:05E7       _CheckHelpTab
+ 0770:01FB       _CheckMouseRelease
+ 1D72:2D1E       _CheckRoutines
+ 0E01:000F       _CheckVolume
+ 1D19:00CC       _ClearBitfieldBit
+ 1349:002A       _ClearCustomError
+ 075F:00D7       _ClearEvent
+ 15C1:0029       _ClearFTEerror
+ 249E:002E       _ClearKeyboard
+ 0770:0005       _ClearMouse
+ 0855:0313       _ClearStatusBar
+ 1D34:0128       _ClearVFSBitfieldBit
+ 0000:1D9B       _clock
+ 0000:02D3       _close
+ 1C1B:009D       _CloseLogicalCache
+ 24A1:000D       _CloseMouse
+ 1C31:0134       _ClosePerBlockCaching
+ 1C09:0084       _ClosePhysicalCache
+ 134C:0782       _CloseReadWriteSectors
+ 1BF6:001C       _CloseSectorCache
+ 0949:08D3       _CloseWindow
+ 0000:0300       _clrscr
+ 1D72:691E       _ClustersPerBlock
+ 0443:0003       _CMDefint
+ 04FB:00E1       _CMDEFINT_GetCallbacks
+ 1322:0021       _ColdReboot
+ 07AE:070E       _ColorArea
+ 07AE:0006       _ColorScreen
+ 1BF6:011B       _CommitCache
+ 0EA9:0100       _CompareDateTime
+ 0E4A:0043       _CompareEntriesToSort
+ 0EA9:007A       _CompareExtension
+ 0EA9:0003       _CompareNames
+ 0EA9:00B7       _CompareSize
+ 11EE:0068       _CompleteQuickTryDefragmentVolume
+ 0949:02D3       _ControlWindow
+ 1B6F:0219       _ConvertEntryPath
+ 14CC:020F       _ConvertToDataSector
+ 1B6F:000F       _ConvertUserPath
+ 1D72:131E       _CopyRight
+ 0844:0004       _CopyScreen
+ 16D3:0003       _CopySectors
+ 24A1:00CC       _CountButtonPresses
+ 24A1:011A       _CountButtonReleases
+ 1D19:0009       _CreateBitField
+ 08E1:0443       _CreateCommandButton
+ 0AC9:0259       _CreateDriveSelectionBox
+ 10E1:0009       _CreateFastSelectMap
+ 17DB:014B       _CreateFatMapReference
+ 12E6:0003       _CreateFixedClusterMap
+ 092F:0054       _CreateFrame
+ 0B4D:0521       _CreateHelpView
+ 0939:0032       _CreateHLine
+ 0941:002F       _CreateLabel
+ 0A66:0586       _CreateLowListBox
+ 0B05:03D7       _CreateLowView
+ 10E1:01DB       _CreateNotFragmentedMap
+ 09F8:024A       _CreateSelectionButton
+ 09D7:00E3       _CreateTimeLabel
+ 1D61:0000       _CreateVFSArray
+ 1D34:0003       _CreateVFSBitField
+ 18DD:0005       _CreateVirtualFile
+ 0A25:035C       _CreateVScrollBox
+ 0AF9:006B       _CreateWindowCloser
+ 24E9:0037       _CriticalErrorOccured
+ 24E9:001E       _CriticalHandlerOn
+ 1084:0242       _CrunchVolume
+ 1B9A:04B6       _CtrlAltDel
+ 0000:03A4       _ctrlbrk
+ 1D72:2C0A       _CurrentLink
+ 14CC:017B       _DataSectorToCluster
+ 1D72:345E       _daylight
+ 0F31:0002       _DefragFAT
+ 0F40:000D       _DefragmentVolume
+ 0000:1FE5       _delay
+ 18DD:00CC       _DeleteVirtualFile
+ 07AE:0054       _DelimitStatusBar
+ 0EA9:0299       _DescendingFilter
+ 0E08:0008       _DescriptorCheck
+ 1D19:006E       _DestroyBitfield
+ 16F4:00A6       _DestroyDirReferedTable
+ 10E1:013A       _DestroyFastSelectMap
+ 17DB:0101       _DestroyFatReferedMap
+ 1757:00FE       _DestroyFatReferedTable
+ 12E6:01FC       _DestroyFixedClusterMap
+ 10E1:02E8       _DestroyNotFragmentedMap
+ 1D61:0064       _DestroyVFSArray
+ 1D34:0090       _DestroyVFSBitfield
+ 13CB:0703       _DetermineFATType
+ 1027:0599       _DirectoriesFirstDefrag
+ 1027:05B9       _DirectoriesWithFilesDefrag
+ 15C4:0333       _DirectoryEquals
+ 1D72:33D3       _directvideo
+ 1CF8:0007       _disk_read
+ 1CF8:0054       _disk_read_ext
+ 1D04:0008       _disk_write_ext
+ 0000:15BE       _dostounix
+ 042A:0107       _DOStoXMSmove
+ 24BB:0180       _DOSWipeScreen
+ 249C:0000       _DPMIinstalled
+ 089A:0313       _DrawBadBlock
+ 089A:0404       _DrawBadBlocks
+ 089A:0187       _DrawBlock
+ 089A:01BB       _DrawBlocks
+ 0855:0082       _DrawBlockSize
+ 07AE:009F       _DrawBox
+ 07AE:035B       _DrawButton
+ 24BB:01EF       _DrawChar
+ 0855:0428       _DrawCurrentDrive
+ 07AE:0210       _DrawDoubleBox
+ 1334:0081       _DrawDriveMap
+ 089A:0008       _DrawDrvMap
+ 0855:017E       _DrawFunctionKey
+ 0D04:04FC       _DrawHelpLine
+ 0855:00CE       _DrawMethod
+ 1334:0062       _DrawMoreOnDriveMap
+ 1334:0049       _DrawOnDriveMap
+ 089A:02B6       _DrawOptimizedBlock
+ 089A:0395       _DrawOptimizedBlocks
+ 089A:0332       _DrawReadBlock
+ 089A:0429       _DrawReadBlocks
+ 0793:0006       _DrawScreen
+ 07AE:0559       _DrawSelectionButton
+ 07AE:075F       _DrawSequence
+ 07AE:01D4       _DrawSingleBox
+ 0855:0334       _DrawStatus
+ 07AE:02A5       _DrawStatusBar
+ 07AE:0882       _DrawStatusOnBar
+ 07AE:024C       _DrawText
+ 089A:012E       _DrawTheBlock
+ 0855:0007       _DrawTime
+ 089A:02F4       _DrawUnmovableBlock
+ 089A:03DF       _DrawUnmovableBlocks
+ 089A:02D5       _DrawUnusedBlock
+ 089A:03BA       _DrawUnusedBlocks
+ 089A:0297       _DrawUsedBlock
+ 089A:0370       _DrawUsedBlocks
+ 07AE:07AE       _DrawVScrollBox
+ 089A:0351       _DrawWriteBlock
+ 089A:044E       _DrawWriteBlocks
+ 1C1B:00CA       _EnsureBlockMapped
+ 18DD:0717       _EnsureClusterFree
+ 18DD:0737       _EnsureClustersFree
+ 148A:02BD       _EntryLength
+ 1D72:34E4       _environ
+ 0000:2026       _eof
+ 1D72:007D       _errno
+ 06B2:0226       _ErrorBox
+ 0000:03C8       _exit
+ 162E:0001       _ExtendedAbsReadWrite
+ 0000:36BE       _farfree
+ 0000:37AE       _farmalloc
+ 0000:390E       _farrealloc
+ 0000:0519       _fclose
+ 0000:091D       _fdopen
+ 0000:05C8       _fflush
+ 0000:2164       _fgetc
+ 0000:2250       _fgetchar
+ 1027:0579       _FilesFirstDefrag
+ 14CC:077F       _FileTraverseFat
+ 0D8E:0001       _FillDriveMap
+ 0E4A:005B       _FilterSortResult
+ 16F4:020A       _FindClusterInDirectories
+ 16F4:04C7       _FindClusterInDirectories1
+ 1757:01C6       _FindClusterInFAT
+ 1757:020E       _FindClusterInFAT1
+ 187E:0300       _FindFirstFittingFreeSpace
+ 187E:000D       _FindFirstFreeSpace
+ 187E:0373       _FindLastFreeCluster
+ 187E:0147       _FindNextFreeSpace
+ 12E6:01A0       _FixedClusterMarker
+ 12E6:0109       _FixedFileMarker
+ 0000:0698       _flushall
+ 1B9A:007D       _FlushAllCaches
+ 0000:08B2       _fopen
+ 0000:0C47       _fputc
+ 0000:0DA3       _fputchar
+ 0000:36BE       _free
+ 1D0B:009A       _FreeBootSector
+ 1D0B:00B9       _FreeDirectoryEntry
+ 1D0B:00D8       _FreeFSInfo
+ 0CDE:01FC       _FreeHelpSysData
+ 1D0B:007B       _FreeSectors
+ 0000:08E4       _freopen
+ 0000:09E3       _fseek
+ 1D0B:000C       _FTEAlloc
+ 1D0B:0043       _FTEFree
+ 0000:0A63       _ftell
+ 0F67:0403       _FullDefragPlace
+ 0F67:000F       _FullyDefragmentVolume
+ 13CB:041C       _GetBiosDriveNumber
+ 13CB:0672       _GetBPBFileSystemString
+ 13CB:05E1       _GetBPBVolumeLabel
+ 14CC:0DDB       _GetBytesInFat
+ 13CB:0347       _GetClustersInDataArea
+ 24E9:0049       _GetCriticalCause
+ 24E9:0056       _GetCriticalStatus
+ 130C:0083       _GetCurrentVolumeHandle
+ 24BB:004F       _GetCursorShape
+ 1349:0022       _GetCustomError
+ 14CC:009A       _GetDataAreaStart
+ 0000:0AB3       _getdate
+ 0DB3:000C       _GetDefragFactor
+ 0000:22FF       _getdfree
+ 15C4:02D5       _GetDirectory
+ 148A:0005       _GetDirectoryStart
+ 0000:1D6B       _getdisk
+ 13CB:0554       _GetDiskSerialNumber
+ 1316:0037       _GetDriveNames
+ 0E4A:0068       _GetEntryToSort
+ 0000:225C       _getenv
+ 075F:0001       _GetEvent
+ 249D:0002       _GetExtendedMemorySize
+ 10E1:0163       _GetFastSelectMap
+ 0000:22E1       _getfat
+ 13CB:0899       _GetFAT32BackupBootSector
+ 13CB:0853       _GetFAT32RootCluster
+ 162E:0084       _GetFAT32SectorSize
+ 13CB:07FF       _GetFAT32Version
+ 0000:22CC       _getfatd
+ 14CC:001E       _GetFatLabelSize
+ 14CC:000A       _GetFatStart
+ 148A:0273       _GetFirstCluster
+ 1C31:0749       _GetFirstDirtyTag
+ 1605:0137       _GetFreeClusterSearchStart
+ 187E:04A5       _GetFreeDiskSpace
+ 13CB:0879       _GetFSInfoSector
+ 15C1:000F       _GetFTEerror
+ 0C94:000C       _GetHelpIndex
+ 0CDE:01E3       _GetHelpLine
+ 0CDE:01DB       _GetHelpLineCount
+ 24BB:003B       _GetHighIntensity
+ 0CA0:030F       _GetHlpAsciiChar
+ 0CA0:0274       _GetHlpLinkCaption
+ 0CA0:02C7       _GetHlpLinkIndex
+ 0CA0:037A       _GetHlpTextToCenter
+ 13CB:03E6       _GetLabelsInFat
+ 0D04:06E5       _GetLastHelpTop
+ 1334:00D4       _GetMaximumDrvMapBlock
+ 18DD:1A93       _GetMaxRelocatableSize
+ 13CB:029B       _GetMediaDescriptor
+ 10E1:0467       _GetNotFragmentedMap
+ 1782:0001       _GetNthCluster
+ 1799:0002       _GetNthDirectoryPosition
+ 1799:019A       _GetNthDirectorySector
+ 17CC:0004       _GetNthFileCluster
+ 1799:0207       _GetNthSubDirectoryPosition
+ 13CB:025B       _GetNumberOfFats
+ 1605:01FC       _GetNumberOfFreeClusters
+ 13CB:027B       _GetNumberOfRootEntries
+ 13CB:02BB       _GetNumberOfSectors
+ 0770:011B       _GetNumSupportedButtons
+ 1325:0040       _GetOptimizationDrive
+ 1325:0074       _GetOptimizationMethod
+ 1342:001F       _GetParsedDrive
+ 0770:0149       _GetPressedX
+ 0770:0151       _GetPressedY
+ 187E:041C       _GetPreviousFreeCluster
+ 13CB:0327       _GetReadWriteHeads
+ 134C:07DC       _GetReadWriteModus
+ 0770:0159       _GetReleasedX
+ 0770:0161       _GetReleasedY
+ 0DF5:0029       _GetRememberedFileCount
+ 13CB:023B       _GetReservedSectors
+ 148A:019C       _GetRootDirPosition
+ 24BB:0064       _GetScreenCols
+ 24BB:006D       _GetScreenLines
+ 13CB:0215       _GetSectorsPerCluster
+ 13CB:02E1       _GetSectorsPerFat
+ 13CB:0307       _GetSectorsPerTrack
+ 0E4A:00A2       _GetSlotToSort
+ 1325:0059       _GetSortCriterium
+ 05DD:030C       _GetSortOptions
+ 1325:0061       _GetSortOrder
+ 0000:0AD9       _gettext
+ 24E0:0003       _GetTime
+ 0000:0AC6       _gettime
+ 0000:2321       _getvect
+ 1D61:00B4       _GetVFSArray
+ 1D34:01B0       _GetVFSBitfieldBit
+ 18DD:00FD       _GetVirtualFileSpaceUsed
+ 03F4:0005       _get_os
+ 1342:006B       _GiveAudibleWarning
+ 1342:0058       _GiveFullOutput
+ 24E2:0031       _gotoxy1
+ 14C4:000C       _HasAllFloppyForm
+ 14C4:0052       _HasFloppyForm
+ 24BB:0007       _HideCursor
+ 24A1:0060       _HideMouse
+ 0000:0362       _highvideo
+ 1D72:08E2       _id_os
+ 1D72:08E4       _id_os_name
+ 1D72:3538       _id_os_type
+ 1D72:3500       _id_os_ver
+ 0DF5:001A       _IncrementFileCount
+ 16F4:0315       _IndicateDirClusterMoved
+ 16F4:028D       _IndicateDirEntryMoved
+ 1334:00B8       _IndicatePercentageDone
+ 13CB:0915       _IndicateVolumeDataFilled
+ 13CB:08ED       _IndicateVolumeDataFilled_NT
+ 0D7F:0009       _InfoFAT
+ 06B2:0194       _InformUser
+ 1C1B:0006       _InitialiseLogicalCache
+ 1C31:00C5       _InitialisePerBlockCaching
+ 1C09:0001       _InitialisePhysicalCache
+ 09EB:0008       _InitializeControlValues
+ 24A1:000D       _InitMouse
+ 134C:0750       _InitReadSectors
+ 134C:071E       _InitReadWriteSectors
+ 1BF6:000F       _InitSectorCache
+ 1349:0003       _InspectFatLabelSize
+ 0DF2:000A       _InspectLabelSizeFAT
+ 130C:000F       _InstallOptimizationDrive
+ 1CE6:0006       _InstallWriteFunction
+ 0000:2341       _int86
+ 0000:2372       _int86x
+ 0000:240B       _intdos
+ 0000:2439       _intdosx
+ 0000:2499       _intr
+ 1C31:06EA       _InvalidateBlockCache
+ 13CB:0202       _InvalidateBootInfo
+ 1BF6:00E0       _InvalidateCache
+ 14CC:0DCD       _InvalidateFatCache
+ 24BB:000F       _InvertChar
+ 07AE:060B       _InvertLine
+ 0000:253D       _ioctl
+ 0000:25A3       _isatty
+ 24EF:003F       _IsCDROM
+ 0CA0:014D       _IsCenterOnLine
+ 12E6:0225       _IsClusterMovable
+ 18DD:061C       _IsClusterUsed
+ 24BB:0088       _isEGA
+ 11A5:0009       _IsFileFragmented
+ 0CA0:00DD       _IsFullLine
+ 0CA0:0104       _IsHlpAsciiChar
+ 0CA0:000F       _IsHlpReference
+ 14CC:0E51       _IsLabelValid
+ 14CC:0EE8       _IsLabelValidInFile
+ 1342:000C       _IsMethodEntered
+ 1342:0032       _IsRebootRequested
+ 148A:01F2       _IsRootDirPosition
+ 13CB:052A       _IsVolumeDataFilled
+ 13CB:053F       _IsVolumeDataFilled_NT
+ 134C:07E8       _IsWorkingOnImageFile
+ 249D:000C       _IsXMSInstalled
+ 0419:004C       _is_dosemu
+ 0000:265F       _itoa
+ 249E:0015       _KeyPressed
+ 1334:0034       _LargeMessage
+ 1D72:2FE0       _LastReadBufferSector
+ 14CC:0565       _LinearTraverseFat
+ 148A:02DB       _LocatePreviousDir
+ 0770:0169       _LockMouse
+ 1BF6:002D       _LockSectorCache
+ 1D72:711C       _LogicalBlocks
+ 1334:0096       _LogMessage
+ 0C53:000E       _LogPrint
+ 0000:036B       _lowvideo
+ 16E4:00B8       _low_dircount
+ 0000:25B4       _lseek
+ 0000:26A6       _ltoa
+ 03CB:0007       _main
+ 0557:010F       _MainMenu
+ 0000:37A4       _malloc
+ 10E1:0473       _MarkFileAsContinous
+ 0DCC:0004       _MarkUnmovables
+ 0DCC:00C7       _MarkUnmovables32
+ 0000:26CE       _memcmp
+ 0000:26F6       _memcpy
+ 0000:27AF       _memmove
+ 0ED3:0003       _MemorySortEntries
+ 0000:273E       _memset
+ 1342:0001       _MethodIsEntered
+ 24A1:00A8       _MouseGotoXY
+ 24A1:0034       _MousePresent
+ 0770:004B       _MousePressed
+ 0770:0071       _MouseReleased
+ 24A1:0168       _MouseWindow
+ 10E1:04FA       _MoveFragmentBlock
+ 0000:0B64       _movetext
+ 0000:275D       _movmem
+ 0BA8:000F       _MSDefint
+ 04FB:055B       _MSDEFINT_GetCallbacks
+ 163F:00AC       _MultipleBootCheck
+ 0E23:0002       _MultipleFatCheck
+ 1342:0045       _MustAutomaticallyExit
+ 1D72:1EAC       _NoButton
+ 0000:0374       _normvideo
+ 1D72:22BE       _OkButton
+ 0000:27FD       _open
+ 0949:0007       _OpenWindow
+ 1D72:2486       _OptimizationMethods
+ 132D:0006       _OptimizeDisk
+ 0467:000A       _ParseCmdLineArguments
+ 0CDE:0103       _ParseHelpFile
+ 0467:04D5       _ParseInteractiveArguments
+ 0CA0:020C       _PassCenterOnLinePart
+ 0CA0:01FE       _PassHlpAsciiChar
+ 0CA0:01E8       _PassHlpFullLinePart
+ 0CA0:019B       _PassHlpReferencePart
+ 0CA0:0222       _PassNextHelpPart
+ 0D04:06CB       _PastEndOfHelp
+ 0844:0073       _PasteScreen
+ 0C9B:003D       _PopHelpIndex
+ 1799:0122       _positiongetter
+ 11B4:000D       _PostOrderWalkDirectoryTree
+ 18DD:16FD       _PrepareVirtualFile
+ 0770:00A9       _PressedInRange
+ 0C94:005C       _PreviousHelpIndex
+ 24BB:020B       _PrintChar
+ 24E2:0012       _PrintChar1
+ 0000:0C0A       _printf
+ 24BB:022B       _PrintString
+ 13CB:0498       _PrivateIsVolumeDataFilled
+ 0C9B:0006       _PushHelpIndex
+ 0000:0F62       _puts
+ 0000:0B2A       _puttext
+ 0BF2:02F1       _QueryDisk
+ 1334:00AB       _QuerySaveState
+ 0728:0122       _QueryUserStop
+ 11EE:000A       _QuickTryDefragmentVolume
+ 0000:299B       _read
+ 13CB:0122       _ReadBootSector
+ 13CB:01AE       _ReadBootSectorIfNeeded
+ 24BB:019A       _ReadCursorAttr
+ 24BB:0191       _ReadCursorChar
+ 148A:00A0       _ReadDirEntry
+ 0EEF:0003       _ReadEntriesToSort
+ 14CC:0951       _ReadFatLabel
+ 1605:000E       _ReadFSInfo
+ 0C55:027C       _ReadHelpFile
+ 249E:0023       _ReadKey
+ 134C:021E       _ReadSectors
+ 134C:03E1       _ReadSectorsAddress
+ 18DD:03FC       _ReadVirtualFile
+ 0000:3907       _realloc
+ 1B9A:039B       _Reboot
+ 06FC:00BA       _RecommendMethod
+ 130C:006D       _RejectOptimizationDrive
+ 0770:00CF       _ReleasedInRange
+ 17DB:01FB       _RelocateCluster
+ 1A90:000D       _RelocateClusterSequence
+ 123A:0004       _RelocateKnownFile
+ 1A90:013F       _RelocateOverlapping
+ 1C09:009A       _RemapXMSBlock
+ 0DF5:0035       _RememberFileCount
+ 0C94:001B       _RememberHelpIndex
+ 0000:0253       _RenewCriticalHandler
+ 06DD:0159       _ReportDefragDone
+ 0D8E:0223       _ReportDriveSize
+ 0D8E:00C4       _Reporter
+ 1342:0027       _RequestReboot
+ 0DF5:0009       _ResetFileCount
+ 0BED:0024       _RestoreDOSState
+ 1C31:0485       _RetreiveBlockSector
+ 1BF6:0098       _RetreiveCachedSector
+ 1B2C:00DF       _RotateBufLeft
+ 1B2C:0007       _RotateBufRight
+ 0BED:0007       _SaveDOSState
+ 132C:000C       _ScanDrive
+ 0C49:0005       _ScrLogPrint
+ 24E2:0045       _Scroll1Up
+ 0000:2A75       _segread
+ 0BF2:026F       _SelectDrive
+ 0D04:0682       _SelectHelpPage
+ 0E56:0118       _SelectionSortEntries
+ 0BF2:01E6       _SelectOptimizationMethod
+ 0BF2:0161       _SelectSortOptions
+ 1342:0060       _SetAudibleWarning
+ 24BB:01D5       _SetBackColor
+ 1D19:0088       _SetBitfieldBit
+ 0000:2A95       _setblock
+ 1334:0001       _SetCallBacks
+ 0844:010C       _SetClipIndex
+ 0E4A:000D       _SetCompareFunction
+ 0000:022F       _SetCriticalHandler
+ 24BB:0059       _SetCursorShape
+ 1349:000D       _SetCustomError
+ 0000:2AB1       _setdate
+ 0000:1D71       _setdisk
+ 0E4A:001F       _SetFilterFunction
+ 148A:02A4       _SetFirstCluster
+ 24BB:01BC       _SetForColor
+ 15C1:0017       _SetFTEerror
+ 1342:004D       _SetFullOutput
+ 24BB:0029       _SetHighIntensity
+ 0000:271A       _setmem
+ 1325:000E       _SetOptimizationDrive
+ 1325:0069       _SetOptimizationMethod
+ 1342:0014       _SetParsedDrive
+ 0E4A:0031       _SetResourceConfiguration
+ 24BB:0107       _SetScreenLines
+ 1325:0048       _SetSortOptions
+ 07AE:0033       _SetStatusBar
+ 0855:01CD       _SetStatusOnBar
+ 0000:2AC6       _settime
+ 0000:136A       _setvbuf
+ 0000:2330       _setvect
+ 1D61:007A       _SetVFSArray
+ 1D34:00A2       _SetVFSBitfieldBit
+ 058F:018B       _ShowCopyRight
+ 07AE:0645       _ShowDialog
+ 0695:0102       _ShowDriveSelectionBox
+ 03CB:022E       _ShowError
+ 071C:0088       _ShowHelpSystem
+ 05AE:0293       _ShowMapLegend
+ 06B2:0258       _ShowModalMessage
+ 24A1:0054       _ShowMouse
+ 0C49:0063       _ShowScreenLog
+ 24E2:0007       _ShowScreenPage
+ 1B9A:03F1       _ShutDown
+ 1334:001F       _SmallMessage
+ 132F:0004       _SortDirectories
+ 0E43:0001       _SortDirectoryTree
+ 0E82:000C       _SortEntries
+ 0F28:000A       _SortFAT
+ 0E82:01B2       _SortSubdir
+ 0000:14C9       _sprintf
+ 04FB:0160       _StartCounting
+ 1BF6:0043       _StartSectorCache
+ 0000:150C       _stime
+ 04FB:01A8       _StopCounting
+ 0BF2:056A       _StopDefragmentationProcess
+ 1BF6:004E       _StopSectorCache
+ 0000:2ADB       _strcat
+ 0000:2B1A       _strchr
+ 0000:2B57       _strcmp
+ 0000:2B87       _strcpy
+ 0000:2BB0       _stricmp
+ 0000:2BF1       _strlen
+ 0000:2C10       _strncmp
+ 0000:2C48       _strncpy
+ 0000:2C79       _strnicmp
+ 1799:0261       _SubdirGetter
+ 15C4:0004       _SubdirTraverser
+ 1B9A:04D1       _Suspend
+ 1D19:0112       _SwapBitfieldBits
+ 1B2C:01B7       _SwapBuffer
+ 1B2C:033C       _SwapBufferParts
+ 10E1:016F       _SwapClustersInFastSelectMap
+ 0E4A:0086       _SwapEntryForSort
+ 17DB:016C       _SwapFatMapReference
+ 1D34:0213       _SwapVFSBitfieldBits
+ 24E8:0009       _SwitchChar
+ 163F:052B       _SynchronizeFATs
+ 0000:15A4       _tell
+ 0000:0357       _textattr
+ 0000:033E       _textbackground
+ 0000:0329       _textcolor
+ 0000:154C       _time
+ 1D72:345A       _timezone
+ 0000:1955       _tmpnam
+ 0C9B:0050       _TopHelpIndex
+ 0000:199C       _toupper
+ 15C4:00E6       _TraverseRootDir
+ 15C4:0251       _TraverseSubdir
+ 1D72:3452       _tzname
+ 0000:2CBD       _tzset
+ 0000:2689       _ultoa
+ 1C31:05BB       _UncacheBlockSector
+ 1BF6:00C1       _UncacheSector
+ 1140:000C       _UnfragmentFiles
+ 1CE6:0049       _UninstallWriteFunction
+ 0000:16EB       _unixtodos
+ 0000:2F88       _unlink
+ 0770:01C2       _UnLockMouse
+ 1BF6:0038       _UnlockSectorCache
+ 0BF2:0546       _UpdateDriveMap
+ 1334:0013       _UpdateInterfaceState
+ 1D72:6DCE       _VirtualDirectory
+ 0000:14EB       _vsprintf
+ 1698:0001       _WalkDirectoryTree
+ 1322:0004       _WarmReboot
+ 06B2:01DD       _WarningBox
+ 03CB:027D       _WarnOnNoOp
+ 24A1:006C       _WhereMouse
+ 0000:19D2       _wherex
+ 0000:19E1       _wherey
+ 0000:19F4       _write
+ 1C31:0B2A       _WriteBackCache
+ 1CE6:00D1       _WriteBackSectors
+ 13CB:09E8       _WriteBiosDriveNumber
+ 13CB:0164       _WriteBootSector
+ 13CB:0B3B       _WriteBPBFileSystemString
+ 13CB:0AC4       _WriteBPBVolumeLabel
+ 15C4:035B       _WriteDirectory
+ 148A:015B       _WriteDirEntry
+ 13CB:0A14       _WriteDiskSerialNumber
+ 13CB:0BE6       _WriteFAT32BackupBootSector
+ 13CB:0BC1       _WriteFAT32RootCluster
+ 13CB:0BB2       _WriteFAT32Version
+ 14CC:0A48       _WriteFatLabel
+ 1757:0128       _WriteFatReference
+ 1605:0279       _WriteFreeClusterCount
+ 1605:0261       _WriteFreeClusterStart
+ 1605:0054       _WriteFSInfo
+ 13CB:0BD7       _WriteFSInfoSector
+ 1D72:7166       _WriteFuncs
+ 13CB:0979       _WriteMediaDescriptor
+ 13CB:096A       _WriteNumberOfFats
+ 13CB:093D       _WriteNumberOfRootEntries
+ 13CB:0988       _WriteNumberOfSectors
+ 13CB:09D9       _WriteReadWriteHeads
+ 13CB:095B       _WriteReservedSectors
+ 134C:0430       _WriteSectors
+ 13CB:094C       _WriteSectorsPerCluster
+ 13CB:0997       _WriteSectorsPerFat
+ 13CB:09CA       _WriteSectorsPerTrack
+ 0F07:0006       _WriteSortedEntries
+ 18DD:01D6       _WriteVirtualFile
+ 042A:0001       _XMMinit
+ 042A:0079       _XMSalloc
+ 042A:004E       _XMScoreleft
+ 042A:00BF       _XMSfree
+ 042A:0001       _XMSinit
+ 042A:014D       _XMStoDOSmove
+ 1D72:1EA4       _YesButton
+ 0000:1000  Abs  __AHINCR
+ 0000:000C  Abs  __AHSHIFT
+ 1D72:34D4       __argc
+ 1D72:34D6       __argv
+ 1D72:30D6       __atexitcnt
+ 1D72:716E       __atexittbl
+ 0000:046D       __brk
+ 1D72:0087       __brklvl
+ 1D72:0069       __C0argc
+ 1D72:006B       __C0argv
+ 0000:1EAE       __c0crtinit
+ 1D72:006F       __C0environ
+ 0000:1D7E       __chmod
+ 0000:1DD1       __close
+ 0000:1ECE       __crtinit
+ 1D72:30D8       __ctype
+ 1D72:33DC       __doserrno
+ 1D72:33DE       __dosErrorToSV
+ 04FB:033D       __DrawDriveMap
+ 04FB:03D5       __DrawMoreOnDriveMap
+ 04FB:0353       __DrawOnDriveMap
+ 1D72:0073       __envLng
+ 1D72:0075       __envseg
+ 1D72:0077       __envSize
+ 0000:011A       __exit
+ 1D72:31DA       __exitbuf
+ 0000:00FA       __exitclean
+ 1D72:31DE       __exitfopen
+ 1D72:31E2       __exitopen
+ 0000:2146       __fgetc
+ 1D72:33A0       __fmode
+ 0000:0C25       __fputc
+ 0000:0DBA       __FPUTN
+ 1D72:0083       __heapbase
+ 1D72:008B       __heaptop
+ 1D72:0059       __Int0Vector
+ 1D72:005D       __Int4Vector
+ 1D72:0061       __Int5Vector
+ 1D72:0065       __Int6Vector
+ 0000:2566       __IOERROR
+ 0000:2EA9       __ISDST
+ 04FB:02CF       __LargeMessage
+ 0000:25DD       __LONGTOA
+ 0000:18EF       __MKNAME
+ 0000:0208       __MMODEL
+ 1D72:3438       __monthDay
+ 0000:2161       __Nfgetc
+ 1D72:33A2       __notUmask
+ 0000:294D       __open
+ 1D72:3378       __openfd
+ 1D72:007B       __osmajor
+ 1D72:007C       __osminor
+ 1D72:0079       __psp
+ 04FB:049B       __QuerySaveState
+ 0000:2A59       __read
+ 0000:3B3A       __REALCVT
+ 1D72:34E8       __RealCvtVector
+ 0000:0178       __restorezero
+ 0000:04AC       __sbrk
+ 1D72:34E8       __ScanTodVector
+ 0000:10E2       __SCREENIO
+ 0000:1185       __SCROLL
+ 0000:0000  Abs  __setargv__
+ 0000:0000  Abs  __setenvp__
+ 0000:12F1       __setupio
+ 04FB:029B       __SmallMessage
+ 1D72:007F       __StartTime
+ 1D72:33AA       __stklen
+ 1D72:31E8       __streams
+ 1D72:71F4       __tmpnum
+ 0000:0000  Abs  __turboCrt
+ 04FB:01B3       __UpdateInterfaceState
+ 0000:111F       __VALIDATEXY
+ 1D72:007B       __version
+ 1D72:33C4       __video
+ 0000:1E2A       __VideoInt
+ 0000:2FB8       __VPRINTER
+ 0000:3490       __VPTR
+ 0000:34B6       __VRAM
+ 0000:19C8       __wherexy
+ 0000:352F       __write
+ 0000:1B21       __xfclose
+ 0000:1B5B       __xfflush
+ 0000:3580       ___first
+ 0000:3582       ___last
+ 0000:3584       ___rover
+
+  Address         Publics by Value
+
+ 0000:0000  Abs  __setargv__
+ 0000:0000  Abs  __turboCrt
+ 0000:0000  Abs  __setenvp__
+ 0000:000C  Abs  __AHSHIFT
+ 0000:1000  Abs  __AHINCR
+ 0000:00FA       __exitclean
+ 0000:011A       __exit
+ 0000:0178       __restorezero
+ 0000:01F0       _abort
+ 0000:0206       DGROUP@
+ 0000:0208       __MMODEL
+ 0000:022F       _SetCriticalHandler
+ 0000:0253       _RenewCriticalHandler
+ 0000:026B       _access
+ 0000:02A6       _atexit
+ 0000:02D3       _close
+ 0000:0300       _clrscr
+ 0000:0329       _textcolor
+ 0000:033E       _textbackground
+ 0000:0357       _textattr
+ 0000:0362       _highvideo
+ 0000:036B       _lowvideo
+ 0000:0374       _normvideo
+ 0000:03A4       _ctrlbrk
+ 0000:03C8       _exit
+ 0000:046D       __brk
+ 0000:04AC       __sbrk
+ 0000:0519       _fclose
+ 0000:05C8       _fflush
+ 0000:0698       _flushall
+ 0000:08B2       _fopen
+ 0000:08E4       _freopen
+ 0000:091D       _fdopen
+ 0000:09E3       _fseek
+ 0000:0A63       _ftell
+ 0000:0AB3       _getdate
+ 0000:0AC6       _gettime
+ 0000:0AD9       _gettext
+ 0000:0B2A       _puttext
+ 0000:0B64       _movetext
+ 0000:0C0A       _printf
+ 0000:0C25       __fputc
+ 0000:0C47       _fputc
+ 0000:0DA3       _fputchar
+ 0000:0DBA       __FPUTN
+ 0000:0F62       _puts
+ 0000:10E2       __SCREENIO
+ 0000:111F       __VALIDATEXY
+ 0000:1185       __SCROLL
+ 0000:12F1       __setupio
+ 0000:136A       _setvbuf
+ 0000:14C9       _sprintf
+ 0000:14EB       _vsprintf
+ 0000:150C       _stime
+ 0000:154C       _time
+ 0000:15A4       _tell
+ 0000:15BE       _dostounix
+ 0000:16EB       _unixtodos
+ 0000:18EF       __MKNAME
+ 0000:1955       _tmpnam
+ 0000:199C       _toupper
+ 0000:19C8       __wherexy
+ 0000:19D2       _wherex
+ 0000:19E1       _wherey
+ 0000:19F4       _write
+ 0000:1B21       __xfclose
+ 0000:1B5B       __xfflush
+ 0000:1BE6       _absread
+ 0000:1C4D       _abswrite
+ 0000:1CB4       _atol
+ 0000:1D29       _atoi
+ 0000:1D3A       _biosequip
+ 0000:1D3D       _biosmemory
+ 0000:1D40       _biostime
+ 0000:1D53       _chdir
+ 0000:1D6B       _getdisk
+ 0000:1D71       _setdisk
+ 0000:1D7E       __chmod
+ 0000:1D9B       _clock
+ 0000:1DD1       __close
+ 0000:1E2A       __VideoInt
+ 0000:1EAE       __c0crtinit
+ 0000:1ECE       __crtinit
+ 0000:1FE5       _delay
+ 0000:2026       _eof
+ 0000:2146       __fgetc
+ 0000:2161       __Nfgetc
+ 0000:2164       _fgetc
+ 0000:2250       _fgetchar
+ 0000:225C       _getenv
+ 0000:22CC       _getfatd
+ 0000:22E1       _getfat
+ 0000:22FF       _getdfree
+ 0000:2321       _getvect
+ 0000:2330       _setvect
+ 0000:2341       _int86
+ 0000:2372       _int86x
+ 0000:240B       _intdos
+ 0000:2439       _intdosx
+ 0000:2499       _intr
+ 0000:253D       _ioctl
+ 0000:2566       __IOERROR
+ 0000:25A3       _isatty
+ 0000:25B4       _lseek
+ 0000:25DD       __LONGTOA
+ 0000:265F       _itoa
+ 0000:2689       _ultoa
+ 0000:26A6       _ltoa
+ 0000:26CE       _memcmp
+ 0000:26F6       _memcpy
+ 0000:271A       _setmem
+ 0000:273E       _memset
+ 0000:275D       _movmem
+ 0000:27AF       _memmove
+ 0000:27FD       _open
+ 0000:294D       __open
+ 0000:299B       _read
+ 0000:2A59       __read
+ 0000:2A75       _segread
+ 0000:2A95       _setblock
+ 0000:2AB1       _setdate
+ 0000:2AC6       _settime
+ 0000:2ADB       _strcat
+ 0000:2B1A       _strchr
+ 0000:2B57       _strcmp
+ 0000:2B87       _strcpy
+ 0000:2BB0       _stricmp
+ 0000:2BF1       _strlen
+ 0000:2C10       _strncmp
+ 0000:2C48       _strncpy
+ 0000:2C79       _strnicmp
+ 0000:2CBD       _tzset
+ 0000:2EA9       __ISDST
+ 0000:2F88       _unlink
+ 0000:2FB8       __VPRINTER
+ 0000:3490       __VPTR
+ 0000:34B6       __VRAM
+ 0000:352F       __write
+ 0000:3580       ___first
+ 0000:3582       ___last
+ 0000:3584       ___rover
+ 0000:36BE       _free
+ 0000:36BE       _farfree
+ 0000:37A4       _malloc
+ 0000:37AE       _farmalloc
+ 0000:3907       _realloc
+ 0000:390E       _farrealloc
+ 0000:397C       F_LXMUL@
+ 0000:397C       LXMUL@
+ 0000:3993       N_LDIV@
+ 0000:3996       F_LDIV@
+ 0000:3996       LDIV@
+ 0000:399A       N_LUDIV@
+ 0000:399D       F_LUDIV@
+ 0000:399D       LUDIV@
+ 0000:39A2       N_LMOD@
+ 0000:39A5       F_LMOD@
+ 0000:39A5       LMOD@
+ 0000:39AA       N_LUMOD@
+ 0000:39AD       F_LUMOD@
+ 0000:39AD       LUMOD@
+ 0000:3A41       N_LXLSH@
+ 0000:3A44       F_LXLSH@
+ 0000:3A44       LXLSH@
+ 0000:3A62       N_LXURSH@
+ 0000:3A65       F_LXURSH@
+ 0000:3A65       LXURSH@
+ 0000:3A83       N_PADD@
+ 0000:3A86       F_PADD@
+ 0000:3A86       PADD@
+ 0000:3AB2       N_PSUB@
+ 0000:3AB5       F_PSUB@
+ 0000:3AB5       PSUB@
+ 0000:3AE3       N_SCOPY@
+ 0000:3AE6       F_SCOPY@
+ 0000:3AE6       SCOPY@
+ 0000:3B02       N_LXMUL@
+ 0000:3B19       N_PCMP@
+ 0000:3B3A       __REALCVT
+ 03CB:0007       _main
+ 03CB:022E       _ShowError
+ 03CB:0250       _BadOption
+ 03CB:027D       _WarnOnNoOp
+ 03F4:0005       _get_os
+ 0419:004C       _is_dosemu
+ 0421:0001       _CheckDefragEnvironment
+ 042A:0001       _XMSinit
+ 042A:0001       _XMMinit
+ 042A:004E       _XMScoreleft
+ 042A:0079       _XMSalloc
+ 042A:00BF       _XMSfree
+ 042A:0107       _DOStoXMSmove
+ 042A:014D       _XMStoDOSmove
+ 0443:0003       _CMDefint
+ 0467:000A       _ParseCmdLineArguments
+ 0467:04D5       _ParseInteractiveArguments
+ 04FB:00E1       _CMDEFINT_GetCallbacks
+ 04FB:0160       _StartCounting
+ 04FB:01A8       _StopCounting
+ 04FB:01B3       __UpdateInterfaceState
+ 04FB:029B       __SmallMessage
+ 04FB:02CF       __LargeMessage
+ 04FB:033D       __DrawDriveMap
+ 04FB:0353       __DrawOnDriveMap
+ 04FB:03D5       __DrawMoreOnDriveMap
+ 04FB:049B       __QuerySaveState
+ 04FB:055B       _MSDEFINT_GetCallbacks
+ 0557:010F       _MainMenu
+ 058F:018B       _ShowCopyRight
+ 05AE:0293       _ShowMapLegend
+ 05DD:030C       _GetSortOptions
+ 0620:0609       _AskOptimizationMethod
+ 0695:0102       _ShowDriveSelectionBox
+ 06B2:0194       _InformUser
+ 06B2:01DD       _WarningBox
+ 06B2:0226       _ErrorBox
+ 06B2:0258       _ShowModalMessage
+ 06DD:0159       _ReportDefragDone
+ 06FC:00BA       _RecommendMethod
+ 071C:0088       _ShowHelpSystem
+ 0728:0122       _QueryUserStop
+ 0742:0155       _AskForXMSManager
+ 075F:0001       _GetEvent
+ 075F:00D7       _ClearEvent
+ 076D:000C       _AltKeyPressed
+ 0770:0005       _ClearMouse
+ 0770:004B       _MousePressed
+ 0770:0071       _MouseReleased
+ 0770:00A9       _PressedInRange
+ 0770:00CF       _ReleasedInRange
+ 0770:00F5       _AnyButtonPressed
+ 0770:011B       _GetNumSupportedButtons
+ 0770:0149       _GetPressedX
+ 0770:0151       _GetPressedY
+ 0770:0159       _GetReleasedX
+ 0770:0161       _GetReleasedY
+ 0770:0169       _LockMouse
+ 0770:01C2       _UnLockMouse
+ 0770:01FB       _CheckMouseRelease
+ 0793:0006       _DrawScreen
+ 07AE:0006       _ColorScreen
+ 07AE:0033       _SetStatusBar
+ 07AE:0054       _DelimitStatusBar
+ 07AE:009F       _DrawBox
+ 07AE:01D4       _DrawSingleBox
+ 07AE:0210       _DrawDoubleBox
+ 07AE:024C       _DrawText
+ 07AE:02A5       _DrawStatusBar
+ 07AE:035B       _DrawButton
+ 07AE:0559       _DrawSelectionButton
+ 07AE:05BE       _ChangeCharColor
+ 07AE:060B       _InvertLine
+ 07AE:0645       _ShowDialog
+ 07AE:070E       _ColorArea
+ 07AE:075F       _DrawSequence
+ 07AE:07AE       _DrawVScrollBox
+ 07AE:0882       _DrawStatusOnBar
+ 0844:0004       _CopyScreen
+ 0844:0073       _PasteScreen
+ 0844:010C       _SetClipIndex
+ 0855:0007       _DrawTime
+ 0855:0082       _DrawBlockSize
+ 0855:00CE       _DrawMethod
+ 0855:017E       _DrawFunctionKey
+ 0855:01CD       _SetStatusOnBar
+ 0855:0313       _ClearStatusBar
+ 0855:0334       _DrawStatus
+ 0855:0428       _DrawCurrentDrive
+ 089A:0008       _DrawDrvMap
+ 089A:012E       _DrawTheBlock
+ 089A:0187       _DrawBlock
+ 089A:01BB       _DrawBlocks
+ 089A:0297       _DrawUsedBlock
+ 089A:02B6       _DrawOptimizedBlock
+ 089A:02D5       _DrawUnusedBlock
+ 089A:02F4       _DrawUnmovableBlock
+ 089A:0313       _DrawBadBlock
+ 089A:0332       _DrawReadBlock
+ 089A:0351       _DrawWriteBlock
+ 089A:0370       _DrawUsedBlocks
+ 089A:0395       _DrawOptimizedBlocks
+ 089A:03BA       _DrawUnusedBlocks
+ 089A:03DF       _DrawUnmovableBlocks
+ 089A:0404       _DrawBadBlocks
+ 089A:0429       _DrawReadBlocks
+ 089A:044E       _DrawWriteBlocks
+ 08E1:0443       _CreateCommandButton
+ 092F:0054       _CreateFrame
+ 0939:0032       _CreateHLine
+ 0941:002F       _CreateLabel
+ 0949:0007       _OpenWindow
+ 0949:02D3       _ControlWindow
+ 0949:08D3       _CloseWindow
+ 09D7:00E3       _CreateTimeLabel
+ 09EB:0008       _InitializeControlValues
+ 09EF:0005       _CheckExternalEvent
+ 09F8:024A       _CreateSelectionButton
+ 0A25:035C       _CreateVScrollBox
+ 0A66:0586       _CreateLowListBox
+ 0AC9:0259       _CreateDriveSelectionBox
+ 0AF9:006B       _CreateWindowCloser
+ 0B05:03D7       _CreateLowView
+ 0B4D:0521       _CreateHelpView
+ 0BA8:000F       _MSDefint
+ 0BED:0007       _SaveDOSState
+ 0BED:0024       _RestoreDOSState
+ 0BF2:0058       _BeginOptimization
+ 0BF2:0161       _SelectSortOptions
+ 0BF2:01E6       _SelectOptimizationMethod
+ 0BF2:026F       _SelectDrive
+ 0BF2:02F1       _QueryDisk
+ 0BF2:0546       _UpdateDriveMap
+ 0BF2:056A       _StopDefragmentationProcess
+ 0C49:0005       _ScrLogPrint
+ 0C49:0063       _ShowScreenLog
+ 0C53:000E       _LogPrint
+ 0C55:017B       _CheckHelpFile
+ 0C55:027C       _ReadHelpFile
+ 0C94:000C       _GetHelpIndex
+ 0C94:001B       _RememberHelpIndex
+ 0C94:005C       _PreviousHelpIndex
+ 0C9B:0006       _PushHelpIndex
+ 0C9B:003D       _PopHelpIndex
+ 0C9B:0050       _TopHelpIndex
+ 0CA0:000F       _IsHlpReference
+ 0CA0:00DD       _IsFullLine
+ 0CA0:0104       _IsHlpAsciiChar
+ 0CA0:014D       _IsCenterOnLine
+ 0CA0:019B       _PassHlpReferencePart
+ 0CA0:01E8       _PassHlpFullLinePart
+ 0CA0:01FE       _PassHlpAsciiChar
+ 0CA0:020C       _PassCenterOnLinePart
+ 0CA0:0222       _PassNextHelpPart
+ 0CA0:0274       _GetHlpLinkCaption
+ 0CA0:02C7       _GetHlpLinkIndex
+ 0CA0:030F       _GetHlpAsciiChar
+ 0CA0:037A       _GetHlpTextToCenter
+ 0CDE:0103       _ParseHelpFile
+ 0CDE:01DB       _GetHelpLineCount
+ 0CDE:01E3       _GetHelpLine
+ 0CDE:01FC       _FreeHelpSysData
+ 0D04:04FC       _DrawHelpLine
+ 0D04:057A       _CheckHelpClick
+ 0D04:05E7       _CheckHelpTab
+ 0D04:0652       _CheckHelpEnter
+ 0D04:0682       _SelectHelpPage
+ 0D04:06CB       _PastEndOfHelp
+ 0D04:06E5       _GetLastHelpTop
+ 0D74:0040       _CalculateCheckSum
+ 0D7F:0009       _InfoFAT
+ 0D8E:0001       _FillDriveMap
+ 0D8E:00C4       _Reporter
+ 0D8E:0223       _ReportDriveSize
+ 0DB3:000C       _GetDefragFactor
+ 0DCC:0004       _MarkUnmovables
+ 0DCC:00C7       _MarkUnmovables32
+ 0DF2:000A       _InspectLabelSizeFAT
+ 0DF5:0009       _ResetFileCount
+ 0DF5:001A       _IncrementFileCount
+ 0DF5:0029       _GetRememberedFileCount
+ 0DF5:0035       _RememberFileCount
+ 0E01:000F       _CheckVolume
+ 0E08:0008       _DescriptorCheck
+ 0E1B:0008       _CheckDescriptorInFat
+ 0E23:0002       _MultipleFatCheck
+ 0E3E:0005       _CheckFAT
+ 0E43:0001       _SortDirectoryTree
+ 0E4A:000D       _SetCompareFunction
+ 0E4A:001F       _SetFilterFunction
+ 0E4A:0031       _SetResourceConfiguration
+ 0E4A:0043       _CompareEntriesToSort
+ 0E4A:005B       _FilterSortResult
+ 0E4A:0068       _GetEntryToSort
+ 0E4A:0086       _SwapEntryForSort
+ 0E4A:00A2       _GetSlotToSort
+ 0E56:0118       _SelectionSortEntries
+ 0E82:000C       _SortEntries
+ 0E82:01B2       _SortSubdir
+ 0EA9:0003       _CompareNames
+ 0EA9:007A       _CompareExtension
+ 0EA9:00B7       _CompareSize
+ 0EA9:0100       _CompareDateTime
+ 0EA9:0291       _AscendingFilter
+ 0EA9:0299       _DescendingFilter
+ 0ED3:0003       _MemorySortEntries
+ 0EEF:0003       _ReadEntriesToSort
+ 0F07:0006       _WriteSortedEntries
+ 0F28:000A       _SortFAT
+ 0F31:0002       _DefragFAT
+ 0F40:000D       _DefragmentVolume
+ 0F67:000F       _FullyDefragmentVolume
+ 0F67:0403       _FullDefragPlace
+ 1027:0579       _FilesFirstDefrag
+ 1027:0599       _DirectoriesFirstDefrag
+ 1027:05B9       _DirectoriesWithFilesDefrag
+ 1084:0242       _CrunchVolume
+ 10E1:0009       _CreateFastSelectMap
+ 10E1:013A       _DestroyFastSelectMap
+ 10E1:0163       _GetFastSelectMap
+ 10E1:016F       _SwapClustersInFastSelectMap
+ 10E1:01DB       _CreateNotFragmentedMap
+ 10E1:02E8       _DestroyNotFragmentedMap
+ 10E1:0467       _GetNotFragmentedMap
+ 10E1:0473       _MarkFileAsContinous
+ 10E1:04FA       _MoveFragmentBlock
+ 1140:000C       _UnfragmentFiles
+ 11A5:0009       _IsFileFragmented
+ 11B4:000D       _PostOrderWalkDirectoryTree
+ 11EE:000A       _QuickTryDefragmentVolume
+ 11EE:0068       _CompleteQuickTryDefragmentVolume
+ 123A:0004       _RelocateKnownFile
+ 12E6:0003       _CreateFixedClusterMap
+ 12E6:0109       _FixedFileMarker
+ 12E6:01A0       _FixedClusterMarker
+ 12E6:01FC       _DestroyFixedClusterMap
+ 12E6:0225       _IsClusterMovable
+ 130C:000F       _InstallOptimizationDrive
+ 130C:006D       _RejectOptimizationDrive
+ 130C:0083       _GetCurrentVolumeHandle
+ 1316:0037       _GetDriveNames
+ 1322:0004       _WarmReboot
+ 1322:0021       _ColdReboot
+ 1325:000E       _SetOptimizationDrive
+ 1325:0040       _GetOptimizationDrive
+ 1325:0048       _SetSortOptions
+ 1325:0059       _GetSortCriterium
+ 1325:0061       _GetSortOrder
+ 1325:0069       _SetOptimizationMethod
+ 1325:0074       _GetOptimizationMethod
+ 132C:000C       _ScanDrive
+ 132D:0006       _OptimizeDisk
+ 132F:0004       _SortDirectories
+ 1332:000C       _CheckDiskIntegrity
+ 1334:0001       _SetCallBacks
+ 1334:0013       _UpdateInterfaceState
+ 1334:001F       _SmallMessage
+ 1334:0034       _LargeMessage
+ 1334:0049       _DrawOnDriveMap
+ 1334:0062       _DrawMoreOnDriveMap
+ 1334:0081       _DrawDriveMap
+ 1334:0096       _LogMessage
+ 1334:00AB       _QuerySaveState
+ 1334:00B8       _IndicatePercentageDone
+ 1334:00D4       _GetMaximumDrvMapBlock
+ 1342:0001       _MethodIsEntered
+ 1342:000C       _IsMethodEntered
+ 1342:0014       _SetParsedDrive
+ 1342:001F       _GetParsedDrive
+ 1342:0027       _RequestReboot
+ 1342:0032       _IsRebootRequested
+ 1342:003A       _AutomaticallyExit
+ 1342:0045       _MustAutomaticallyExit
+ 1342:004D       _SetFullOutput
+ 1342:0058       _GiveFullOutput
+ 1342:0060       _SetAudibleWarning
+ 1342:006B       _GiveAudibleWarning
+ 1349:0003       _InspectFatLabelSize
+ 1349:000D       _SetCustomError
+ 1349:0022       _GetCustomError
+ 1349:002A       _ClearCustomError
+ 134C:021E       _ReadSectors
+ 134C:03E1       _ReadSectorsAddress
+ 134C:0430       _WriteSectors
+ 134C:071E       _InitReadWriteSectors
+ 134C:0750       _InitReadSectors
+ 134C:0782       _CloseReadWriteSectors
+ 134C:07DC       _GetReadWriteModus
+ 134C:07E8       _IsWorkingOnImageFile
+ 13CB:0122       _ReadBootSector
+ 13CB:0164       _WriteBootSector
+ 13CB:01AE       _ReadBootSectorIfNeeded
+ 13CB:0202       _InvalidateBootInfo
+ 13CB:0215       _GetSectorsPerCluster
+ 13CB:023B       _GetReservedSectors
+ 13CB:025B       _GetNumberOfFats
+ 13CB:027B       _GetNumberOfRootEntries
+ 13CB:029B       _GetMediaDescriptor
+ 13CB:02BB       _GetNumberOfSectors
+ 13CB:02E1       _GetSectorsPerFat
+ 13CB:0307       _GetSectorsPerTrack
+ 13CB:0327       _GetReadWriteHeads
+ 13CB:0347       _GetClustersInDataArea
+ 13CB:03E6       _GetLabelsInFat
+ 13CB:041C       _GetBiosDriveNumber
+ 13CB:0498       _PrivateIsVolumeDataFilled
+ 13CB:052A       _IsVolumeDataFilled
+ 13CB:053F       _IsVolumeDataFilled_NT
+ 13CB:0554       _GetDiskSerialNumber
+ 13CB:05E1       _GetBPBVolumeLabel
+ 13CB:0672       _GetBPBFileSystemString
+ 13CB:0703       _DetermineFATType
+ 13CB:07FF       _GetFAT32Version
+ 13CB:0853       _GetFAT32RootCluster
+ 13CB:0879       _GetFSInfoSector
+ 13CB:0899       _GetFAT32BackupBootSector
+ 13CB:08ED       _IndicateVolumeDataFilled_NT
+ 13CB:0915       _IndicateVolumeDataFilled
+ 13CB:093D       _WriteNumberOfRootEntries
+ 13CB:094C       _WriteSectorsPerCluster
+ 13CB:095B       _WriteReservedSectors
+ 13CB:096A       _WriteNumberOfFats
+ 13CB:0979       _WriteMediaDescriptor
+ 13CB:0988       _WriteNumberOfSectors
+ 13CB:0997       _WriteSectorsPerFat
+ 13CB:09CA       _WriteSectorsPerTrack
+ 13CB:09D9       _WriteReadWriteHeads
+ 13CB:09E8       _WriteBiosDriveNumber
+ 13CB:0A14       _WriteDiskSerialNumber
+ 13CB:0A4E       _CalculateNewSerialNumber
+ 13CB:0AC4       _WriteBPBVolumeLabel
+ 13CB:0B3B       _WriteBPBFileSystemString
+ 13CB:0BB2       _WriteFAT32Version
+ 13CB:0BC1       _WriteFAT32RootCluster
+ 13CB:0BD7       _WriteFSInfoSector
+ 13CB:0BE6       _WriteFAT32BackupBootSector
+ 148A:0005       _GetDirectoryStart
+ 148A:00A0       _ReadDirEntry
+ 148A:015B       _WriteDirEntry
+ 148A:019C       _GetRootDirPosition
+ 148A:01F2       _IsRootDirPosition
+ 148A:0273       _GetFirstCluster
+ 148A:02A4       _SetFirstCluster
+ 148A:02BD       _EntryLength
+ 148A:02DB       _LocatePreviousDir
+ 14C4:000C       _HasAllFloppyForm
+ 14C4:0052       _HasFloppyForm
+ 14CC:000A       _GetFatStart
+ 14CC:001E       _GetFatLabelSize
+ 14CC:009A       _GetDataAreaStart
+ 14CC:017B       _DataSectorToCluster
+ 14CC:020F       _ConvertToDataSector
+ 14CC:0565       _LinearTraverseFat
+ 14CC:077F       _FileTraverseFat
+ 14CC:0951       _ReadFatLabel
+ 14CC:0A48       _WriteFatLabel
+ 14CC:0DCD       _InvalidateFatCache
+ 14CC:0DDB       _GetBytesInFat
+ 14CC:0E51       _IsLabelValid
+ 14CC:0EE8       _IsLabelValidInFile
+ 15C1:000F       _GetFTEerror
+ 15C1:0017       _SetFTEerror
+ 15C1:0029       _ClearFTEerror
+ 15C4:0004       _SubdirTraverser
+ 15C4:00E6       _TraverseRootDir
+ 15C4:0251       _TraverseSubdir
+ 15C4:02D5       _GetDirectory
+ 15C4:0333       _DirectoryEquals
+ 15C4:035B       _WriteDirectory
+ 1605:000E       _ReadFSInfo
+ 1605:0054       _WriteFSInfo
+ 1605:009E       _CheckFSInfo
+ 1605:0137       _GetFreeClusterSearchStart
+ 1605:01FC       _GetNumberOfFreeClusters
+ 1605:0261       _WriteFreeClusterStart
+ 1605:0279       _WriteFreeClusterCount
+ 162E:0001       _ExtendedAbsReadWrite
+ 162E:0084       _GetFAT32SectorSize
+ 163F:0001       _BackupBoot
+ 163F:00AC       _MultipleBootCheck
+ 163F:0511       _BackupFat
+ 163F:052B       _SynchronizeFATs
+ 1698:0001       _WalkDirectoryTree
+ 16D3:0003       _CopySectors
+ 16E4:00B8       _low_dircount
+ 16F4:00A6       _DestroyDirReferedTable
+ 16F4:020A       _FindClusterInDirectories
+ 16F4:028D       _IndicateDirEntryMoved
+ 16F4:0315       _IndicateDirClusterMoved
+ 16F4:04C7       _FindClusterInDirectories1
+ 1757:00FE       _DestroyFatReferedTable
+ 1757:0128       _WriteFatReference
+ 1757:01C6       _FindClusterInFAT
+ 1757:020E       _FindClusterInFAT1
+ 1782:0001       _GetNthCluster
+ 1799:0002       _GetNthDirectoryPosition
+ 1799:0122       _positiongetter
+ 1799:019A       _GetNthDirectorySector
+ 1799:0207       _GetNthSubDirectoryPosition
+ 1799:0261       _SubdirGetter
+ 17CC:0004       _GetNthFileCluster
+ 17DB:0101       _DestroyFatReferedMap
+ 17DB:012A       _BreakFatMapReference
+ 17DB:014B       _CreateFatMapReference
+ 17DB:016C       _SwapFatMapReference
+ 17DB:01FB       _RelocateCluster
+ 184E:0009       _AdaptCurrentAndPreviousDirs
+ 1874:0004       _CalculateFileSize
+ 187E:000D       _FindFirstFreeSpace
+ 187E:0147       _FindNextFreeSpace
+ 187E:0300       _FindFirstFittingFreeSpace
+ 187E:0373       _FindLastFreeCluster
+ 187E:041C       _GetPreviousFreeCluster
+ 187E:04A5       _GetFreeDiskSpace
+ 187E:054C       _CalculateFreeSpace
+ 18DD:0005       _CreateVirtualFile
+ 18DD:00CC       _DeleteVirtualFile
+ 18DD:00FD       _GetVirtualFileSpaceUsed
+ 18DD:01D6       _WriteVirtualFile
+ 18DD:03FC       _ReadVirtualFile
+ 18DD:061C       _IsClusterUsed
+ 18DD:0717       _EnsureClusterFree
+ 18DD:0737       _EnsureClustersFree
+ 18DD:16FD       _PrepareVirtualFile
+ 18DD:1A93       _GetMaxRelocatableSize
+ 1A90:000D       _RelocateClusterSequence
+ 1A90:013F       _RelocateOverlapping
+ 1B2C:0007       _RotateBufRight
+ 1B2C:00DF       _RotateBufLeft
+ 1B2C:01B7       _SwapBuffer
+ 1B2C:033C       _SwapBufferParts
+ 1B6F:000F       _ConvertUserPath
+ 1B6F:0219       _ConvertEntryPath
+ 1B9A:0002       _apmlib
+ 1B9A:007D       _FlushAllCaches
+ 1B9A:039B       _Reboot
+ 1B9A:03F1       _ShutDown
+ 1B9A:04B6       _CtrlAltDel
+ 1B9A:04D1       _Suspend
+ 1B9A:0576       _APMIsInstalled
+ 1B9A:05B8       _APMGetVer
+ 1BF6:000F       _InitSectorCache
+ 1BF6:001C       _CloseSectorCache
+ 1BF6:002D       _LockSectorCache
+ 1BF6:0038       _UnlockSectorCache
+ 1BF6:0043       _StartSectorCache
+ 1BF6:004E       _StopSectorCache
+ 1BF6:0059       _CacheIsCorrupt
+ 1BF6:0068       _CacheSector
+ 1BF6:0098       _RetreiveCachedSector
+ 1BF6:00C1       _UncacheSector
+ 1BF6:00E0       _InvalidateCache
+ 1BF6:00F3       _CacheActive
+ 1BF6:011B       _CommitCache
+ 1C09:0001       _InitialisePhysicalCache
+ 1C09:0084       _ClosePhysicalCache
+ 1C09:009A       _RemapXMSBlock
+ 1C1B:0006       _InitialiseLogicalCache
+ 1C1B:009D       _CloseLogicalCache
+ 1C1B:00CA       _EnsureBlockMapped
+ 1C31:00C5       _InitialisePerBlockCaching
+ 1C31:0134       _ClosePerBlockCaching
+ 1C31:015C       _CacheBlockSector
+ 1C31:0485       _RetreiveBlockSector
+ 1C31:05BB       _UncacheBlockSector
+ 1C31:06EA       _InvalidateBlockCache
+ 1C31:0749       _GetFirstDirtyTag
+ 1C31:0B2A       _WriteBackCache
+ 1CE6:0006       _InstallWriteFunction
+ 1CE6:0049       _UninstallWriteFunction
+ 1CE6:00D1       _WriteBackSectors
+ 1CF8:0007       _disk_read
+ 1CF8:0054       _disk_read_ext
+ 1D04:0008       _disk_write_ext
+ 1D0B:000C       _FTEAlloc
+ 1D0B:0043       _FTEFree
+ 1D0B:0055       _AllocateSector
+ 1D0B:0066       _AllocateSectors
+ 1D0B:007B       _FreeSectors
+ 1D0B:008C       _AllocateBootSector
+ 1D0B:009A       _FreeBootSector
+ 1D0B:00AB       _AllocateDirectoryEntry
+ 1D0B:00B9       _FreeDirectoryEntry
+ 1D0B:00CA       _AllocateFSInfo
+ 1D0B:00D8       _FreeFSInfo
+ 1D19:0009       _CreateBitField
+ 1D19:006E       _DestroyBitfield
+ 1D19:0088       _SetBitfieldBit
+ 1D19:00CC       _ClearBitfieldBit
+ 1D19:0112       _SwapBitfieldBits
+ 1D34:0003       _CreateVFSBitField
+ 1D34:0090       _DestroyVFSBitfield
+ 1D34:00A2       _SetVFSBitfieldBit
+ 1D34:0128       _ClearVFSBitfieldBit
+ 1D34:01B0       _GetVFSBitfieldBit
+ 1D34:0213       _SwapVFSBitfieldBits
+ 1D61:0000       _CreateVFSArray
+ 1D61:0064       _DestroyVFSArray
+ 1D61:007A       _SetVFSArray
+ 1D61:00B4       _GetVFSArray
+ 1D72:0000       DATASEG@
+ 1D72:0059       __Int0Vector
+ 1D72:005D       __Int4Vector
+ 1D72:0061       __Int5Vector
+ 1D72:0065       __Int6Vector
+ 1D72:0069       __C0argc
+ 1D72:006B       __C0argv
+ 1D72:006F       __C0environ
+ 1D72:0073       __envLng
+ 1D72:0075       __envseg
+ 1D72:0077       __envSize
+ 1D72:0079       __psp
+ 1D72:007B       __osmajor
+ 1D72:007B       __version
+ 1D72:007C       __osminor
+ 1D72:007D       _errno
+ 1D72:007F       __StartTime
+ 1D72:0083       __heapbase
+ 1D72:0087       __brklvl
+ 1D72:008B       __heaptop
+ 1D72:08E2       _id_os
+ 1D72:08E4       _id_os_name
+ 1D72:131E       _CopyRight
+ 1D72:1EA4       _YesButton
+ 1D72:1EAC       _NoButton
+ 1D72:22BE       _OkButton
+ 1D72:22C6       _CancelButton
+ 1D72:2486       _OptimizationMethods
+ 1D72:2C0A       _CurrentLink
+ 1D72:2D1E       _CheckRoutines
+ 1D72:2FE0       _LastReadBufferSector
+ 1D72:30D6       __atexitcnt
+ 1D72:30D8       __ctype
+ 1D72:31DA       __exitbuf
+ 1D72:31DE       __exitfopen
+ 1D72:31E2       __exitopen
+ 1D72:31E8       __streams
+ 1D72:3378       __openfd
+ 1D72:33A0       __fmode
+ 1D72:33A2       __notUmask
+ 1D72:33AA       __stklen
+ 1D72:33C4       __video
+ 1D72:33D3       _directvideo
+ 1D72:33DC       __doserrno
+ 1D72:33DE       __dosErrorToSV
+ 1D72:3438       __monthDay
+ 1D72:3452       _tzname
+ 1D72:345A       _timezone
+ 1D72:345E       _daylight
+ 1D72:34D4       __argc
+ 1D72:34D6       __argv
+ 1D72:34E4       _environ
+ 1D72:34E8       __ScanTodVector
+ 1D72:34E8       __RealCvtVector
+ 1D72:3500       _id_os_ver
+ 1D72:3538       _id_os_type
+ 1D72:691E       _ClustersPerBlock
+ 1D72:6DCE       _VirtualDirectory
+ 1D72:710E       _APMVerMax
+ 1D72:710F       _APMVerMin
+ 1D72:711C       _LogicalBlocks
+ 1D72:7166       _WriteFuncs
+ 1D72:716E       __atexittbl
+ 1D72:71F4       __tmpnum
+ 249C:0000       _DPMIinstalled
+ 249D:0002       _GetExtendedMemorySize
+ 249D:000C       _IsXMSInstalled
+ 249E:000D       _AltKeyDown
+ 249E:0015       _KeyPressed
+ 249E:0023       _ReadKey
+ 249E:002E       _ClearKeyboard
+ 24A1:000D       _CloseMouse
+ 24A1:000D       _InitMouse
+ 24A1:0034       _MousePresent
+ 24A1:0054       _ShowMouse
+ 24A1:0060       _HideMouse
+ 24A1:006C       _WhereMouse
+ 24A1:00A8       _MouseGotoXY
+ 24A1:00CC       _CountButtonPresses
+ 24A1:011A       _CountButtonReleases
+ 24A1:0168       _MouseWindow
+ 24BB:0007       _HideCursor
+ 24BB:000F       _InvertChar
+ 24BB:0029       _SetHighIntensity
+ 24BB:003B       _GetHighIntensity
+ 24BB:004F       _GetCursorShape
+ 24BB:0059       _SetCursorShape
+ 24BB:0064       _GetScreenCols
+ 24BB:006D       _GetScreenLines
+ 24BB:0088       _isEGA
+ 24BB:0107       _SetScreenLines
+ 24BB:0180       _DOSWipeScreen
+ 24BB:0191       _ReadCursorChar
+ 24BB:019A       _ReadCursorAttr
+ 24BB:01A5       _ChangeCursorPos
+ 24BB:01BC       _SetForColor
+ 24BB:01D5       _SetBackColor
+ 24BB:01EF       _DrawChar
+ 24BB:020B       _PrintChar
+ 24BB:022B       _PrintString
+ 24BB:024A       GetScreenAddress
+ 24E0:0003       _GetTime
+ 24E2:0007       _ShowScreenPage
+ 24E2:0012       _PrintChar1
+ 24E2:0031       _gotoxy1
+ 24E2:0045       _Scroll1Up
+ 24E8:0009       _SwitchChar
+ 24E9:001E       _CriticalHandlerOn
+ 24E9:0037       _CriticalErrorOccured
+ 24E9:0049       _GetCriticalCause
+ 24E9:0056       _GetCriticalStatus
+ 24EF:0005       _CDEXinstalled
+ 24EF:003F       _IsCDROM
+
+Program entry point at 0000:0000
+

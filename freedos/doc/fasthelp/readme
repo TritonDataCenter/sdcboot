@@ -1,0 +1,24 @@
+This is the readme for the FreeDOS HELP program
+
+HELP will display a text file help topic.  It uses these environment
+variables:
+
+   PAGER: the program that will display the help files
+   HELPPATH: the location of your help files
+   LANG: the preferred language to display the help files
+
+If PAGER is not present, "MORE" is assumed.
+
+If HELPPATH is not present, HELP uses the path based on the program
+name, and if not found then "C:\FDOS\HELP" is assumed.
+
+If LANG is not present, "EN" is assumed.
+
+
+This program has international support using the "Cats" library
+(catopen/catgets implementation for DOS).  "Cats" is distributed under
+the terms of the GNU LGPL.  You can download "Cats" from
+http://www.freedos.org/jhall/cats/
+
+HELP is distributed under the GNU GPL.  See the file COPYING for
+details.

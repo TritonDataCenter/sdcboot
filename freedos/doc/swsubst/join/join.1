@@ -1,0 +1,73 @@
+.TH JOIN 1 "22 May 1995"
+.\"
+.\"    This is the documentation for the SWSUBST package, a SUBST/JOIN & more
+.\"    Copyright (C) 1995  Steffen Kaiser
+.\"
+.\"    This program is free software; you can redistribute it and/or modify
+.\"    it under the terms of the GNU General Public License as published by
+.\"    the Free Software Foundation; either version 2 of the License, or
+.\"    (at your option) any later version.
+.\"
+.\"    This program is distributed in the hope that it will be useful,
+.\"    but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"    GNU General Public License for more details.
+.\"
+.\"    You should have received a copy of the GNU General Public License
+.\"    along with this program; if not, write to the Free Software
+.\"    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"  $Id: JOIN.1 1.2 1995/05/26 05:31:58 ska Exp ska $
+.SH NAME
+join \- mount a drive letter into a directory 
+.SH SYNOPSIS
+\fBjoin\fP \fB/?\fP 
+
+\fBjoin\fP \fBdr1\fP: \fBdr2\fP:\fBpath\fP
+
+\fBjoin\fP \fBdr\fP: \fB/d\fP
+
+\fBjoin\fP
+
+.SH DESCRIPTION
+\fIjoin\fP is designed to manipulate the CDS (\fBC\fPurrent
+\fBD\fPirectory \fBS\fPtructure), so a drive can be accessed by a 
+directory of another drive.
+
+\fIjoin\fP is part of the \fIswsubst\fP package. It can be created, if
+it does not already exist, by copying the executable \fBswsubst.exe\fP to
+\fBjoin.exe\fP.
+.SH OPTIONS
+.IP \fB/?\fP 
+Displays a little help screen.
+.IP \fB/d\fP
+Causes \fIjoin\fP to break off the relation between the directory and
+the JOIN'ed drive \fBdr\fP. If \fBdr\fP is SUBST'ed and not JOIN'ed, the
+relation is been broken off, too.
+.IP "\fBdr1: dr2:path\fP"
+Causes \fIjoin\fP to join drive \fBdr1\fP into \fBpath\fP on drive
+\fBdr2\fP.  If \fBdr1\fP is already SUBST'ed or JOIN'ed, this relation
+will be broken off. \fBpath\fP need not neither exist nor fully
+qualified. It will be created as well as the full path relative to the
+current working directory on drive \fBdr2\fP.
+.IP "\fBwithout any parameter\fP"
+This dumps a list onto the screen containing all JOIN'ed drives in
+the form: X: => Y:\PATH; where Y:\PATH is the fully-qualified path and
+X: JOIN'ed in drive. If there is no JOIN'ed drive, no output
+occurs.
+.SH "SEE ALSO"
+swsubst, subst.
+.SH "KNOWN BUGS"
+.IP \(bu
+Networked drives cannot be used.
+.IP \(bu
+Sometimes JOIN's onto a floppy drive won't work for unknown
+reason.
+.SH CONTRIBUTERS
+    Steffen Kaiser
+.br
+Ernst-Th\("almann-Stra\("se 2
+.br
+     D-09126 Iden
+.br
+ Deutschland - Germany

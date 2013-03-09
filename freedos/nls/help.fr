@@ -1,0 +1,10 @@
+#Translated by Mateusz Viste "Fox" / the.killer@wp.pl
+#
+0.0:Affiche un sujet d'aide
+0.1:Usage:
+0.2:sujet
+0.3:Environment:
+0.4:Programme pager affichant le fichier texte
+0.5:R‚pertoire contenant les fichier d'aide
+0.6:Language pr‚ferr‚ language for your help files
+1.0:Impossible d'afficher le programme pager.

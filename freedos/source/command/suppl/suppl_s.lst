@@ -1,0 +1,1314 @@
+Publics by module
+
+ADDU    	size = 15
+	_addu                           
+
+APP_FILE	size = 40
+	_appFile                        
+
+APP_FILX	size = 11
+	_appFileEx                      
+
+APP_IENV	size = 19
+	_appInitEnv                     
+
+APP_IEVX	size = 30
+	_appInitEnvEx                   
+
+APP_INIT	size = 28
+	_appInit                        
+
+APP_INIX	size = 23
+	_appInitEx                      
+
+APP_INI_	size = 88
+	_appInit_                       
+
+APP_NAME	size = 34
+	_appName                        
+
+APP_NAMX	size = 11
+	_appNameEx                      
+
+APP_PATH	size = 26
+	_appPath                        
+
+APP_PATX	size = 11
+	_appPathEx                      
+
+APP_VARS	size = 6
+	_app_fext                         _app_file
+	_app_fnam                       
+
+BYTE2PAR	size = 31
+	_BLK_byte2para                  
+
+CNTRY   	size = 691
+	_nlsInfo                          _nlsNewInfo
+
+COMMIT  	size = 52
+	_commit                         
+
+CTRLBRK 	size = 0
+
+DBGF_CHG	size = 237
+	_suppl_log_change               
+
+DBGF_CL 	size = 226
+	_suppl_log_chg_list_            
+
+DBGF_CLE	size = 20
+	_suppl_log_class_enabled        
+
+DBGF_CLG	size = 31
+	_suppl_log_close                
+
+DBGF_DL 	size = 44
+	_suppl_log_del_list_            
+
+DBGF_DPL	size = 43
+	_suppl_log_dup_list             
+
+DBGF_ET 	size = 305
+	_suppl_log_enter                
+
+DBGF_EX2	size = 44
+	_suppl_log_exit                 
+
+DBGF_EXT	size = 70
+	_suppl_log_terminate            
+
+DBGF_FL 	size = 58
+	_suppl_log_find_list            
+
+DBGF_FLG	size = 211
+	_suppl_log_flag_                
+
+DBGF_FLH	size = 13
+	_suppl_log_flush                
+
+DBGF_IEN	size = 53
+	_suppl_log_item_enabled         
+
+DBGF_LGH	size = 218
+	_suppl_log_log_header           
+
+DBGF_LGI	size = 59
+	_suppl_log_log_item               _suppl_log_log_vitem
+
+DBGF_LGT	size = 72
+	_suppl_log_log_trailer          
+
+DBGF_LK 	size = 33
+	_suppl_log_lock                   _suppl_log_unlock
+
+DBGF_LOG	size = 27
+	_suppl_log_log                  
+
+DBGF_LV 	size = 106
+	_suppl_log_leave                
+
+DBGF_MFI	size = 57
+	_suppl_log_mkf_item             
+
+DBGF_MI 	size = 49
+	_suppl_log_match_item           
+
+DBGF_MKI	size = 41
+	_suppl_log_mk_item              
+
+DBGF_ML 	size = 56
+	_suppl_log_match_list           
+
+DBGF_POP	size = 109
+	_suppl_log_pop                  
+
+DBGF_PRT	size = 66
+	_suppl_log_print_1                _suppl_log_print_2
+
+DBGF_PSH	size = 62
+	_suppl_log_push                 
+
+DBGF_VAR	size = 42
+	_suppl_Stack                      _suppl_l_count
+	_suppl_l_fct_enabled              _suppl_l_logfile
+	_suppl_l_nestlevel                _suppl_l_openmode
+	_suppl_stack1                   
+
+DBGM_CHK	size = 164
+	_suppl_testMemChain             
+
+DBGM_CKH	size = 104
+	_suppl_testHeap                 
+
+DBGM_LC 	size = 82
+	_suppl_log_calloc               
+
+DBGM_LF 	size = 31
+	_suppl_log_free                 
+
+DBGM_LM 	size = 75
+	_suppl_log_malloc               
+
+DBGM_LR 	size = 85
+	_suppl_log_realloc              
+
+DBGM_LS 	size = 21
+	_suppl_log_strdup               
+
+DBGM_SC 	size = 35
+	_suppl_calloc                   
+
+DBGM_SF 	size = 19
+	_suppl_free                     
+
+DBGM_SM 	size = 27
+	_suppl_malloc                   
+
+DBGM_SR 	size = 35
+	_suppl_realloc                  
+
+DBGM_SS 	size = 27
+	_suppl_strdup                   
+
+DBGV_S0 	size = 6
+	_Suppl_SUPPL                    
+
+DBGV_S1 	size = 7
+	_Suppl_syslog                   
+
+DBGV_S10	size = 4
+	_Suppl_mcb                      
+
+DBGV_S11	size = 10
+	_Suppl_inifile2                 
+
+DBGV_S12	size = 10
+	_Suppl_inifile3                 
+
+DBGV_S13	size = 7
+	_Suppl_farmem                   
+
+DBGV_S14	size = 4
+	_Suppl_dfn                      
+
+DBGV_S15	size = 9
+	_Suppl_portable                 
+
+DBGV_S16	size = 4
+	_Suppl_usr                      
+
+DBGV_S17	size = 8
+	_Suppl_cmdline                  
+
+DBGV_S18	size = 8
+	_Suppl_inifile                  
+
+DBGV_S19	size = 4
+	_Suppl_class_arg                
+
+DBGV_S2 	size = 8
+	_Suppl_appName                  
+
+DBGV_S20	size = 3
+	_Suppl_class_rv                 
+
+DBGV_S21	size = 4
+	_Suppl_class_fct                
+
+DBGV_S22	size = 4
+	_Suppl_class_inf                
+
+DBGV_S23	size = 4
+	_Suppl_class_env                
+
+DBGV_S24	size = 4
+	_Suppl_class_mcb                
+
+DBGV_S25	size = 4
+	_Suppl_class_mem                
+
+DBGV_S26	size = 4
+	_Suppl_class_str                
+
+DBGV_S27	size = 4
+	_Suppl_class_ini                
+
+DBGV_S28	size = 4
+	_Suppl_class_cmd                
+
+DBGV_S29	size = 4
+	_Suppl_class_err                
+
+DBGV_S3 	size = 7
+	_Suppl_dynstr                   
+
+DBGV_S30	size = 4
+	_Suppl_class_dfn                
+
+DBGV_S31	size = 4
+	_Suppl_class_fil                
+
+DBGV_S32	size = 4
+	_Suppl_class_lmt                
+
+DBGV_S33	size = 4
+	_Suppl_class_nls                
+
+DBGV_S34	size = 4
+	_Suppl_class_log                
+
+DBGV_S35	size = 4
+	_Suppl_class_msc                
+
+DBGV_S4 	size = 4
+	_Suppl_env                      
+
+DBGV_S5 	size = 6
+	_Suppl_error                    
+
+DBGV_S6 	size = 5
+	_Suppl_misc                     
+
+DBGV_S7 	size = 8
+	_Suppl_supplio                  
+
+DBGV_S8 	size = 4
+	_Suppl_nls                      
+
+DBGV_S9 	size = 10
+	_Suppl_inifile1                 
+
+DFNBNAM 	size = 94
+	_dfnbakname                     
+
+DFNDELI2	size = 30
+	_dfndelim2                      
+
+DFNDELIM	size = 24
+	_dfndelim                       
+
+DFNEXPAN	size = 393
+	_dfnexpand                      
+
+DFNEXT  	size = 17
+	_dfnextension                   
+
+DFNFEXT 	size = 43
+	_dfnfilenameext                 
+
+DFNFNAM 	size = 53
+	_dfnfilename                    
+
+DFNFRPL 	size = 79
+	_dfnfreplace                    
+
+DFNFULL2	size = 165
+	_dfnfullpath2                   
+
+DFNFULLP	size = 165
+	_dfnfullpath                    
+
+DFNGFFM 	size = 129
+	_dfnglobfullfilename            
+
+DFNGFNAM	size = 54
+	_dfnglobfilename                
+
+DFNGFREE	size = 32
+	_dfnglobfree                    
+
+DFNGINIT	size = 201
+	_dfnglobinit                    
+
+DFNGREAD	size = 155
+	_dfnglobread                    
+
+DFNISUNC	size = 32
+	_isUNCpath                      
+
+DFNMATC2	size = 20
+	_dfnmatch2                      
+
+DFNMATCH	size = 20
+	_dfnmatch                       
+
+DFNMATCX	size = 291
+	_dfnmatchEx                     
+
+DFNMATE1	size = 59
+	_dfnmatchext                    
+
+DFNMATE2	size = 87
+	_dfnmatchext2                   
+
+DFNMATO1	size = 167
+	_dfnmatchcomponent              
+
+DFNMATO2	size = 286
+	_dfnmatchcomponent2             
+
+DFNMERGE	size = 333
+	_dfnmerge                       
+
+DFNMKFIL	size = 69
+	_dfnmkfile                      
+
+DFNMKTMP	size = 206
+	_dfnmktmp                       
+
+DFNPATH 	size = 76
+	_dfnpath                        
+
+DFNSEARC	size = 939
+	_dfnsearch                      
+
+DFNSPLIT	size = 368
+	_dfnsplit                       
+
+DFNSQUEE	size = 117
+	_dfnsqueeze                     
+
+DFNSTAT 	size = 168
+	_dfnstat                        
+
+DFNTRUEN	size = 126
+	_dfntruename                    
+
+DFNUNC  	size = 68
+	_UNCpath                        
+
+DFNWRDIR	size = 40
+	_dfnwrdir                       
+
+DFN_TMPN	size = 188
+	_dfn_tmpnam                     
+
+DMEMCMP 	size = 101
+	_MemiCmp                        
+
+DMEMCMP2	size = 102
+	_MemFCmp                        
+
+DMEMCMP3	size = 136
+	__fMemFCmp                      
+
+DMEMCMPF	size = 111
+	__fMemiCmp                      
+
+DMEMFUPR	size = 43
+	_MemFUpr                        
+
+DMEMUPR 	size = 43
+	_MemUpr                         
+
+DMEMUPRF	size = 46
+	__fMemUpr                       
+
+DOSALLOC	size = 203
+	_DOSalloc                       
+
+DOSFREE 	size = 12
+	_DOSfree                        
+
+DOSSIZE 	size = 31
+	_DOSresize                      
+
+DPEEKB  	size = 0
+
+DPEEKW  	size = 0
+
+DSTRAPPC	size = 35
+	_StrAppChr_                     
+
+DSTRAPPD	size = 113
+	_StrAppDelimStr_                
+
+DSTRAPPE	size = 95
+	_StrAppQStr_                    
+
+DSTRBEG 	size = 37
+	_StrBeg                         
+
+DSTRCAT 	size = 71
+	_StrCat_                        
+
+DSTRCHAR	size = 29
+	_StrChar                        
+
+DSTRCHG 	size = 42
+	_StrChg_                        
+
+DSTRCHR 	size = 32
+	_StrChr                         
+
+DSTRCMP 	size = 90
+	_StriCmp                        
+
+DSTRCMPF	size = 67
+	__fStriCmp                      
+
+DSTRCONC	size = 116
+	_StrConcat                      
+
+DSTRCPY 	size = 71
+	_StrCpy_                        
+
+DSTRCSTR	size = 261
+	_StrCString                     
+
+DSTRDUP 	size = 28
+	_StrDup                         
+
+DSTRDUPE	size = 99
+	_StrDupe                        
+
+DSTRFUPR	size = 37
+	_StrFUpr                        
+
+DSTRLEFT	size = 78
+	_StrLeft                        
+
+DSTRMID 	size = 58
+	_StrMiddle                      
+
+DSTRNLEN	size = 46
+	_StrnLen                        
+
+DSTRQUOT	size = 474
+	_StrQuote                       
+
+DSTRREPL	size = 21
+	_StrRepl_                       
+
+DSTRRIGH	size = 51
+	_StrRight                       
+
+DSTRSTRI	size = 55
+	_StrStrip                       
+
+DSTRTAIL	size = 50
+	_StrTail                        
+
+DSTRTOKE	size = 163
+	_StrTokRestore                    _StrTokSave
+	_StrTokenize                    
+
+DSTRTRIM	size = 45
+	_StrTrim                        
+
+DSTRUNQT	size = 412
+	_StrUnquoteToken                  _StrUnquoteTokenAppend
+
+DSTRUNQU	size = 47
+	_StrUnquote                     
+
+DSTRUPR 	size = 37
+	_StrUpr                         
+
+DSTRUPRF	size = 43
+	__fStrUpr                       
+
+DSTRWORD	size = 110
+	_StrWord                        
+
+DTA     	size = 0
+
+EECLOSE 	size = 19
+	_Eclose                         
+
+EECREATE	size = 33
+	_Ecreate                        
+
+EEERROR 	size = 31
+	_Eerror                         
+
+EEFSEEK 	size = 0
+
+EEGET   	size = 43
+	_Eget                           
+
+EEGETLIN	size = 46
+	_Egetline                       
+
+EEGETPOS	size = 23
+	_Egetpos                        
+
+EEGETS  	size = 37
+	_Egets                          
+
+EEOPEN  	size = 33
+	_Eopen                          
+
+EEPUT   	size = 40
+	_Eput                           
+
+EEPUTS  	size = 40
+	_Eputs                          
+
+EERDERR 	size = 31
+	_Ereaderr                       
+
+EESEEK  	size = 43
+	_Eseek                          
+
+EESETPOS	size = 23
+	_Esetpos                        
+
+EESTRCON	size = 101
+	_EStrConcat                     
+
+EETMPDIR	size = 32
+	_Etmpdir                        
+
+EETMPFIL	size = 35
+	_Etmpfile                       
+
+EETMPNAM	size = 25
+	_Etmpnam                        
+
+EEWRERR 	size = 31
+	_Ewriteerr                      
+
+EEXCLOSE	size = 19
+	_Exclose                        
+
+EEXOPEN 	size = 33
+	_Exopen                         
+
+ENOALLC 	size = 28
+	_eno_malloc                     
+
+ENOFSDUP	size = 42
+	_eno_fstrdup                    
+
+ENOREAL 	size = 32
+	_eno_realloc                    
+
+ENOSDUP 	size = 36
+	_eno_strdup                     
+
+ENOSETOS	size = 39
+	_eno_setOSerror                 
+
+ENV_ADD 	size = 159
+	_env_addVar                     
+
+ENV_CHG 	size = 126
+	_env_change                     
+
+ENV_CHK 	size = 219
+	_env_check                      
+
+ENV_CLR 	size = 53
+	_env_clear                      
+
+ENV_CPY 	size = 201
+	_cpyenv                           _env_get
+
+ENV_DEL 	size = 64
+	_env_delete                     
+
+ENV_DVAR	size = 130
+	_dupvar                           _env_dupvar
+
+ENV_FANY	size = 230
+	_env_findAnyVar                 
+
+ENV_FIND	size = 109
+	_env_findVar                    
+
+ENV_FORA	size = 126
+	_env_forAll                     
+
+ENV_FREE	size = 86
+	_env_endOfVars                    _env_firstFree
+	_env_freeCount                  
+
+ENV_FTCH	size = 124
+	_env_fetch                      
+
+ENV_INSV	size = 255
+	_env_appVar                       _env_insVarOffset
+
+ENV_LEN 	size = 17
+	_env_varlen                     
+
+ENV_MSTR	size = 26
+	_env_master                     
+
+ENV_MTCH	size = 235
+	_env_matchVar                   
+
+ENV_NEW 	size = 134
+	_env_create                     
+
+ENV_NOSP	size = 94
+	_env_noSpace                    
+
+ENV_NOST	size = 77
+	_env_nullStrings                
+
+ENV_OVRW	size = 290
+	_env_ovrVarOffset               
+
+ENV_REPL	size = 292
+	_env_replace                    
+
+ENV_RLSG	size = 40
+	_env_relocateSegment            
+
+ENV_SCNT	size = 89
+	_env_strcounter                 
+
+ENV_SCPY	size = 137
+	_env_strcpy                     
+
+ENV_SDUP	size = 122
+	_env_strdup                     
+
+ENV_SGET	size = 0
+
+ENV_SHEL	size = 32
+	_env_shell                      
+
+ENV_SINS	size = 152
+	_env_strinsert                  
+
+ENV_SIZE	size = 309
+	_env_resize                       _env_setsize
+
+ENV_SPUT	size = 243
+	_env_strput                     
+
+ENV_SSET	size = 0
+
+ENV_STRG	size = 110
+	_env_string                     
+
+ENV_STRS	size = 15
+	_env_strings                    
+
+ENV_SUB 	size = 48
+	_env_subVarOffset               
+
+ENV_VAR1	size = 2
+	_env_resizeCtrl                 
+
+ENV_VAR2	size = 2
+	_suppl_dfltEnvSegm              
+
+ERFC_001	size = 72
+	_Esuppl_argMissing              
+
+ERFC_002	size = 66
+	_Wsuppl_argMissing              
+
+ERFC_003	size = 66
+	_Esuppl_nonArgOption            
+
+ERFC_004	size = 60
+	_Wsuppl_nonArgOption            
+
+ERFC_005	size = 63
+	_Esuppl_argOption               
+
+ERFC_006	size = 57
+	_Wsuppl_argOption               
+
+ERFC_007	size = 60
+	_Esuppl_lArgOption              
+
+ERFC_008	size = 54
+	_Wsuppl_lArgOption              
+
+ERFC_009	size = 50
+	_Esuppl_option                  
+
+ERFC_00A	size = 44
+	_Wsuppl_option                  
+
+ERFC_00B	size = 47
+	_Esuppl_lOption                 
+
+ERFC_00C	size = 41
+	_Wsuppl_lOption                 
+
+ERFC_00D	size = 50
+	_Esuppl_longOption              
+
+ERFC_00E	size = 44
+	_Wsuppl_longOption              
+
+ERFC_00F	size = 37
+	_Esuppl_noMem                   
+
+ERFC_010	size = 31
+	_Wsuppl_noMem                   
+
+ERFC_011	size = 49
+	_Esuppl_writeFile               
+
+ERFC_012	size = 43
+	_Wsuppl_writeFile               
+
+ERFC_013	size = 50
+	_Esuppl_accessFile              
+
+ERFC_014	size = 44
+	_Wsuppl_accessFile              
+
+ERFC_015	size = 48
+	_Esuppl_openFile                
+
+ERFC_016	size = 42
+	_Wsuppl_openFile                
+
+ERFC_017	size = 50
+	_Esuppl_createFile              
+
+ERFC_018	size = 44
+	_Wsuppl_createFile              
+
+ERFC_019	size = 48
+	_Esuppl_readFile                
+
+ERFC_01A	size = 42
+	_Wsuppl_readFile                
+
+ERFC_01B	size = 65
+	_Esuppl_creatTmpFnam            
+
+ERFC_01C	size = 59
+	_Wsuppl_creatTmpFnam            
+
+ERFC_01D	size = 58
+	_Esuppl_tmpOpen                 
+
+ERFC_01E	size = 52
+	_Wsuppl_tmpOpen                 
+
+ERFC_01F	size = 70
+	_Esuppl_wrCfgFile               
+
+ERFC_020	size = 64
+	_Wsuppl_wrCfgFile               
+
+ERFC_021	size = 73
+	_Esuppl_ovrLinkcount            
+
+ERFC_022	size = 67
+	_Wsuppl_ovrLinkcount            
+
+ERFC_023	size = 21
+	_Y_noFNam                       
+
+ERFC_024	size = 4
+	_I_wdInc                        
+
+ERFC_025	size = 2
+	_I_sgnPlus                      
+
+ERFC_026	size = 4
+	_I_wdDec                        
+
+ERFC_027	size = 2
+	_I_sgnMinus                     
+
+ERFC_028	size = 4
+	_I_wdOff                        
+
+ERFC_029	size = 6
+	_I_wdFalse                      
+
+ERFC_02A	size = 3
+	_I_wdNo                         
+
+ERFC_02B	size = 6
+	_I_wdClear                      
+
+ERFC_02C	size = 3
+	_I_wdOn                         
+
+ERFC_02D	size = 5
+	_I_wdTrue                       
+
+ERFC_02E	size = 4
+	_I_wdYes                        
+
+ERFC_02F	size = 4
+	_I_wdSet                        
+
+ERFC_030	size = 7
+	_I_wdToggle                     
+
+ERFC_031	size = 7
+	_I_wdSwitch                     
+
+ERFC_032	size = 8
+	_I_TcfgErr                      
+
+ERFC_033	size = 12
+	_I_TcfgNone                     
+
+ERFC_034	size = 7
+	_I_TcfgStr                      
+
+ERFC_035	size = 18
+	_I_TcfgExpStr                   
+
+ERFC_036	size = 8
+	_I_TcfgInt                      
+
+ERFC_037	size = 8
+	_I_TcfgBool                     
+
+ERFC_038	size = 19
+	_I_TcfgExpInt                   
+
+ERFC_039	size = 19
+	_I_TcfgExpBool                  
+
+ERFC_03A	size = 8
+	_I_success                      
+
+ERFC_03B	size = 6
+	_I_error                        
+
+ERFC_03C	size = 8
+	_I_failure                      
+
+FCOMPARE	size = 0
+
+FFCOMMIT	size = 33
+	_fcommit                        
+
+FFCOPY  	size = 91
+	_Fcopy                          
+
+FFCOPYB 	size = 75
+	_Fcopybuf                       
+
+FFCOPYI 	size = 110
+	_Fcopyi                         
+
+FFCOPYL 	size = 130
+	_Fcopyl                         
+
+FFCOPYTO	size = 104
+	_Fcopyto                        
+
+FFDOPEN 	size = 0
+
+FFEOF   	size = 0
+
+FFGET   	size = 34
+	_FFget                          
+
+FFGETLIN	size = 183
+	_Fgetline                       
+
+FFGETPOS	size = 0
+
+FFMAXBUF	size = 57
+	_Fmaxbuf                        
+
+FFOPEN  	size = 0
+
+FFPOSCMP	size = 27
+	_Fposcmp                        
+
+FFPUT   	size = 34
+	_FFput                          
+
+FFSEEK  	size = 0
+
+FFSEEKI 	size = 0
+
+FFSETMOD	size = 0
+
+FFTMPDIR	size = 40
+	_Ftmpdir                        
+
+FFTMPFIL	size = 16
+	_Ftmpfile                       
+
+FFTMPNAM	size = 292
+	_Ftmpnam                        
+
+FFXCLALL	size = 25
+	_Fxcloseall                     
+
+FFXCLOSE	size = 87
+	_Fxclose                        
+
+FFXDFLT 	size = 8
+	_suppl_dfltExtAttr              
+
+FFXINFO 	size = 77
+	_F_xinfo                          _Fxinfo
+
+FFXOPEN 	size = 31
+	_Fxopen                         
+
+FF_DOPEN	size = 0
+
+FF_OPNM 	size = 0
+
+FF_TMPFL	size = 54
+	_F_tmpfile                      
+
+FF_XOPEN	size = 86
+	_F_xopen                        
+
+FGETPOS 	size = 0
+
+FILEFIND	size = 0
+
+FMEMCHR 	size = 58
+	__fmemchr                       
+
+FMEMCMP 	size = 84
+	__fmemcmp                       
+
+FMEMCMPI	size = 98
+	__fmemcmpi                      
+
+FMEMCPY 	size = 64
+	__fmemcpy                       
+
+FMEMOVE 	size = 174
+	__fmemmove                      
+
+FMEMSET 	size = 46
+	__fmemset                       
+
+FNORM   	size = 22
+	__fnormalize                    
+
+FPUTMC  	size = 71
+	_fputmc                         
+
+FSTRCHR 	size = 55
+	__fstrchr                       
+
+FSTRCMP 	size = 36
+	__fstrcmp                       
+
+FSTRCMPI	size = 36
+	__fstricmp                      
+
+FSTRCPY 	size = 36
+	__fstrcpy                       
+
+FSTRDUP 	size = 55
+	__fdupstr                       
+
+FSTRLEN 	size = 42
+	__fstrlen                       
+
+GETBDISK	size = 35
+	_getbootdisk                    
+
+GETDISK 	size = 0
+
+GETOPT  	size = 458
+	_getopt                         
+
+GETOPTB0	size = 10
+	_optarg                           _optcur
+	_opterr                           _optind
+	_optopt                         
+
+GETOPTI 	size = 23
+	_getopt_init                    
+
+GETOPTL 	size = 875
+	_getopt_long                    
+
+GETOPTLO	size = 918
+	_getopt_long_only               
+
+GETOPTRS	size = 54
+	_getopt_restore_                  _getopt_save_
+
+GM_CHGM 	size = 35
+	_Erealloc                       
+
+GM_CMEM 	size = 30
+	_Ecalloc                        
+
+GM_DUP  	size = 35
+	_Estrdup                        
+
+GM_DUPE 	size = 39
+	_Estrdupe                       
+
+GM_GTMEM	size = 25
+	_Emalloc                        
+
+GM_NWSTR	size = 25
+	_Estrchg_                       
+
+GM_RES  	size = 22
+	_Eresize_                       
+
+GM_SSIZE	size = 25
+	_Esetsize_                      
+
+INVOKEDO	size = 0
+
+ISODIGIT	size = 24
+	_isodigit                       
+
+LONGADDI	size = 0
+
+LONGADDU	size = 0
+
+LONGCLR 	size = 0
+
+LONGCMP 	size = 51
+	_longcmp                        
+
+LONGDIVI	size = 0
+
+LONGDIVU	size = 0
+
+LONGMULI	size = 0
+
+LONGMULU	size = 0
+
+LONGSETI	size = 0
+
+LONGSETU	size = 0
+
+LONGSHLN	size = 0
+
+LONGSHRN	size = 0
+
+LONGSUBI	size = 0
+
+LONGSUBU	size = 0
+
+MCB_1ST 	size = 43
+	_mcb_first                      
+
+MCB_APAR	size = 76
+	_mcb_allParents                 
+
+MCB_ENV 	size = 57
+	_isEnv                          
+
+MCB_IS  	size = 39
+	_isMCB                          
+
+MCB_LENG	size = 44
+	_mcb_length                     
+
+MCB_MSTR	size = 207
+	_mcb_primaryShell               
+
+MCB_NXT 	size = 32
+	_nxtMCB                         
+
+MCB_OWNE	size = 46
+	_mcb_owner                      
+
+MCB_PARE	size = 57
+	_mcb_shell                      
+
+MCB_PSP 	size = 38
+	_isPSP                          
+
+MCB_SHEL	size = 38
+	_isShell                        
+
+MCB_TOEN	size = 12
+	_mcb_env                        
+
+MCB_WALK	size = 142
+	_mcb_walk                       
+
+MEMCCMP 	size = 0
+
+MEMCMPI 	size = 0
+
+NLSDATE 	size = 37
+	_nlsCurDate                     
+
+NLSTIME 	size = 42
+	_nlsCurTime                     
+
+OSVERS  	size = 0
+
+PEEKD   	size = 0
+
+PEEKDD  	size = 77
+	_peekdd                         
+
+POKED   	size = 0
+
+POKEDD  	size = 0
+
+PSP_    	size = 0
+
+SETDISK 	size = 0
+
+STFC_001	size = 46
+	_Memccpy                        
+
+STFC_002	size = 36
+	_Memchr                         
+
+STFC_003	size = 63
+	_Memcmp                         
+
+STFC_004	size = 43
+	_Memcpy                         
+
+STFC_005	size = 63
+	_Memicmp                        
+
+STFC_006	size = 43
+	_Memmove                        
+
+STFC_007	size = 36
+	_Memset                         
+
+STFC_008	size = 37
+	_Stpcat                         
+
+STFC_009	size = 40
+	_Stpcpy                         
+
+STFC_00A	size = 37
+	_Strcat                         
+
+STFC_00B	size = 26
+	_Strchr                         
+
+STFC_00C	size = 49
+	_Strcmp                         
+
+STFC_00D	size = 49
+	_Strcoll                        
+
+STFC_00E	size = 33
+	_Strcpy                         
+
+STFC_00F	size = 40
+	_Strcspn                        
+
+STFC_010	size = 25
+	_Strdup                         
+
+STFC_011	size = 49
+	_Stricmp                        
+
+STFC_012	size = 22
+	_Strlen                         
+
+STFC_013	size = 22
+	_Strlwr                         
+
+STFC_014	size = 41
+	_Strncat                        
+
+STFC_015	size = 53
+	_Strncmp                        
+
+STFC_016	size = 37
+	_Strncpy                        
+
+STFC_017	size = 53
+	_Strnicmp                       
+
+STFC_018	size = 30
+	_Strnset                        
+
+STFC_019	size = 32
+	_Strpbrk                        
+
+STFC_01A	size = 26
+	_Strrchr                        
+
+STFC_01B	size = 22
+	_Strrev                         
+
+STFC_01C	size = 26
+	_Strset                         
+
+STFC_01D	size = 32
+	_Strspn                         
+
+STFC_01E	size = 39
+	_Strstr                         
+
+STFC_01F	size = 37
+	_Strtok                         
+
+STFC_020	size = 22
+	_Strupr                         
+
+STFC_021	size = 25
+	_Strend                         
+
+STPCAT  	size = 24
+	_stpcat                         
+
+STPCPY  	size = 0
+
+STRNUM  	size = 360
+	_strnum                         
+
+STRTOD  	size = 0
+
+SYSLOGC 	size = 57
+	_closelog                       
+
+SYSLOGL 	size = 46
+	_syslog_eol                     
+
+SYSLOGO 	size = 108
+	_openlog                        
+
+SYSLOGP 	size = 21
+	_syslog_print                   
+
+SYSLOGR 	size = 15
+	_syslog_facility                  _syslog_fnam
+	_syslog_ident                     _syslog_logfile
+	_syslog_opencount                 _syslog_openmode
+	_syslog_options                 
+
+SYSLOGS 	size = 245
+	_syslog                           _syslogv
+
+SYSLOGV 	size = 64
+	_syslog_vprint                  
+
+SYSLOGX 	size = 44
+	_syslogo                        
+
+S_LKPWD 	size = 77
+	_lookupwd_                      
+
+S_SKIPWD	size = 43
+	_skipwd                         
+
+S_SKIPWS	size = 38
+	_skipws                         
+
+S_SNGLWD	size = 60
+	_singleword                     
+
+TOUPPERX	size = 113
+	_toFUpper                         _toUpper
+
+TOXDIGIT	size = 39
+	_toxdigit                       
+
+_FLAGS  	size = 0
+
+_GETDCWD	size = 138
+	__getdcwd                       

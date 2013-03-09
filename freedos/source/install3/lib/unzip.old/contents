@@ -1,0 +1,69 @@
+Contents of the UnZip 5.2 source archive.  The OS-specific subdirectories
+at the end contain their own Contents listings:
+
+  Contents	this file
+  README	what UnZip is; general information
+  COPYING	copyrights and distribution policy
+  INSTALL	how to compile and install UnZip and related utilities
+  Where		where Zip/UnZip and encryption/decryption support can be found
+  History.520	new features and fixes in this release
+  ToDo		rough priority list of new features to be added in next release
+  BUGS		known bugs, problems, and (possible) other features to be added
+  unzip.doc	UnZip manual page, human-readable format
+  unzipsfx.doc	UnZipSFX manual page, human-readable format
+  zipinfo.doc	ZipInfo manual page, human-readable format
+  funzip.doc	fUnZip manual page, human-readable format
+  file_id.diz	BBS-oriented file describing this archive
+  api.c		generic DLL entry points, support functions (required for DLLs)
+  apihelp.c     API help text for DLL versions (currently OS/2 only)
+  crc32.c	code for calculation 32bit CRC of a string buffer (required*)
+  crc_i386.S	fast assembler replacement for crc32.c (Intel 386 and newer)
+  crctab.c	supplies polynom table for CRC calculation
+  crypt.c	dummy decryption routines (required*)
+  crypt.h	dummy decryption header file (required*)
+  ebcdic.h	static lookup table for ASCII <-> EBCDIC translation (required)
+  envargs.c	code to read options from environment variables (required)
+  explode.c	code for exploding (required)
+  extract.c	high-level extraction and decryption code (required)
+  fileio.c	file manipulation and password code (required)
+  funzip.c	filter unzip:  extracts in a pipe from stdin to stdout
+  globals.c	code to support global variables with reentrancy (required)
+  globals.h	definition of global structure G (required)
+  inflate.c	code for inflating (required*)
+  inflate.h	header file for inflating (required*)
+  list.c	UnZip listing routines, non-ZipInfo mode (required)
+  match.c	pattern-matching code for filename wildcards (required)
+  process.c	zipfile headers code (required)
+  tables.h	static lookup tables used in fileio.c and funzip.c (required*)
+  ttyio.c	code for handling nonecho tty input: password, pager (required)
+  ttyio.h	header file for nonecho tty input: password, pager (required)
+  unreduce.c	code for unreducing (required)
+  unshrink.c	code for unshrinking (required)
+  unzip.c	UnZip main(), usage and options code (required)
+  unzip.h	public half of main UnZip header file (required*)
+  unzipstb.c	minimal UnZip "stub" file demonstrating use of DLL versions
+  unzpriv.h	private (internal) half of main UnZip header file (required*)
+  version.h	header with UnZip/UnZipSFX and ZipInfo version info (required)
+  zip.h		dummy header for use with crypt.c (required*)
+  zipinfo.c	UnZip listing routines, ZipInfo mode (required)
+  acorn/	support files for compiling under Acorn RISCOS
+  amiga/	support files for compiling under AmigaDOS
+  aosvs/	support files for compiling under Data General AOS/VS
+  atari/	support files for compiling under Atari TOS
+  cmsmvs/	support files for compiling under VM/CMS and MVS
+  human68k/	support files for compiling under X68000/Human68K
+  mac/		support files for compiling under Macintosh OS
+  msdos/	support files for compiling under MS-DOS
+  novell/	support files for compiling for Novell Netware NLM (preliminary)
+  os2/		support files for compiling under OS/2 (includes DLL stuff)
+  tops20/	support files for compiling under TOPS-20
+  unix/		support files for compiling under Unix
+  vms/		support files for compiling under VMS
+  win32/	support files for compiling under Windows NT and Windows 95
+  wingui/	support files for compiling WizUnZip (Win3/NT/95 GUI version)
+  wizdll/	support files for compiling WizUnZip 16- and 32-bit DLLs
+  proginfo/	programming docs and additional technical info
+
+Files marked "required*" are also needed to compile fUnZip.  The normal
+UnZip makefile targets now make both UnZipSFX and fUnZip, except in a few
+cases; ZipInfo is now incorporated into UnZip (see zipinfo.doc for usage).

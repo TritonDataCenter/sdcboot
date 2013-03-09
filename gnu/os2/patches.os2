@@ -1,0 +1,1828 @@
+diff -cbr orig/lib/getopt.c new/lib/getopt.c
+*** orig/lib/getopt.c	Mon Jan 27 20:23:34 1992
+--- new/lib/getopt.c	Mon Feb 10 16:16:36 1992
+***************
+*** 29,36 ****
+--- 29,40 ----
+  #ifdef _AIX
+   #pragma alloca
+  #else
++ #ifdef OS2
++ #include <malloc.h>
++ #else
+  char *alloca ();
+  #endif
++ #endif
+  #endif /* sparc */
+  #endif /* not __GNUC__ */
+  
+***************
+*** 76,81 ****
+--- 80,87 ----
+  
+  #include "getopt.h"
+  
++ static void exchange (char **);
++ 
+  /* For communication from `getopt' to the caller.
+     When `getopt' finds an option that takes an argument,
+     the argument value is returned here.
+***************
+*** 420,426 ****
+  	   p++, option_index++)
+  	if (!strncmp (p->name, nextchar, s - nextchar))
+  	  {
+! 	    if (s - nextchar == strlen (p->name))
+  	      {
+  		/* Exact match found.  */
+  		pfound = p;
+--- 426,432 ----
+  	   p++, option_index++)
+  	if (!strncmp (p->name, nextchar, s - nextchar))
+  	  {
+! 	    if (s - nextchar == (int) strlen (p->name))
+  	      {
+  		/* Exact match found.  */
+  		pfound = p;
+diff -cbr orig/src/cat.c new/src/cat.c
+*** orig/src/cat.c	Thu Jan 16 22:57:10 1992
+--- new/src/cat.c	Mon Feb 10 16:27:52 1992
+***************
+*** 26,36 ****
+--- 26,40 ----
+  #include <getopt.h>
+  #include <sys/types.h>
+  #ifndef _POSIX_SOURCE
++ #ifndef OS2
+  #include <sys/ioctl.h>
+  #endif
++ #endif
+  #include "system.h"
+  
++ #ifndef max
+  #define max(h,i) ((h) > (i) ? (h) : (i))
++ #endif
+  
+  char *stpcpy ();
+  char *xmalloc ();
+***************
+*** 39,44 ****
+--- 43,49 ----
+  void next_line_num ();
+  void simple_cat ();
+  
++ typedef unsigned char uchar;
+  /* Name under which this program was invoked.  */
+  char *program_name;
+  
+***************
+*** 78,83 ****
+--- 83,89 ----
+    if (reason != NULL)
+      fprintf (stderr, "%s: %s\n", program_name, reason);
+  
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-benstuvAET] [--number] [--number-nonblank] [--squeeze-blank]\n\
+         [--show-nonprinting] [--show-ends] [--show-tabs] [--show-all]\n\
+***************
+*** 235,240 ****
+--- 241,251 ----
+    infile = "-";
+    argind = optind;
+  
++ #ifdef OS2
++   if ( optind == argc && isatty(fileno(stdin)) )
++     usage(NULL);
++ #endif
++ 
+    do
+      {
+        if (argind < argc)
+***************
+*** 256,261 ****
+--- 267,281 ----
+  	    }
+  	}
+  
++ #ifdef OS2
++         /* We will not set the binary mode if we have
++            another (verbose) option active.  */
++         if (options == 0)
++           {
++             setmode (input_desc, O_BINARY);
++             setmode (output_desc, O_BINARY);
++           }
++ #endif
+        if (fstat (input_desc, &stat_buf) < 0)
+  	{
+  	  error (0, errno, "%s", infile);
+***************
+*** 269,274 ****
+--- 289,295 ----
+  	 stdout, and skip this input file if they coincide.  Input
+  	 files cannot be redirected to themselves.  */
+  
++ #ifndef OS2
+        if (check_redirection
+  	  && stat_buf.st_dev == out_dev && stat_buf.st_ino == out_ino)
+  	{
+***************
+*** 276,281 ****
+--- 297,303 ----
+  	  exit_stat = 1;
+  	  goto contin;
+  	}
++ #endif
+  
+        /* Select which version of `cat' to use. If any options (more than -u)
+  	 were specified, use `cat', otherwise use `simple_cat'.  */
+***************
+*** 289,294 ****
+--- 311,319 ----
+  	}
+        else
+  	{
++ #ifdef OS2			/* the user wants it slow, he can get it! */
++ 	  insize = outsize = 0x1000;
++ #endif
+  	  inbuf = (unsigned char *) xmalloc (insize + 1);
+  
+  	  /* Why are (OUTSIZE  - 1 + INSIZE * 4 + 13) bytes allocated for
+diff -cbr orig/src/cmp.c new/src/cmp.c
+*** orig/src/cmp.c	Thu Jan 16 22:56:34 1992
+--- new/src/cmp.c	Mon Feb 10 16:23:10 1992
+***************
+*** 29,36 ****
+--- 29,40 ----
+  #include <sys/types.h>
+  #include "system.h"
+  
++ #ifdef OS2
++ #include <io.h>
++ #else
+  #define max(h, i)	((h) > (i) ? (h) : (i))
+  #define min(l, o)	((l) < (o) ? (l) : (o))
++ #endif
+  
+  char *xmalloc ();
+  int bcmp_cnt ();
+***************
+*** 95,100 ****
+--- 99,105 ----
+    if (reason != NULL)
+      fprintf (stderr, "%s: %s\n", program_name, reason);
+  
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-cls] [--show-chars] [--verbose] [--silent] [--quiet]\n\
+         file1 [file2]\n",
+***************
+*** 144,149 ****
+--- 149,156 ----
+  	usage ((char *) 0);
+        }
+  
++   if (optind == argc)
++     usage(NULL);
+    if (optind < argc)
+      file1 = argv[optind++];
+  
+***************
+*** 200,208 ****
+--- 207,217 ----
+        /* Find out if the files are links to the same inode, and therefore
+  	 identical.  */
+  
++ #ifndef OS2
+        if (stat_buf1.st_dev == stat_buf2.st_dev
+  	  && stat_buf1.st_ino == stat_buf2.st_ino)
+  	exit (0);
++ #endif
+  
+        /* If output is redirected to "/dev/null", we may assume `-s'.  */
+  
+***************
+*** 239,244 ****
+--- 248,258 ----
+    buf1 = xmalloc (buf_size + sizeof (long));
+    buf2 = xmalloc (buf_size + sizeof (long));
+  
++ #ifdef OS2
++   setmode (file1_desc, O_BINARY);
++   setmode (file2_desc, O_BINARY);
++ #endif
++ 
+    exit_status = cmp ();
+  
+    if (close (file1_desc) < 0)
+***************
+*** 524,530 ****
+        --width;
+      }
+  
+!   putc (c, fs);
+    while (--width > 0)
+      putc (' ', fs);
+  }
+--- 538,544 ----
+        --width;
+      }
+  
+!   putc ((int) c, fs);
+    while (--width > 0)
+      putc (' ', fs);
+  }
+diff -cbr orig/src/comm.c new/src/comm.c
+*** orig/src/comm.c	Thu Aug 29 22:19:46 1991
+--- new/src/comm.c	Mon Feb 10 16:47:24 1992
+***************
+*** 23,29 ****
+--- 23,31 ----
+  #include "system.h"
+  #include "linebuffer.h"
+  
++ #ifndef min
+  #define min(x, y) ((x) < (y) ? (x) : (y))
++ #endif
+  
+  /* If nonzero, print lines that are found only in file 1. */
+  int only_file_1;
+***************
+*** 132,138 ****
+  	{
+  	  /* Cannot use bcmp -- it only returns a boolean value. */
+  	  order = memcmp (thisline[0]->buffer, thisline[1]->buffer,
+! 			  min (thisline[0]->length, thisline[1]->length));
+  	  if (order == 0)
+  	    order = thisline[0]->length - thisline[1]->length;
+  	}
+--- 134,140 ----
+  	{
+  	  /* Cannot use bcmp -- it only returns a boolean value. */
+  	  order = memcmp (thisline[0]->buffer, thisline[1]->buffer,
+! 			  (size_t)min (thisline[0]->length, thisline[1]->length));
+  	  if (order == 0)
+  	    order = thisline[0]->length - thisline[1]->length;
+  	}
+***************
+*** 209,215 ****
+        break;
+      }
+  
+!   fwrite (line->buffer, sizeof (char), line->length, stream);
+    putc ('\n', stream);
+  }
+  
+--- 211,217 ----
+        break;
+      }
+  
+!   fwrite (line->buffer, sizeof (char), (size_t) line->length, stream);
+    putc ('\n', stream);
+  }
+  
+***************
+*** 216,221 ****
+  void
+  usage ()
+  {
+!   fprintf (stderr, "Usage: %s [-123] file1 file2\n", program_name);
+    exit (1);
+  }
+--- 218,224 ----
+  void
+  usage ()
+  {
+!   print_version();
+    fprintf (stderr, "Usage: %s [-123] file1 file2\n", program_name);
+    exit (1);
+  }
+diff -cbr orig/src/csplit.c new/src/csplit.c
+*** orig/src/csplit.c	Thu Jan 16 22:58:32 1992
+--- new/src/csplit.c	Mon Feb 10 16:51:56 1992
+***************
+*** 70,83 ****
+    boolean ignore;		/* If true, produce no output (for regexp). */
+  };
+  
+  /* Initial size of data area in buffers. */
+  #define START_SIZE	8191
+- 
+  /* Increment size for data area. */
+  #define INCR_SIZE	2048
+- 
+  /* Number of lines kept in each node in line list. */
+  #define CTRL_SIZE	80
+  
+  #ifdef DEBUG
+  /* Some small values to test the algorithms. */
+--- 70,87 ----
+    boolean ignore;		/* If true, produce no output (for regexp). */
+  };
+  
++ #ifdef OS2
++ #define START_SIZE      2047
++ #define INCR_SIZE       512
++ #define CTRL_SIZE       20
++ #else
+  /* Initial size of data area in buffers. */
+  #define START_SIZE	8191
+  /* Increment size for data area. */
+  #define INCR_SIZE	2048
+  /* Number of lines kept in each node in line list. */
+  #define CTRL_SIZE	80
++ #endif
+  
+  #ifdef DEBUG
+  /* Some small values to test the algorithms. */
+***************
+*** 1300,1305 ****
+--- 1304,1310 ----
+  void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-sk] [-f prefix] [-n digits] [--prefix=prefix]\n\
+         [--digits=digits] [--quiet] [--silent] [--keep-files] file pattern...\n",
+diff -cbr orig/src/cut.c new/src/cut.c
+*** orig/src/cut.c	Thu Jan 16 22:55:32 1992
+--- new/src/cut.c	Mon Feb 10 16:28:56 1992
+***************
+*** 576,581 ****
+--- 576,582 ----
+  void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s {-b byte-list,--bytes=byte-list} [-n] [file...]\n\
+         %s {-c character-list,--characters=character-list} [file...]\n\
+diff -cbr orig/src/expand.c new/src/expand.c
+*** orig/src/expand.c	Thu Jan 16 22:54:46 1992
+--- new/src/expand.c	Mon Feb 10 16:29:14 1992
+***************
+*** 161,166 ****
+--- 161,169 ----
+      tab_size = 0;
+  
+    if (optind == argc)
++     if ( isatty(fileno(stdin)) )
++       usage();
++     else
+      file_list = stdin_argv;
+    else
+      file_list = &argv[optind];
+***************
+*** 369,374 ****
+--- 372,378 ----
+  void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-tab1[,tab2[,...]]] [-t tab1[,tab2[,...]]] [-i]\n\
+         [--tabs=tab1[,tab2[,...]]] [--initial] [file...]\n",
+diff -cbr orig/src/fold.c new/src/fold.c
+*** orig/src/fold.c	Thu Jan 16 22:54:20 1992
+--- new/src/fold.c	Mon Feb 10 16:52:48 1992
+***************
+*** 53,58 ****
+--- 53,68 ----
+  };
+  
+  void
++ usage ()
++ {
++   print_version();
++   fprintf (stderr, "\
++ Usage: %s [-bs] [-w width] [--bytes] [--spaces] [--width=width] [file...]\n",
++ 	   program_name);
++   exit (1);
++ }
++ 
++ void
+  main (argc, argv)
+       int argc;
+       char **argv;
+***************
+*** 85,99 ****
+  	  break;
+  
+  	default:
+! 	  fprintf (stderr, "\
+! Usage: %s [-bs] [-w width] [--bytes] [--spaces] [--width=width] [file...]\n",
+! 		   argv[0]);
+! 	  exit (1);
+  	}
+      }
+  
+    if (argc == optind)
+      errs |= fold_file ("-", width);
+    else
+      for (i = optind; i < argc; i++)
+        errs |= fold_file (argv[i], width);
+--- 95,110 ----
+  	  break;
+  
+  	default:
+!           usage();
+  	}
+      }
+  
+    if (argc == optind)
++   {
++     if (isatty(0))
++       usage();
+      errs |= fold_file ("-", width);
++   }
+    else
+      for (i = optind; i < argc; i++)
+        errs |= fold_file (argv[i], width);
+diff -cbr orig/src/head.c new/src/head.c
+*** orig/src/head.c	Thu Jan 16 22:54:00 1992
+--- new/src/head.c	Mon Feb 10 16:31:48 1992
+***************
+*** 64,69 ****
+--- 64,74 ----
+    multiple_files, always, never
+  };
+  
++ #ifdef OS2
++ #include <string.h>
++ #include <stdarg.h>
++ #include <io.h>
++ #endif
+  int head ();
+  int head_bytes ();
+  int head_file ();
+***************
+*** 74,79 ****
+--- 79,85 ----
+  void usage ();
+  void write_header ();
+  void xwrite ();
++ char *basename ();
+  
+  /* The name this program was run with. */
+  char *program_name;
+***************
+*** 198,204 ****
+--- 204,214 ----
+      print_headers = 1;
+  
+    if (optind == argc)
++   {
++     if ( isatty(fileno(stdin)) )
++       usage();
+      exit_status |= head_file ("-", number);
++   }
+  
+    for (; optind < argc; ++optind)
+      exit_status |= head_file (argv[optind], number);
+***************
+*** 267,276 ****
+--- 277,298 ----
+       int fd;
+       long number;
+  {
++ #ifdef OS2
++   int errors;
++   setmode (fileno (stdout), O_BINARY);
++   setmode (fd, O_BINARY);
++   if (unit_size)
++     errors = head_bytes (filename, fd, number);
++   else
++     errors = head_lines (filename, fd, number);
++   setmode (fileno (stdout), O_TEXT);
++   return errors;
++ #else
+    if (unit_size)
+      return head_bytes (filename, fd, number);
+    else
+      return head_lines (filename, fd, number);
++ #endif
+  }
+  
+  int
+***************
+*** 292,301 ****
+  	}
+        if (bytes_read == 0)
+  	break;
+!       if (bytes_read > bytes_to_write)
+! 	bytes_read = bytes_to_write;
+        xwrite (1, buffer, bytes_read);
+!       bytes_to_write -= bytes_read;
+      }
+    return 0;
+  }
+--- 314,323 ----
+  	}
+        if (bytes_read == 0)
+  	break;
+!       if ((long) bytes_read > bytes_to_write)
+! 	bytes_read = (int) bytes_to_write;
+        xwrite (1, buffer, bytes_read);
+!       bytes_to_write -= (long) bytes_read;
+      }
+    return 0;
+  }
+***************
+*** 362,377 ****
+  atou (str)
+       char *str;
+  {
+!   int value;
+  
+    for (value = 0; ISDIGIT (*str); ++str)
+      value = value * 10 + *str - '0';
+!   return *str ? -1 : value;
+  }
+  
+  void
+  usage ()
+  {
+    fprintf (stderr, "\
+  Usage: %s [-c N[bkm]] [-n N] [-qv] [--bytes=N[bkm]] [--lines=N]\n\
+         [--quiet] [--silent] [--verbose] [file...]\n\
+--- 384,400 ----
+  atou (str)
+       char *str;
+  {
+!   long value;
+  
+    for (value = 0; ISDIGIT (*str); ++str)
+      value = value * 10 + *str - '0';
+!   return *str ? -1L : value;
+  }
+  
+  void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-c N[bkm]] [-n N] [-qv] [--bytes=N[bkm]] [--lines=N]\n\
+         [--quiet] [--silent] [--verbose] [file...]\n\
+diff -cbr orig/src/join.c new/src/join.c
+*** orig/src/join.c	Thu Sep 26 12:47:10 1991
+--- new/src/join.c	Mon Feb 10 16:47:34 1992
+***************
+*** 40,46 ****
+--- 40,48 ----
+  void error ();
+  static void usage ();
+  
++ #ifndef min
+  #define min(A, B) ((A) < (B) ? (A) : (B))
++ #endif
+  
+  /* An element of the list describing the format of each
+     output line. */
+***************
+*** 682,687 ****
+--- 684,690 ----
+  static void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-a 1|2] [-v 1|2] [-e empty-string] [-o field-list...] [-t char]\n\
+         [-j[1|2] field] [-1 field] [-2 field] file1 file2\n",
+diff -cbr orig/src/nl.c new/src/nl.c
+*** orig/src/nl.c	Sun Feb 02 18:25:26 1992
+--- new/src/nl.c	Mon Feb 10 17:00:56 1992
+***************
+*** 281,287 ****
+--- 281,292 ----
+    /* Main processing. */
+  
+    if (optind == argc)
++   {
++     if ( isatty(0) )
++       usage();
++ 
+      exit_status |= nl_file ("-");
++   }
+    else
+      for (; optind < argc; optind++)
+        exit_status |= nl_file (argv[optind]);
+***************
+*** 532,537 ****
+--- 537,543 ----
+  void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-h header-style] [-b body-style] [-f footer-style] [-p] [-d cc]\n\
+         [-v start-number] [-i increment] [-l lines] [-s line-separator]\n\
+diff -cbr orig/src/paste.c new/src/paste.c
+*** orig/src/paste.c	Thu Jan 16 22:53:10 1992
+--- new/src/paste.c	Mon Feb 10 16:32:04 1992
+***************
+*** 119,125 ****
+--- 119,129 ----
+      }
+  
+    if (optind == argc)
++   {
++     if ( isatty(fileno(stdin)) )
++       usage();
+      argv[argc++] = "-";
++   }
+  
+    delim_end = collapse_escapes (delims);
+  
+***************
+*** 449,454 ****
+--- 453,459 ----
+  void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-s] [-d delim-list] [--serial] [--delimiters=delim-list]\n\
+         [file...]\n",
+diff -cbr orig/src/pr.c new/src/pr.c
+*** orig/src/pr.c	Sun Jan 05 14:40:06 1992
+--- new/src/pr.c	Mon Feb 10 16:47:44 1992
+***************
+*** 602,607 ****
+--- 602,610 ----
+      }
+  
+    if (input_is_stdin)
++     if (isatty(0))
++       usage ((char *) 0);
++     else
+      print_files (0, (char **) 0);
+  
+    if (have_read_stdin && fclose (stdin) == EOF)
+***************
+*** 1811,1816 ****
+--- 1814,1820 ----
+    if (reason)
+      fprintf (stderr, "%s: %s\n", program_name, reason);
+  
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [+PAGE] [-COLUMN] [-abcdfFmrtv] [-e[in-tab-char[in-tab-width]]]\n\
+         [-h header] [-i[out-tab-char[out-tab-width]]] [-l page-length]\n\
+diff -cbr orig/src/sort.c new/src/sort.c
+*** orig/src/sort.c	Thu Jan 02 09:17:28 1992
+--- new/src/sort.c	Mon Feb 10 16:36:38 1992
+***************
+*** 43,50 ****
+--- 43,53 ----
+  
+  void error ();
+  static void usage ();
++ static void cleanup ();
+  
++ #ifndef min
+  #define min(a, b) ((a) < (b) ? (a) : (b))
++ #endif
+  #define UCHAR_LIM (UCHAR_MAX + 1)
+  #define UCHAR(c) ((unsigned char) (c))
+  
+***************
+*** 104,114 ****
+--- 107,126 ----
+  };
+  
+  /* During the merge phase, the number of files to merge at once. */
++ #ifdef OS2
++ /* 14 (= 20 - 5 - 1) is a hard upper limit for the MS C library */
++ #define NMERGE 12
++ #else
+  #define NMERGE 16
++ #endif
+  
+  /* Initial buffer size for in core sorting.  Will not grow unless a
+     line longer than this is seen. */
++ #ifdef OS2
++ static int sortalloc = 32767;
++ #else
+  static int sortalloc =  524288;
++ #endif
+  
+  /* Initial buffer size for in core merge buffers.  Bear in mind that
+     up to NMERGE * mergealloc bytes may be allocated for merge buffers. */
+***************
+*** 147,152 ****
+--- 159,188 ----
+    char *keylim;			/* Limit of first key. */
+  };
+  
++ #ifdef OS2
++ /* Using _huge line arrays under MS-DOS is terribly inefficient, so we
++    impose an upper limit on the number of lines cosidered at once.  The
++    user can break the input into digestable pieces by using the `-S' option
++    to adjust the input buffer size.
++    This only matters for files with very short lines ( < 8 chars).  */
++ static int maxlines
++   = (int) (((1L << 16) - 1L) / sizeof (struct line));
++ 
++ void
++ assert_lines (int lines)
++ {
++   if (lines >= maxlines)
++     {
++       fprintf (stderr,
++ 	       "sort: the number of lines per input buffer is restricted in\n"
++ 	       "      the MS-DOS version to %u.  For files with short lines, use\n"
++ 	       "      the `-S <num>' option to reduce the buffer size.\n", maxlines);
++       cleanup ();
++       exit (-1);
++     }
++ }
++ #endif
++ 
+  /* Arrays of lines. */
+  struct lines
+  {
+***************
+*** 307,315 ****
+--- 343,357 ----
+    (struct tempnode *) xmalloc (sizeof (struct tempnode));
+  
+    if (len && prefix[len - 1] != '/')
++ #ifdef OS2
++     sprintf(name, "%s/sort%4.4x.%3.3x", prefix, getpid(), ++seq);
++   else
++     sprintf(name, "%ssort%4.4x.%3.3x", prefix, getpid(), ++seq);
++ #else
+      sprintf (name, "%s/sort%5.5d%5.5d", prefix, getpid (), ++seq);
+    else
+      sprintf (name, "%ssort%5.5d%5.5d", prefix, getpid (), ++seq);
++ #endif
+    node->name = name;
+    node->next = temphead.next;
+    temphead.next = node;
+***************
+*** 392,401 ****
+--- 434,453 ----
+    while (!feof (fp) && (buf->used == 0 || !memchr (buf->buf, '\n', buf->used)))
+      {
+        if (buf->used == buf->alloc)
++ #ifdef OS2
++ 	{
++ 	  fprintf (stderr,
++ 		   "sort: lines longer than 32k are not supported in this\n"
++ 		   "      version because of performance considerations.\n");
++ 	  cleanup ();
++ 	  exit (-1);
++ 	}
++ #else
+  	{
+  	  buf->alloc *= 2;
+  	  buf->buf = xrealloc (buf->buf, buf->alloc);
+  	}
++ #endif
+        cc = fread (buf->buf + buf->used, 1, buf->alloc - buf->used, fp);
+        if (ferror (fp))
+  	{
+***************
+*** 409,418 ****
+--- 461,480 ----
+    if (feof (fp) && buf->used && buf->buf[buf->used - 1] != '\n')
+      {
+        if (buf->used == buf->alloc)
++ #ifdef OS2
++ 	{
++ 	  fprintf (stderr,
++ 		   "sort: lines longer than 32k are not supported in this\n"
++ 		   "      version because of performance considerations.\n");
++ 	  cleanup ();
++ 	  exit (-1);
++ 	}
++ #else
+  	{
+  	  buf->alloc *= 2;
+  	  buf->buf = xrealloc (buf->buf, buf->alloc);
+  	}
++ #endif
+        buf->buf[buf->used++] = '\n';
+      }
+  
+***************
+*** 430,435 ****
+--- 492,500 ----
+       int limit;
+  {
+    lines->alloc = alloc;
++ #ifdef OS2
++   assert_lines (lines->alloc);
++ #endif
+    lines->lines = (struct line *) xmalloc (lines->alloc * sizeof (struct line));
+    lines->used = 0;
+    lines->limit = limit;
+***************
+*** 540,545 ****
+--- 605,614 ----
+  		      lines->alloc * sizeof (struct line));
+  	}
+  
++ #ifdef OS2
++       assert_lines (lines->alloc);
++ #endif
++ 
+        lines->lines[lines->used].text = beg;
+        lines->lines[lines->used].length = ptr - beg;
+  
+***************
+*** 1269,1274 ****
+--- 1338,1346 ----
+    initlines (&lines, sortalloc / linelength + 1,
+  	     LINEALLOC / sizeof (struct line));
+    ntmp = lines.alloc;
++ #ifdef OS2
++   assert_lines (ntmp);
++ #endif
+    tmp = (struct line *) xmalloc (ntmp * sizeof (struct line));
+  
+    while (nfiles--)
+***************
+*** 1281,1286 ****
+--- 1353,1361 ----
+  	    {
+  	      while (lines.used > ntmp)
+  		ntmp *= 2;
++ #ifdef OS2
++ 	      assert_lines (ntmp);
++ #endif
+  	      tmp = (struct line *)
+  		xrealloc ((char *) tmp, ntmp * sizeof (struct line));
+  	    }
+***************
+*** 1358,1364 ****
+--- 1433,1443 ----
+    signal (sig, SIG_DFL);
+  #endif				/* _POSIX_VERSION */
+    cleanup ();
++ #ifdef OS2
++   raise (SIGINT);
++ #else
+    kill (getpid (), sig);
++ #endif
+  }
+  
+  /* Set the ordering options for KEY specified in S.
+***************
+*** 1432,1440 ****
+--- 1511,1525 ----
+    have_read_stdin = 0;
+    inittables ();
+  
++ #ifdef OS2
++   prefix = getenv ("TMP");
++   if (prefix == NULL)
++     prefix = "/";
++ #else
+    prefix = getenv ("TMPDIR");
+    if (prefix == NULL)
+      prefix = "/tmp";
++ #endif
+  
+  #ifdef _POSIX_VERSION
+    newact.sa_handler = sighandler;
+***************
+*** 1450,1455 ****
+--- 1535,1542 ----
+  #else				/* !_POSIX_VERSION */
+    if (signal (SIGINT, SIG_IGN) != SIG_IGN)
+      signal (SIGINT, sighandler);
++   if (signal (SIGQUIT, SIG_IGN) != SIG_IGN)
++     signal (SIGQUIT, sighandler);
+    if (signal (SIGHUP, SIG_IGN) != SIG_IGN)
+      signal (SIGHUP, sighandler);
+  #endif				/* _POSIX_VERSION */
+***************
+*** 1622,1627 ****
+--- 1709,1737 ----
+  		  case 'u':
+  		    unique = 1;
+  		    break;
++ #ifdef OS2
++ 		  case 'S':
++ 		    {
++ 		      long num;
++ 		      if (s[1])
++ 			num = atol (s + 1);
++ 		      else
++ 			{
++ 			  if (i == argc - 1)
++ 			    {
++ 			      fprintf(stderr, "sort: missing argument to -S\n");
++ 			      exit(-1);
++ 			    }
++ 			  else
++ 			    num = atol (argv[++i]);
++ 			}
++ 		      if (num > 32767 || num <= 0)
++ 			fprintf(stderr, "sort: argument to -S must be < 32k\n");
++ 		      else
++ 			sortalloc = (int) num;
++ 		    }
++ 		    goto outer;
++ #endif
+  		  default:
+  		    fprintf (stderr, "%s: unrecognized option `-%c'\n",
+  			     argv[0], *s);
+***************
+*** 1662,1667 ****
+--- 1772,1784 ----
+  
+    if (nfiles == 0)
+      {
++ #ifdef OS2
++       if ( isatty(fileno(stdin)) )
++       {
++         usage(argv[0]);
++         exit(1);
++       }
++ #endif
+        nfiles = 1;
+        files = &minus;
+      }
+***************
+*** 1718,1723 ****
+--- 1835,1841 ----
+  static void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-cmu] [-t separator] [-o output-file] [-bdfiMnr] [+POS1 [-POS2]]\n\
+         [-k POS1[,POS2]] [file...]\n",
+diff -cbr orig/src/split.c new/src/split.c
+*** orig/src/split.c	Thu Jan 16 22:52:30 1992
+--- new/src/split.c	Mon Feb 10 16:37:54 1992
+***************
+*** 72,77 ****
+--- 72,78 ----
+  {
+    if (reason != NULL)
+      fprintf (stderr, "%s: %s\n", program_name, reason);
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-lines] [-l lines] [-b bytes[bkm]] [-C bytes[bkm]]\n\
+         [--lines=lines] [--bytes=bytes[bkm]] [--line-bytes=bytes[bkm]]\n\
+***************
+*** 197,206 ****
+--- 198,215 ----
+  
+    /* Open the input file.  */
+    if (!strcmp (infile, "-"))
++   {
++     if ( isatty(0) )
++       usage (NULL);
+      input_desc = 0;
++   }
+    else
+      {
++ #ifdef OS2
++       input_desc = open (infile, O_RDONLY | O_BINARY);
++ #else
+        input_desc = open (infile, O_RDONLY);
++ #endif
+        if (input_desc < 0)
+  	error (1, errno, "%s", infile);
+      }
+***************
+*** 466,472 ****
+--- 475,485 ----
+  	error (1, errno, "%s", outfile);
+  
+        next_file_name ();
++ #ifdef OS2
++       output_desc = open (outfile, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 0666);
++ #else
+        output_desc = open (outfile, O_WRONLY | O_CREAT | O_TRUNC, 0666);
++ #endif
+        if (output_desc < 0)
+  	error (1, errno, "%s", outfile);
+      }
+diff -cbr orig/src/sum.c new/src/sum.c
+*** orig/src/sum.c	Thu Jan 16 22:52:04 1992
+--- new/src/sum.c	Mon Feb 10 18:52:18 1992
+***************
+*** 23,28 ****
+--- 23,31 ----
+  #include <sys/types.h>
+  #include <getopt.h>
+  #include "system.h"
++ #ifdef OS2
++ #include <io.h>
++ #endif
+  
+  int bsd_sum_file ();
+  int sysv_sum_file ();
+***************
+*** 44,49 ****
+--- 47,61 ----
+  };
+  
+  void
++ usage ()
++ {
++   print_version();
++   fprintf (stderr, "\
++ Usage: %s [-s] [--sysv] [file...]\n", program_name);
++   exit (1);
++ }
++ 
++ void
+  main (argc, argv)
+       int argc;
+       char **argv;
+***************
+*** 64,77 ****
+  	  break;
+  
+  	case '?':
+! 	  fprintf (stderr, "\
+! Usage: %s [-s] [--sysv] [file...]\n", argv[0]);
+! 	  exit (1);
+  	}
+      }
+  
+    if (optind == argc)
+      {
+        if ((*sum_func) ("-", 0) < 0)
+  	errors = 1;
+      }
+--- 76,90 ----
+  	  break;
+  
+  	case '?':
+!           usage();
+  	}
+      }
+  
+    if (optind == argc)
+      {
++       if (isatty(0))
++         usage();
++ 
+        if ((*sum_func) ("-", 0) < 0)
+  	errors = 1;
+      }
+***************
+*** 105,114 ****
+--- 118,134 ----
+      {
+        fp = stdin;
+        have_read_stdin = 1;
++ #ifdef OS2
++       setmode(0, O_BINARY);
++ #endif
+      }
+    else
+      {
++ #ifdef OS2
++       fp = fopen (file, "rb");
++ #else
+        fp = fopen (file, "r");
++ #endif
+        if (fp == NULL)
+  	{
+  	  error (0, errno, "%s", file);
+***************
+*** 168,177 ****
+--- 188,204 ----
+      {
+        fd = 0;
+        have_read_stdin = 1;
++ #ifdef OS2
++       setmode(0, O_BINARY);
++ #endif
+      }
+    else
+      {
++ #ifdef OS2
++       fd = open (file, O_RDONLY | O_BINARY);
++ #else
+        fd = open (file, O_RDONLY);
++ #endif
+        if (fd == -1)
+  	{
+  	  error (0, errno, "%s", file);
+***************
+*** 202,208 ****
+        return -1;
+      }
+  
+!   printf ("%u %ld", checksum % 0xffff, (total_bytes + 512 - 1) / 512);
+    if (print_name)
+      printf (" %s", file);
+    putchar ('\n');
+--- 229,235 ----
+        return -1;
+      }
+  
+!   printf ("%lu %ld", checksum % 0xffff, (total_bytes + 512 - 1) / 512);
+    if (print_name)
+      printf (" %s", file);
+    putchar ('\n');
+diff -cbr orig/src/system.h new/src/system.h
+*** orig/src/system.h	Mon Dec 23 22:30:06 1991
+--- new/src/system.h	Mon Feb 10 16:36:36 1992
+***************
+*** 95,100 ****
+--- 95,104 ----
+  
+  /* Extract or fake data from a `struct stat'.
+     ST_BLKSIZE: Optimal I/O blocksize for the file, in bytes. */
++ #ifdef OS2
++ #define DEV_BSIZE  512
++ #define ST_BLKSIZE(statbuf) 0x4000
++ #else
+  #ifdef _POSIX_SOURCE
+  #define ST_BLKSIZE(statbuf) 1024
+  #else /* not _POSIX_SOURCE */
+***************
+*** 111,117 ****
+--- 115,131 ----
+  #ifndef S_ISLNK
+  #define lstat stat
+  #endif
++ #endif
+  
+  #ifndef SIGTYPE
+  #define SIGTYPE void
+  #endif
++ 
++ #ifdef OS2
++ #define SIGQUIT SIGBREAK
++ #define SIGHUP  SIGTERM
++ #endif
++ 
++ extern char *version_string;
++ #define print_version() \
++   fprintf(stderr, "\nGNU %s, %s\n", program_name, version_string + 5)
+diff -cbr orig/src/tac.c new/src/tac.c
+*** orig/src/tac.c	Fri Jan 17 12:07:54 1992
+--- new/src/tac.c	Mon Feb 10 16:44:10 1992
+***************
+*** 55,60 ****
+--- 55,63 ----
+  
+  char *mktemp ();
+  
++ #ifdef OS2
++ #include <io.h>
++ #endif
+  SIGTYPE cleanup ();
+  int tac ();
+  int tac_file ();
+***************
+*** 118,123 ****
+--- 121,130 ----
+    int have_read_stdin = 0;
+  
+    program_name = argv[0];
++ #ifdef OS2
++   setmode (0, O_BINARY);
++   setmode (1, O_BINARY);
++ #endif /* OS2 */
+    errors = 0;
+    separator = "\n";
+    sentinel_length = 1;
+***************
+*** 142,152 ****
+  	    error (1, 0, "separator cannot be empty");
+  	  break;
+  	default:
+! 	  fprintf (stderr, "\
+! Usage: %s [-br] [-s separator] [--before] [--regex] [--separator=separator]\n\
+!        [file...]\n",
+! 		   program_name);
+! 	  exit (1);
+  	}
+      }
+  
+--- 149,155 ----
+  	    error (1, 0, "separator cannot be empty");
+  	  break;
+  	default:
+!           usage();
+  	}
+      }
+  
+***************
+*** 181,186 ****
+--- 184,191 ----
+  
+    if (optind == argc)
+      {
++       if ( isatty(fileno(stdin)) )
++         usage();
+        have_read_stdin = 1;
+        errors = tac_stdin ();
+      }
+***************
+*** 217,223 ****
+  tac_stdin ()
+  {
+    /* Previous values of signal handlers. */
+!   SIGTYPE (*sigint) (), (*sighup) (), (*sigterm) ();
+    int errors;
+    struct stat stats;
+  #ifdef _POSIX_VERSION
+--- 222,228 ----
+  tac_stdin ()
+  {
+    /* Previous values of signal handlers. */
+!   SIGTYPE (*sigint) (), (*sighup) (), (*sigquit) (), (*sigterm) ();
+    int errors;
+    struct stat stats;
+  #ifdef _POSIX_VERSION
+***************
+*** 251,256 ****
+--- 256,266 ----
+    if (sighup != SIG_IGN)
+      sigaction (SIGHUP, &newact, NULL);
+  
++   sigaction (SIGQUIT, NULL, &oldact);
++   sigquit = oldact.sa_handler;
++   if (sigquit != SIG_IGN)
++     sigaction (SIGQUIT, &newact, NULL);
++ 
+    sigaction (SIGTERM, NULL, &oldact);
+    sigterm = oldact.sa_handler;
+    if (sigterm != SIG_IGN)
+***************
+*** 264,269 ****
+--- 274,283 ----
+    if (sighup != SIG_IGN)
+      signal (SIGHUP, cleanup);
+  
++   sigquit = signal (SIGQUIT, SIG_IGN);
++   if (sigquit != SIG_IGN)
++     signal (SIGQUIT, cleanup);
++ 
+    sigterm = signal (SIGTERM, SIG_IGN);
+    if (sigterm != SIG_IGN)
+      signal (SIGTERM, cleanup);
+***************
+*** 285,290 ****
+--- 299,305 ----
+  #else				/* !_POSIX_VERSION */
+    signal (SIGINT, sigint);
+    signal (SIGHUP, sighup);
++   signal (SIGQUIT, sigquit);
+    signal (SIGTERM, sigterm);
+  #endif				/* _POSIX_VERSION */
+  
+***************
+*** 303,308 ****
+--- 318,334 ----
+  
+    if (template == NULL)
+      {
++ #ifdef OS2
++       tempdir = getenv ("TMP");
++       if (tempdir == NULL)
++ 	tempdir = "";
++       template = xmalloc (strlen (tempdir) + 10);
++     }
++   sprintf (template, "%s/tcXXXXXX", tempdir);
++   tempfile = mktemp (template);
++ 
++   fd = open (tempfile, O_CREAT|O_TRUNC|O_RDWR|O_BINARY, S_IWRITE|S_IREAD);
++ #else
+        tempdir = getenv ("TMPDIR");
+        if (tempdir == NULL)
+  	tempdir = "/tmp";
+***************
+*** 312,317 ****
+--- 338,344 ----
+    tempfile = mktemp (template);
+  
+    fd = creat (tempfile, 0600);
++ #endif
+    if (fd == -1)
+      {
+        error (0, errno, "%s", tempfile);
+***************
+*** 344,350 ****
+--- 371,381 ----
+  {
+    int fd, errors;
+  
++ #ifdef OS2
++   fd = open (file, O_RDONLY|O_BINARY);
++ #else /* not OS2 */
+    fd = open (file, 0);
++ #endif /* not OS2 */
+    if (fd == -1)
+      {
+        error (0, errno, "%s", file);
+***************
+*** 393,399 ****
+--- 424,434 ----
+       not always hold during the program run, but since it usually will, leave
+       it here for i/o efficiency (page/sector boundaries and all that).
+       Note: the efficiency gain has not been verified. */
++ #ifdef OS2
++   saved_record_size = (unsigned int) (file_pos % read_size);
++ #else /* not OS2 */
+    saved_record_size = file_pos % read_size;
++ #endif /* not OS2 */
+    if (saved_record_size == 0)
+      saved_record_size = read_size;
+    file_pos -= saved_record_size;
+***************
+*** 483,489 ****
+  	    file_pos -= read_size;
+  	  else
+  	    {
+! 	      read_size = file_pos;
+  	      file_pos = 0;
+  	    }
+  	  lseek (fd, file_pos, SEEK_SET);
+--- 518,524 ----
+  	    file_pos -= read_size;
+  	  else
+  	    {
+! 	      read_size = (unsigned) file_pos;
+  	      file_pos = 0;
+  	    }
+  	  lseek (fd, file_pos, SEEK_SET);
+***************
+*** 597,602 ****
+--- 632,647 ----
+        cleanup ();
+      }
+    return p;
++ }
++ 
++ usage()
++ {
++   print_version();
++   fprintf (stderr, "\
++ Usage: %s [-br] [-s separator] [--before] [--regex] [--separator=separator]\n\
++        [file...]\n",
++ 		   program_name);
++   exit (1);
+  }
+  
+  /* Change the size of memory area P to N bytes, with error checking. */
+diff -cbr orig/src/tail.c new/src/tail.c
+*** orig/src/tail.c	Thu Jan 16 22:50:38 1992
+--- new/src/tail.c	Mon Feb 10 16:44:50 1992
+***************
+*** 82,88 ****
+--- 82,93 ----
+    multiple_files, always, never
+  };
+  
++ #ifdef OS2
++ #include <io.h>
++ #include <string.h>
++ #endif
+  char *xmalloc ();
++ char *basename ();
+  int file_lines ();
+  int pipe_bytes ();
+  int pipe_lines ();
+***************
+*** 261,267 ****
+--- 266,276 ----
+      print_headers = 1;
+  
+    if (optind == argc)
++   {
++     if ( isatty(fileno(stdin)) )
++       usage();
+      exit_status |= tail_file ("-", number);
++   }
+  
+    for (; optind < argc; ++optind)
+      exit_status |= tail_file (argv[optind], number);
+***************
+*** 337,346 ****
+--- 346,367 ----
+       int fd;
+       long number;
+  {
++ #ifdef OS2
++   int errors;
++   setmode (fileno (stdout), O_BINARY);
++   setmode (fd, O_BINARY);
++   if (unit_size)
++     errors = tail_bytes (filename, fd, number);
++   else
++     errors = tail_lines (filename, fd, number);
++   setmode (fileno (stdout), O_TEXT);
++   return errors;
++ #else
+    if (unit_size)
+      return tail_bytes (filename, fd, number);
+    else
+      return tail_lines (filename, fd, number);
++ #endif
+  }
+  
+  /* Display the last part of file FILENAME, open for reading in FD,
+***************
+*** 455,460 ****
+--- 476,486 ----
+  
+    /* Set `bytes_read' to the size of the last, probably partial, buffer;
+       0 < `bytes_read' <= `BUFSIZE'. */
++ #ifdef OS2				/* shut up the compiler */
++   bytes_read = (int) (pos % (long) BUFSIZE);
++ #else
++   bytes_read = pos % BUFSIZE;
++ #endif
+    bytes_read = pos % BUFSIZE;
+    if (bytes_read == 0)
+      bytes_read = BUFSIZE;
+***************
+*** 527,533 ****
+--- 553,563 ----
+    typedef struct linebuffer LBUFFER;
+    LBUFFER *first, *last, *tmp;
+    int i;			/* Index into buffers. */
++ #ifdef OS2
++   long total_lines = 0;		/* Total number of newlines in all buffers. */
++ #else
+    int total_lines = 0;		/* Total number of newlines in all buffers. */
++ #endif
+    int errors = 0;
+  
+    first = last = (LBUFFER *) xmalloc (sizeof (LBUFFER));
+***************
+*** 608,614 ****
+--- 638,648 ----
+        /* Skip `total_lines' - `number' newlines.  We made sure that
+           `total_lines' - `number' <= `tmp->nlines'. */
+        cp = tmp->buffer;
++ #ifdef OS2				/* shut up the compiler */
++       for (i = (int) (total_lines - number); i; --i)
++ #else
+        for (i = total_lines - number; i; --i)
++ #endif
+  	while (*cp++ != '\n')
+  	  /* Do nothing. */ ;
+        i = cp - tmp->buffer;
+***************
+*** 649,655 ****
+--- 683,693 ----
+    typedef struct charbuffer CBUFFER;
+    CBUFFER *first, *last, *tmp;
+    int i;			/* Index into buffers. */
++ #ifdef OS2
++   long total_bytes = 0;		/* Total characters in all buffers. */
++ #else
+    int total_bytes = 0;		/* Total characters in all buffers. */
++ #endif
+    int errors = 0;
+  
+    first = last = (CBUFFER *) xmalloc (sizeof (CBUFFER));
+***************
+*** 709,715 ****
+--- 747,757 ----
+    /* Find the correct beginning, then print the rest of the file.
+       We made sure that `total_bytes' - `number' <= `tmp->nbytes'. */
+    if (total_bytes > number)
++ #ifdef OS2				/* shut up the compiler */
++     i = (int) (total_bytes - number);
++ #else
+      i = total_bytes - number;
++ #endif
+    else
+      i = 0;
+    xwrite (1, &tmp->buffer[i], tmp->nbytes - i);
+***************
+*** 748,754 ****
+--- 790,800 ----
+        return 1;
+      }
+    else if (number < 0)
++ #ifdef OS2				/* |number| < 64k ??? */
++     xwrite (1, &buffer[bytes_read + number], (unsigned int) (-number));
++ #else
+      xwrite (1, &buffer[bytes_read + number], -number);
++ #endif
+    return 0;
+  }
+  
+***************
+*** 844,855 ****
+  
+    for (value = 0; ISDIGIT (*str); ++str)
+      value = value * 10 + *str - '0';
+!   return *str ? -1 : value;
+  }
+  
+  void
+  usage ()
+  {
+    fprintf (stderr, "\
+  Usage: %s [-c [+]N[bkm]] [-n [+]N] [-fqv] [--bytes=[+]N[bkm]] [--lines=[+]N]\n\
+         [--follow] [--quiet] [--silent] [--verbose] [file...]\n\
+--- 890,902 ----
+  
+    for (value = 0; ISDIGIT (*str); ++str)
+      value = value * 10 + *str - '0';
+!   return *str ? -1L : value;
+  }
+  
+  void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-c [+]N[bkm]] [-n [+]N] [-fqv] [--bytes=[+]N[bkm]] [--lines=[+]N]\n\
+         [--follow] [--quiet] [--silent] [--verbose] [file...]\n\
+diff -cbr orig/src/tr.c new/src/tr.c
+*** orig/src/tr.c	Wed Jan 29 16:58:24 1992
+--- new/src/tr.c	Mon Feb 10 18:21:08 1992
+***************
+*** 302,307 ****
+--- 302,308 ----
+  static void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-cdst] [--complement] [--delete] [--squeeze-repeats]\n\
+         [--truncate-set1] string1 [string2]\n",
+***************
+*** 597,602 ****
+--- 598,604 ----
+    struct List_element *new;
+  
+    new = (struct List_element *) xmalloc (sizeof (struct List_element));
++   new->next = NULL;
+    new->type = RE_NORMAL_CHAR;
+    new->u.normal_char = c;
+    assert (list->tail);
+***************
+*** 630,635 ****
+--- 632,638 ----
+        return 1;
+      }
+    new = (struct List_element *) xmalloc (sizeof (struct List_element));
++   new->next = NULL;
+    new->type = RE_RANGE;
+    new->u.range.first_char = first;
+    new->u.range.last_char = last;
+***************
+*** 663,668 ****
+--- 666,672 ----
+        return 1;
+      }
+    new = (struct List_element *) xmalloc (sizeof (struct List_element));
++   new->next = NULL;
+    new->type = RE_CHAR_CLASS;
+    new->u.char_class = char_class;
+    assert (list->tail);
+***************
+*** 685,690 ****
+--- 689,695 ----
+    struct List_element *new;
+  
+    new = (struct List_element *) xmalloc (sizeof (struct List_element));
++   new->next = NULL;
+    new->type = RE_REPEATED_CHAR;
+    new->u.repeated_char.the_repeated_char = the_char;
+    new->u.repeated_char.repeat_count = repeat_count;
+***************
+*** 717,722 ****
+--- 722,728 ----
+        return 1;
+      }
+    new = (struct List_element *) xmalloc (sizeof (struct List_element));
++   new->next = NULL;
+    new->type = RE_EQUIV_CLASS;
+    new->u.equiv_code = *equiv_class_str;
+    assert (list->tail);
+***************
+*** 1315,1321 ****
+        assert (0);
+        break;
+      }
+!   append_repeated_char (s2, char_to_repeat, s1->length - s2->length);
+    s2->length = s1->length;
+    return;
+  }
+--- 1321,1327 ----
+        assert (0);
+        break;
+      }
+!   append_repeated_char (s2, char_to_repeat, (long) s1->length - s2->length);
+    s2->length = s1->length;
+    return;
+  }
+***************
+*** 1402,1408 ****
+  static void
+  squeeze_filter (buf, size, reader)
+       unsigned char *buf;
+!      long int size;
+       PFI reader;
+  {
+    unsigned int char_to_squeeze = NOT_A_CHAR;
+--- 1408,1414 ----
+  static void
+  squeeze_filter (buf, size, reader)
+       unsigned char *buf;
+!      int size;
+       PFI reader;
+  {
+    unsigned int char_to_squeeze = NOT_A_CHAR;
+***************
+*** 1500,1506 ****
+  static long
+  read_and_delete (buf, size, not_used)
+       unsigned char *buf;
+!      long int size;
+       PFI not_used;
+  {
+    long n_saved;
+--- 1506,1512 ----
+  static long
+  read_and_delete (buf, size, not_used)
+       unsigned char *buf;
+!      int size;
+       PFI not_used;
+  {
+    long n_saved;
+***************
+*** 1553,1559 ****
+  static long
+  read_and_xlate (buf, size, not_used)
+       unsigned char *buf;
+!      long int size;
+       PFI not_used;
+  {
+    long chars_read = 0;
+--- 1559,1565 ----
+  static long
+  read_and_xlate (buf, size, not_used)
+       unsigned char *buf;
+!      int size;
+       PFI not_used;
+  {
+    long chars_read = 0;
+***************
+*** 1616,1621 ****
+--- 1622,1630 ----
+    struct Spec_list *s2 = &buf2;
+  
+    program_name = argv[0];
++ 
++   if ( argc == 1 && isatty(0) )
++     usage();
+  
+    while ((c = getopt_long (argc, argv, "cdst", long_options,
+  			   (int *) 0)) != EOF)
+diff -cbr orig/src/unexpand.c new/src/unexpand.c
+*** orig/src/unexpand.c	Thu Jan 16 22:48:12 1992
+--- new/src/unexpand.c	Mon Feb 10 16:45:10 1992
+***************
+*** 164,169 ****
+--- 164,172 ----
+      tab_size = 0;
+  
+    if (optind == argc)
++     if ( isatty(fileno(stdin)) )
++       usage();
++     else
+      file_list = stdin_argv;
+    else
+      file_list = &argv[optind];
+***************
+*** 424,429 ****
+--- 427,433 ----
+  void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-tab1[,tab2[,...]]] [-t tab1[,tab2[,...]]] [-a]\n\
+         [--tabs=tab1[,tab2[,...]]] [--all] [file...]\n",
+diff -cbr orig/src/uniq.c new/src/uniq.c
+*** orig/src/uniq.c	Thu Jan 16 22:47:42 1992
+--- new/src/uniq.c	Mon Feb 10 16:45:22 1992
+***************
+*** 28,34 ****
+--- 28,36 ----
+  #include "system.h"
+  #include "linebuffer.h"
+  
++ #ifndef min
+  #define min(x, y) ((x) < (y) ? (x) : (y))
++ #endif
+  
+  char *find_field ();
+  int different ();
+***************
+*** 145,150 ****
+--- 147,155 ----
+    while (optind < argc && argv[optind][0] == '+')
+      skip_chars = atoi (argv[optind++]);
+  
++   if (optind == argc && isatty(0))
++     usage ();			/* No arguments. */
++ 
+    if (optind < argc)
+      infile = argv[optind++];
+  
+***************
+*** 304,310 ****
+    if (countmode == count_occurrences)
+      fprintf (stream, "%7d\t", linecount + 1);
+  
+!   fwrite (line->buffer, sizeof (char), line->length, stream);
+    putc ('\n', stream);
+  }
+  
+--- 309,315 ----
+    if (countmode == count_occurrences)
+      fprintf (stream, "%7d\t", linecount + 1);
+  
+!   fwrite (line->buffer, sizeof (char), (size_t) line->length, stream);
+    putc ('\n', stream);
+  }
+  
+***************
+*** 311,316 ****
+--- 316,322 ----
+  void
+  usage ()
+  {
++   print_version();
+    fprintf (stderr, "\
+  Usage: %s [-cdu] [-f skip-fields] [-s skip-chars] [-w check-chars]\n\
+         [-#skip-fields] [+#skip-chars] [--count] [--repeated] [--unique]\n\
+diff -cbr orig/src/wc.c new/src/wc.c
+*** orig/src/wc.c	Thu Jan 16 22:46:48 1992
+--- new/src/wc.c	Mon Feb 10 16:57:28 1992
+***************
+*** 56,61 ****
+--- 56,71 ----
+  };
+  
+  void
++ usage ()
++ {
++   print_version();
++   fprintf (stderr, "\
++ Usage: %s [-clw] [--bytes] [--chars] [--lines] [--words] [file...]\n",
++            program_name);
++   exit (1);
++ }
++ 
++ void
+  main (argc, argv)
+       int argc;
+       char **argv;
+***************
+*** 84,92 ****
+  	break;
+  
+        default:
+! 	fprintf (stderr, "\
+! Usage: %s [-clw] [--bytes] [--chars] [--lines] [--words] [file...]\n", argv[0]);
+! 	exit (1);
+        }
+  
+    if (print_lines + print_words + print_chars == 0)
+--- 94,100 ----
+  	break;
+  
+        default:
+!         usage();
+        }
+  
+    if (print_lines + print_words + print_chars == 0)
+***************
+*** 96,101 ****
+--- 104,111 ----
+  
+    if (nfiles == 0)
+      {
++       if ( isatty(0) )
++         usage();
+        have_read_stdin = 1;
+        wc (0, "");
+      }
+***************
+*** 152,157 ****
+--- 162,170 ----
+    register unsigned long lines, words, chars;
+  
+    lines = words = chars = 0;
++ #ifdef OS2
++   setmode (fd, O_BINARY);
++ #endif
+  
+    while ((bytes_read = read (fd, buf, BUFFER_SIZE)) > 0)
+      {

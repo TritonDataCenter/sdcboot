@@ -1,0 +1,20 @@
+--- dispatch.asm~	Tue Apr  1 00:45:44 2003
++++ dispatch.asm	Sat May 24 03:03:44 2003
+@@ -157,7 +157,8 @@
+ carenoflopreset:
+ 	cmp ah,5
+ 	jb near rwmaybe	; 0..4 are most normal
+-	jz near fishy	; flush if format request (5)
++	jz near quietfishy	; flush if format request (5)
++		; *** FORMAT no longer gives a message - 24may2003 ***
+ 	cmp ah,8
+ 	jb near fishyfishy	; bailout if other odd format requests (6,7)
+ 			; functions 6, 7 are XT harddisk format!
+@@ -269,6 +270,7 @@
+ 		push word fisherr
+ 		call meep	; complain again!
+ 	pop ax
++quietfishy:	; *** FLUSH but do not give a message about it ***
+ 		call flushone	; only flush ONE drive
+ 	jmp UNSTACK_oldint
+ 

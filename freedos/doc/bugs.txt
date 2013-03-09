@@ -1,0 +1,51 @@
+KNOWN BUGS OR "TO DO" ITEMS:
+
+* BUG: better error checking everywhere.
+
+* BUG: OpenWatcom's system() always returns 0 (ok) even if failed?
+  This means if external call to UNZIP fails or returns error,
+  pkginstall() doesn't know about it.
+
+* BUG: validate that the install destination path exists (or can be
+  created) and is a valid DOS path. Do this before attempting the rest
+  of the install.
+
+* TODO: remove the use of hard-coded values in install.c. Prefer to
+  look in PACKAGES\*\*.ZIP instead, but this will require updating the
+  install.c code to use a different method to just look for BASE when
+  you don't want to install everything.
+
+* TODO: When switch to using PACKAGES\*\*.ZIP, we'll need a good way
+  to inform the user when they ask to install everything and only BASE
+  exists, or if nothing exists when you ask to install just BASE.
+  Currently, silently skips any dirs where it cannot do a readdir().
+
+* TODO: add a "beep" when it's done installing.
+
+* TODO: Prefer to use UzpMain() directly from pkginst.c rather than
+  system(), but there's a bug in calling UzpMain() from the Install
+  program. I can't find it. If anyone can help me track this down,
+  I'll buy you a beer.
+
+* NOTE: pkginstall() was written to be a "wrapper" to whatever we use
+  to extract FreeDOS package files. Right now, we use ZIP files, but
+  later we might use RPM or DEB files, whatever.
+
+* TODO: If using UzpMain() or calling UNZIP.EXE, should probably set
+  TZ if not already set, so the Unzip library doesn't complain.
+  Currently, this is "fixed" by using a dummy UNZIP.EXE that sets TZ
+  before calling UzpMain().
+
+* TODO: fix up the buf[] allocation in install.c for prompting the
+  install destination path. Kind of kludgy right now, but works.
+
+* TODO: display the install destination path in all uppercase, so it
+  looks like a regular DOS path.
+
+* TODO: Some screen user interface cleanup. Mostly, I think this is
+  rearranging where the prompts are located on the screen.
+
+* TODO: Add NLS (Kitten) support.
+
+* TODO: Normalize the program strings, to re-use as much as possible
+  from the previous NLS effort.

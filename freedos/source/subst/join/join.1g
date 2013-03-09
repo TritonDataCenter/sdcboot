@@ -1,0 +1,72 @@
+.TH JOIN 1G "22 May 1995"
+.\"
+.\"    This is the documentation for the SWSUBST package, a SUBST/JOIN & more
+.\"    Copyright (C) 1995  Steffen Kaiser
+.\"
+.\"    This program is free software; you can redistribute it and/or modify
+.\"    it under the terms of the GNU General Public License as published by
+.\"    the Free Software Foundation; either version 2 of the License, or
+.\"    (at your option) any later version.
+.\"
+.\"    This program is distributed in the hope that it will be useful,
+.\"    but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"    GNU General Public License for more details.
+.\"
+.\"    You should have received a copy of the GNU General Public License
+.\"    along with this program; if not, write to the Free Software
+.\"    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"  $Id: JOIN.1G 1.2 1995/05/26 05:31:58 ska Exp ska $
+.SH NAME
+join \- f\("ugt ein Laufwerk in ein Verzeichnis ein
+.SH SYNOPSIS
+\fBjoin\fP \fB/?\fP 
+
+\fBjoin\fP \fBlw1\fP: \fBlw2\fP:\fBpfad\fP
+
+\fBjoin\fP \fBlw\fP: \fB/d\fP
+
+\fBjoin\fP
+
+.SH DESCRIPTION
+\fIjoin\fP manipuliert die CDS (\fBC\fPurrent
+\fBD\fPirectory \fBS\fPtructure), so da\("s ein Laufwerk \("uber ein
+Verzeichnis eines anderen Laufwerks verf\("ugbar ist.
+
+\fIjoin\fP ist Teil des \fIswsubst\fP Pakets. Es kann, falls es nicht
+bereits existiert, durch Kopieren des Programms \fBswsubst.exe\fP nach
+\fBjoin.exe\fP bereitgestellt werden.
+.SH OPTIONS
+.IP \fB/?\fP 
+Zeigt einen kleinen Hilfebildschirm an.
+.IP \fB/d\fP
+Weist \fIjoin\fP an, die bestehende Verbindung zwischen einem geJOINten
+Laufwerk \fBlw\fP und dem Verzeichnis wieder aufzuheben. Falls \fBlw\fP
+geSUBSTet ist, wird die Verbindung ebenfalls gel\("ost.
+.IP "\fBlw1: lw2:pfad\fP"
+F\("ugt das Laufwerk \fBlw1\fP in den Pfad \fBpfad\fP auf dem Laufwerk
+\fBdr2\fP ein.  Ist \fBlw1\fP bereits geSUBSTet oder geJOINt, wird diese
+Verbindung gel\("ost. Der Pfad \fBpfad\fP mu\("s weder existieren noch
+vollst\("andig angegeben werden.
+.IP "\fBohne Parameter\fP"
+Gibt die Liste aller geJOINten Laufwerke in der Form: 'X: => Y:\PFAD'
+aus, wobei Y:\PFAD das Verzeichnis ist, \("uber welches das Laufwerk X:
+angesprochen werden kann. Falls kein geJOINtes Laufwerk existiert, wird
+auch keine Ausgabe erzeugt.
+.SH "SEE ALSO"
+swsubst, subst.
+.SH "KNOWN BUGS"
+.IP \(bu
+Netzlaufwerke, zu denen auch CD-ROMs geh\("oren, k\("onnen nicht
+verwendet werden.
+.IP \(bu
+Manchmal funktionieren JOINs auf Diskettenlaufwerken nicht.
+.SH CONTRIBUTERS
+    Steffen Kaiser
+.br
+Ernst-Th\("almann-Stra\("se 2
+.br
+     D-09126 Iden
+.br
+ Deutschland - Germany

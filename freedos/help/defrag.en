@@ -1,0 +1,7 @@
+DEFRAG
+
+DEFRAG is a program to defragment your FAT12 and FAT16 filesystems.
+A filesystem with lots of fragmentation performs notably worse with
+regard to access/response time and transfer speed
+
+For FAT32 please use DOSFSCHK

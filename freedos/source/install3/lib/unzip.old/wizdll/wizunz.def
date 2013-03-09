@@ -1,0 +1,17 @@
+;module-definition file for Windows Unzip DLL -- used by link.exe
+LIBRARY WIZUNZ16 ; Library module name
+
+DESCRIPTION 'Windows Info-ZIP UnZip DLL 1.0 by Info-ZIP, Mike White 1996'
+
+CODE  PRELOAD MOVEABLE
+
+DATA  PRELOAD FIXED
+
+HEAPSIZE  14000 ; need heap for buffers
+STACKSIZE 10000 ; need plenty of stack
+
+EXPORTS
+	 DllProcessZipFiles          ; actual entry point
+     LibMain
+     GetDllVersion
+

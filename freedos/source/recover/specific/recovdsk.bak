@@ -1,0 +1,273 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ *  If you have any questions, comments, suggestions, or fixes please
+ *  email me at:  imre.leber@worldonline.be   
+ */
+ 
+#include <string.h>
+#include <stdio.h>
+ 
+#include "fte.h"
+#include "recover.h"
+
+static BOOL CleanRootDir(RDWRHandle handle);
+static void MakeUpFileName(unsigned short index,
+                           char* filename, char* extension);
+static BOOL RecoverFileChains(RDWRHandle handle);			   
+static BOOL AddToRootDir(RDWRHandle handle, CLUSTER i, unsigned long filesize);
+static void FillNewEntry(struct DirectoryEntry* entry, CLUSTER cluster, 
+                         unsigned long filesize, unsigned short index);
+
+void RecoverDisk(char* disk)
+{
+    RDWRHandle handle;
+    char answer[5];
+    
+    printf("This will TRASH *ALL* the file names on the disk.\n");
+    printf("Enter YES if you are EXTREMELY certain. ");
+    
+    scanf("%5s", answer);
+    if (stricmp(answer, "YES") != 0)
+    {
+	printf("Bailing out!\n");
+	return;
+    }
+    
+    printf("Remember, you asked for it!\n");
+      
+    if (!InitReadWriteSectors(disk, &handle))
+    {
+	printf("Cannot access %s\n", disk);
+	return;	
+    }
+    
+
+    printf("Cleaning root directory ...\n");
+    
+    if (!CleanRootDir(handle)) 
+    {
+	printf("Problem processing %s\n", disk);
+	CloseReadWriteSectors(&handle);
+	return;
+    }
+
+    printf("Recovering file chains...\n");
+    
+    if (!RecoverFileChains(handle))
+    {
+	printf("Problem processing %s\n", disk);
+	SynchronizeFATs(handle);
+	CloseReadWriteSectors(&handle);
+	return;		
+    }
+    
+    printf("Truncating cross linked files...\n");
+
+#if 0
+        
+    if (!TruncateCrossLinkedFiles(handle))
+    {
+	printf("Problem processing %s\n", disk);
+	SynchronizeFATs(handle);
+	CloseReadWriteSectors(&handle);
+	return;		 
+    }
+
+#endif        
+
+    SynchronizeFATs(handle);
+    CloseReadWriteSectors(&handle);
+}
+
+/*************************************************************************
+**                             CleanRootDir
+**************************************************************************
+** Makes the root directory empty.
+**************************************************************************/
+
+static BOOL CleanRootDir(RDWRHandle handle)
+{
+    unsigned short NumberOfRootEntries, i;
+    struct DirectoryEntry entry;
+	
+    memset(&entry, 0, sizeof(struct DirectoryEntry));
+    
+    NumberOfRootEntries = GetNumberOfRootEntries(handle);
+    if (!NumberOfRootEntries) return FALSE;
+	
+    for (i = NumberOfRootEntries-1;; i--)
+    {
+	if (!WriteDirEntry(handle, i, &entry))
+	    return FALSE;
+
+	if (i == 0) break;
+    }
+
+    return TRUE;
+}
+
+/*************************************************************************
+**                        RecoverFileChains
+**************************************************************************
+** Goes through the FAT and converts every cluster chain to a valid file.
+**************************************************************************/
+static BOOL RecoverFileChains(RDWRHandle handle)
+{
+    unsigned long LabelsInFat, i;
+    unsigned long filesize;
+    CLUSTER label;
+    
+    LabelsInFat = GetLabelsInFat(handle);
+    if (!LabelsInFat) return FALSE;
+	
+    for (i = 2; i < LabelsInFat; i++)
+    {	
+	if (!GetNthCluster(handle, i, &label))
+	   return FALSE;
+	
+	if (FAT_NORMAL(label) || (label == FAT_LAST_LABEL))
+	{    
+	   switch (IsStartOfChain(handle, i))
+	   {
+	      case TRUE:    
+	           if (!RecoverFileChain(handle, i, &filesize))
+		      return FALSE;
+		   if (!AddToRootDir(handle, i, filesize))
+		      return FALSE;
+		   break;
+		
+	      case FAIL:
+	           return FALSE;	       
+	   }
+       }
+    }
+    
+    return TRUE;
+}
+
+
+/*************************************************************************
+**                             AddToRootDir
+**************************************************************************
+** Adds a new cluster chain to the root directory.
+**************************************************************************/
+
+static BOOL AddToRootDir(RDWRHandle handle, CLUSTER cluster, unsigned long filesize)
+{
+    struct DirectoryEntry entry; 
+    static unsigned short index = 0;
+    
+    unsigned short NumberOfRootEntries = GetNumberOfRootEntries(handle);
+    
+    if (index < NumberOfRootEntries)
+    {	
+	FillNewEntry(&entry, cluster, filesize, index);
+    
+	if (!WriteDirEntry(handle, cluster, &entry))
+	    return FALSE;    
+    
+	index++;
+    
+	return TRUE;
+    }
+    else
+    {
+	printf("Root directory full (or media error)!");
+	return FALSE;
+    }
+}
+
+/*************************************************************************
+**                           MakeUpFileName
+**************************************************************************
+** Makes up a file name for a lost cluster chain.
+**************************************************************************/
+
+static void MakeUpFileName(unsigned short index,
+                           char* filename, char* extension)
+{
+    char buffer[9];
+
+    sprintf(buffer, "FILE%04d", index);
+    memcpy(filename, buffer, 8);
+    memcpy(extension, "REC", 3);       
+}
+
+
+/*************************************************************************
+**                           FillNewEntry
+**************************************************************************
+**  Fills the given entry with newly generated data.
+**************************************************************************/
+
+static void FillNewEntry(struct DirectoryEntry* entry, CLUSTER firstcluster, 
+                         unsigned long filesize, unsigned short index)
+{
+    struct tm* tmp;
+    time_t now;
+    
+    char filename[8], extension[3];
+
+    /* file name and extension */
+    MakeUpFileName(index, filename, extension);    
+
+    memcpy(entry->filename, filename, 8);
+    memcpy(entry->extension, extension, 3);
+
+    /* attribute */
+    entry->attribute = 0;
+
+    /* first cluster */
+    SetFirstCluster(firstcluster, entry);
+
+    /* file size */
+    entry->filesize = filesize;
+
+    /* NT reserved field */
+    entry->NTReserved = 0;
+
+    /* Mili second stamp */
+    entry->MilisecondStamp = 0;
+
+    /* Last access date */
+    memset(&entry->LastAccessDate, 0, sizeof(struct PackedDate));
+    
+    /* Time last modified */
+    memset(&entry->timestamp, 0, sizeof(struct PackedTime));
+
+    /* Date last modified */
+    memset(&entry->datestamp, 0, sizeof(struct PackedDate));
+
+    /* Get the current date and time and store it in the last write
+       time and date. */
+    time(&now);
+    tmp = localtime(&now);
+
+    entry->LastWriteTime.second = tmp->tm_sec / 2;
+    if (entry->LastWriteTime.second == 30) /* DJGPP help says range is [0..60] */
+       entry->LastWriteTime.second--;
+    
+    entry->LastWriteTime.minute = tmp->tm_min;
+    entry->LastWriteTime.hours  = tmp->tm_hour;
+
+    entry->LastWriteDate.day   = tmp->tm_mday;
+    entry->LastWriteDate.month = tmp->tm_mon + 1;
+
+    if (tmp->tm_year < 80)
+       entry->LastWriteDate.year = 0;
+    else
+       entry->LastWriteDate.year  = (tmp->tm_year+1900)-1980;
+}

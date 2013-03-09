@@ -1,0 +1,41 @@
+Known, current PKZIP bugs/limitations:
+-------------------------------------
+
+ - PKUNZIP 2.04g considers volume labels valid only if originated on a FAT
+   file system, but other OSes and file systems (e.g., Amiga and OS/2 HPFS) 
+   support volume labels, too
+
+ - PKUNZIP 2.04g can restore volume labels created by Zip 2.x but not by
+   PKZIP 2.04g (OS/2 DOS box only??)
+
+ - PKUNZIP 2.04g gives an error message for stored directory entries created
+   under other OSes (although it creates the directory anyway), and PKZIP -vt
+   does not report the directory attribute bit as being set, even if it is
+
+ - PKZIP 2.04g mangles unknown extra fields (especially OS/2 extended attri-
+   butes) when adding new files to an existing zipfile [example:  Walnut Creek
+   Hobbes March 1995 CD-ROM, FILE_ID.DIZ additions]
+
+ - PKUNZIP 2.04g is unable to detect or deal with prepended junk in a zipfile,
+   reporting CRC errors in valid compressed data.
+
+ - [Windows version 2.01] Win95 long filenames (VFAT) are stored OK, but the
+   file system is listed as ordinary DOS FAT
+
+Possibly current PKZIP bugs:
+---------------------------
+
+ - PKZIP (2.04g?) can silently ignore read errors on network drives, storing
+   the correct CRC and compressed length but an incorrect and inconsistent
+   uncompressed length
+
+ - PKZIP (2.04g?), when deleting files from within a zipfile on a Novell
+   drive, sometimes only zeros out the data while failing to shrink the
+   zipfile.
+
+Other limitations:
+-----------------
+
+ - PKZIP 1.x and 2.x encryption has been cracked (known-plaintext approach)
+
+[many other bugs in versions 1.0, 1.1, 1.93a, 2.04c and 2.04e]

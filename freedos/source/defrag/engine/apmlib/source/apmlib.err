@@ -1,0 +1,23 @@
+..\include\cext.h(40): Warning! W138: No newline at end of file
+..\include\CExt.h(40): Warning! W138: No newline at end of file
+APMLIB.C(225): Error! E1019: Tag 'REGPACK' already defined
+APMLIB.C(235): Error! E1031: Name 'r_ax' not found in struct/union REGPACK
+APMLIB.C(236): Error! E1031: Name 'r_bx' not found in struct/union REGPACK
+APMLIB.C(237): Error! E1031: Name 'r_cx' not found in struct/union REGPACK
+APMLIB.C(239): Error! E1031: Name 'r_cx' not found in struct/union REGPACK
+APMLIB.C(241): Error! E1031: Name 'r_dx' not found in struct/union REGPACK
+APMLIB.C(241): Error! E1031: Name 'r_dx' not found in struct/union REGPACK
+APMLIB.C(242): Error! E1031: Name 'r_ax' not found in struct/union REGPACK
+APMLIB.C(243): Error! E1031: Name 'r_bx' not found in struct/union REGPACK
+APMLIB.C(244): Error! E1031: Name 'r_cx' not found in struct/union REGPACK
+APMLIB.C(246): Error! E1031: Name 'r_flags' not found in struct/union REGPACK
+APMLIB.C(254): Error! E1031: Name 'r_ax' not found in struct/union REGPACK
+APMLIB.C(255): Error! E1031: Name 'r_cx' not found in struct/union REGPACK
+APMLIB.C(257): Error! E1031: Name 'r_cx' not found in struct/union REGPACK
+APMLIB.C(260): Error! E1031: Name 'r_ax' not found in struct/union REGPACK
+APMLIB.C(261): Error! E1031: Name 'r_cx' not found in struct/union REGPACK
+APMLIB.C(269): Error! E1031: Name 'r_ax' not found in struct/union REGPACK
+APMLIB.C(270): Error! E1031: Name 'r_bx' not found in struct/union REGPACK
+APMLIB.C(272): Error! E1031: Name 'r_ax' not found in struct/union REGPACK
+APMLIB.C(272): Error! E1031: Name 'r_bx' not found in struct/union REGPACK
+APMLIB.C(274): Error! E1147: Too many errors: compilation aborted

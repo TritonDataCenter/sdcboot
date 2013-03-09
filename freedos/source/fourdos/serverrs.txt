@@ -1,0 +1,132 @@
+          title     SERVERRS - 4DOS high-memory server error messages
+          ;
+          page      ,132                ;make wide listing
+          ;
+          comment   }
+
+          Copyright 1989, 1990, J.P. Software, All Rights Reserved
+
+          Author:  Tom Rawson  04/14/89
+
+          This module includes only an error message table.  Routines for
+          accessing this table are in ERRORMSG.ASM.
+
+          ******************************************************************
+          NOTE:  This text has been compressed and copied from SERVERRS.TXT.
+          Any changes should be made there, not here!
+          ******************************************************************
+
+          } end description
+
+          ;
+          ; Includes
+          ;
+          include   product.asm         ;product / platform definitions
+          include   trmac.asm           ;general macros
+          .cseg     SERV                ;set server segment if not defined
+                                        ;  externally
+          include   model.inc           ;Spontaneous Assembly memory models
+          include   4dlparms.asm        ;loader parameters
+          ;
+          ;
+          .defcode  ,1                  ;set up code segment, no DGROUP
+          ;
+          assume    cs:@curseg, ds:nothing, ss:nothing, es:nothing
+          ;
+          ;
+          ; Fatal errors detected by resident part of loader
+          ;
+          public    ServErrs
+          ;
+ServErrs  label     byte
+          dw        offset ServBad      ;store offset of bad error number msg
+          ;
+          ; Translation table
+          ;
+##
+          ;
+#E_TFREE  Memory deallocation error
+#E_TALLOC Memory allocation error
+#E_QROOT  Attempt to exit from root shell
+#E_DAEMS  EMS deallocation failed
+#E_DAXMS  XMS deallocation failed
+#E_XMSMOV XMS move failed
+#E_EMSMAP EMS mapping failed
+          ;#E_EMSMSR EMS map save or restore failed
+#E_SWSEEK Swap file seek failed
+#E_SWWRIT Swap file write failed
+#E_SWREAD Swap file read failed
+#E_SWDBAD Disk swap file corrupted
+#E_NOHDL  No file handle available
+          ;
+          ; 4DOS signon message
+          ;
+#162 Copyright 1988-2003  Rex Conn & JP Software Inc.  All Rights Reserved
+	;
+	if	_RT
+#166 4DOSRT.COM not correctly installed, execution cannot continue.
+#167 4DOS Runtime internal error G%d/%d, contact JP Software.
+	else
+#166 4DOS.COM not correctly installed, execution cannot continue.
+#167 4DOS internal error M%d/%d, contact JP Software.
+	endif
+
+          ife       _RT
+          ; Restricted trial (Win9x)
+#168 >> Your evaluation period has expired.  Usage is now restricted to a limited>> number of commands in each session (for details see TRIAL.TXT).
+          ; Restricted trial (not Win9x)
+#169 >>  Your evaluation period has expired, and your use will be interrupted>>  periodically to remind you to purchase (for details see TRIAL.TXT).
+          ; Normal trial
+#170 >>  %d days remain in your evaluation period.  To learn about how the>>  evaluation period works see TRIAL.TXT.
+          ; Normal trial (1 day left)
+#171 >>  1 day remains in your evaluation period.  To learn about how the>>  evaluation period works see TRIAL.TXT.
+          ; Order message
+#172 To order call 410-810-8819, visit our web site at http://jpsoft.com/,or see the order form in ORDERS.TXT.
+          ; Expired trial
+#173 >>  Your evaluation period has expired.  Usage will be restricted>>  in %d day(s); see TRIAL.TXT for details.
+          ; Extended trial or pre-release
+#174 >>  Your usage period has been extended while your order is processed.>>  Usage will be restricted in %d day(s).
+#175 If additional information is needed please contact JP Software atsales@jpsoft.com, or use the numbers listed in README.TXT.
+          ; Expired pre-release
+#176 >>  This pre-release version has expired, and usage will be restricted in>>  %d day(s).  See PREREL.TXT for details on obtaining a newer version.
+          ; Normal pre-release
+#177 >>  This pre-release version expires in %d day(s).  After this time usage>>  may be restricted; see PREREL.TXT for details.
+          ; Restricted pre-release
+#178 >>  This pre-release version has expired, and usage is now restricted.  See>>  PREREL.TXT for details and information on obtaining the final release.
+          ; Expired beta
+#179 >> This beta version has expired, and usage will be restricted in>> %d day(s).  See README.TXT for details.
+          ; Normal beta
+#180 >>  This beta version expires in %d day(s).  After this time usage>>  may be restricted; see README.TXT for details.
+          ; Restricted beta
+#181 >>  This beta version has expired, and usage is now restricted.  See>>  README.TXT for details.
+          ; Exiting due to restrictions
+#182 Exiting ...
+          ; Extension code error
+#183 Invalid (%d), please contact JP Software
+         ; Shareware encryption key
+#185 ûÃxyûÃxyûÃxyíŒ“¡íŒ“¡íŒ“¡
+          ; Extension code character set
+#186 83RS6TPMW9DNUXKC4B7VHQLYJIFAG52E
+			 ; Cannot find help file
+#188 Cannot locate 4DOS directory -- check your COMSPEC / InstallPath settings.
+			 ; Wrong version of help file:
+#189 4DOS.HLP file is out of date, please update it.
+          ; Filename for shareware data duplicate
+#191 4DOS.DAT
+          ; Lines and section/item names to go into .INI file flag
+#193 [ReleaseInfo]
+#194 Description
+#195 %s version %s
+          ;
+          endif
+          ;
+          db        0FFh, 0             ;end of table
+          ;
+ServBad   db        BErrLen, "Illegal server error"
+BErrLen   equ       $ - ServBad - 1
+          ;
+@curseg   ends
+          ;
+          end
+
+

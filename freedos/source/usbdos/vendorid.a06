@@ -1,0 +1,4361 @@
+  JMP Main ;Skip over Data to Main Program
+
+
+;==============================================================================
+;NOTE: This program is written for and compiled with Eric Isaacson's A86
+;      assembly language compiler, using Options +P0 -F (8086/8088 CPU and
+;      no FPU).
+;==============================================================================
+
+
+;Copy GetNumber (0x) to other programs, add note to USBINTRO
+
+
+;In DOCS
+;Zero-Length String is same as ALL (exc for Total Records at end)
+;Ctrl-S/Ctrl-Q
+;Data File & Cmd Line, Hex (0x and/or h) or Decimal
+;Semicolon for comments, Double for valid character in Vendor Name
+;  (Never seen a name with a semicolon, but it could exist)
+;Search String, Single, Double, or Grave Quote, double-char = Quote Char
+;  Some command line editors have special uses for quotes (esp Grave Quotes),
+;    so they are sometimes "absorbed"
+;For string searches, command-line string must be 40 characters or less
+;  Vendor Name is truncated to 40 characters (just like when printing)
+;    and spaces are added at end.
+;Treats tabs just like spaces
+
+
+;ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
+;EQUATE/STRUCTURE/MACRO DEFINITIONS
+;‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;EQUATES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;==============================================================================
+;Miscellaneous
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special Codes
+  ;----------------------------------------------------------------------------
+  No  EQU  0 ;Miscellaneous Yes/No tests
+  Yes EQU -1 ;      "        "  "    "
+
+
+;==============================================================================
+;CPU Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Bit masks in the CPU Flags Register
+  ;----------------------------------------------------------------------------
+  CarryFlag  EQU 0001h ;Carry Flag
+  ParityFlag EQU 0004h ;Parity Flag
+  AuxFlag    EQU 0010h ;Auxiliary Flag
+  ZeroFlag   EQU 0040h ;Zero Flag
+  SignFlag   EQU 0080h ;Sign Flag
+  TrapFlag   EQU 0100h ;Trap Flag
+  IntFlag    EQU 0200h ;Interrupt Flag
+  DirFlag    EQU 0400h ;Direction Flag
+  OFFlag     EQU 0800h ;Overflow Flag
+
+
+;==============================================================================
+;CONsole/Screen Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special ASCII Characters
+  ;----------------------------------------------------------------------------
+  Tab       EQU  9 ;Tab
+  LF        EQU 10 ;Line Feed
+  FormFeed  EQU 12 ;FormFeed
+  CR        EQU 13 ;Carriage Return
+  EOF       EQU 26 ;End-of-File
+  Quote2    EQU 34 ;Double quote
+  Quote1    EQU 39 ;Single quote
+  Grave     EQU 96 ;Grave Quote
+  BackSlash EQU 92 ;BackSlash (\)
+
+  ;----------------------------------------------------------------------------
+  ;Special Keys that can be pressed during Pause routine
+  ;----------------------------------------------------------------------------
+  CtrlC  EQU  3 ;Control-C Keystroke
+  Escape EQU 27 ;Escape Keystroke
+
+
+;==============================================================================
+;DOS Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;;Minimum DOS Version required to use this program
+  ;----------------------------------------------------------------------------
+  MinDOSVer EQU 0300h
+
+  ;----------------------------------------------------------------------------
+  ;Sizes of various DOS data structures
+  ;----------------------------------------------------------------------------
+  FCBSize     EQU  44 ;Size of DOS File Control Block
+  CmdTailMax  EQU 128 ;Maximum size of a DOS Command Tail
+  MaxPathSize EQU  64 ;Maximum Size of a DOS Path/FileName String
+
+  ;----------------------------------------------------------------------------
+  ;Special "hard-coded" DOS Device Handles.
+  ;These Handles are permanently hard-coded in DOS, and are always open.
+  ;There is no need to issue Find, Open, or Close calls to these
+  ;  devices - you can just use them at will.
+  ;----------------------------------------------------------------------------
+  StdInHandle  EQU 0 ;Standard Input Device Handle
+  StdOutHandle EQU 1 ;Standard Output Device Handle
+  StdErrHandle EQU 2 ;Standard Error Device Handle
+  StdAuxHandle EQU 3 ;Standard Auxiliary Device Handle (COM1 by default)
+  StdPrnHandle EQU 4 ;Standard Printer Device Handle (LPT1 by default)
+
+  ;----------------------------------------------------------------------------
+  ;Codes returned by INT 21h, Function 4400h (Get Device Information)
+  ;----------------------------------------------------------------------------
+  ;If bit 7 is Set (is a Device):
+  DvcInfoIsStdIn    EQU 0001h ;STDIN
+  DvcInfoIsStdOut   EQU 0002h ;STDOUT
+  DvcInfoIsNUL      EQU 0004h ;NUL
+  DvcInfoIsClock    EQU 0008h ;CLOCK$
+  DvcInfoInt29h     EQU 0010h ;Uses Int 29h (Special Device)
+  DvcInfoBinary     EQU 0020h ;Binary (Raw) Mode
+  DvcInfoEOF        EQU 0040h ;EOF on Input
+  DvcInfoIsDevice   EQU 0080h ;Is a Device (not a File)
+  DvcInfoKEYB       EQU 0100h ;Unknown (set by DOS 6.2x KEYB program)
+  DvcInfoOpenClose  EQU 0800h ;Supports Open/Close calls
+  DvcInfoOutputBusy EQU 2000h ;Supports Output until Busy
+  DvcInfoIOCTL      EQU 4000h ;Can process IOCTL requests (INT 21h, Func 4402h)
+
+  ;If bit 7 is Clear (is a File):
+  DvcInfoDriveMask    EQU 003Fh ;Drive number (0 = A:)
+  DvcInfoNotWritten   EQU 0040h ;File has not been written (Dirty Buffer?)
+  ;Bit 7 = Clear!
+  DvcInfoInt24h       EQU 0100h ;Generate Int 24h on Errors (DOS 4 only)
+  DvcInfoNotRemovable EQU 0800h ;Media Not Removable
+  DvcInfoNoDateTime   EQU 4000h ;Don't set File Date/Time on Closing (DOS 3.0+)
+  DvcInfoRemote       EQU 8000h ;File is Remote (DOS 3.0+)
+
+
+;==============================================================================
+;Program-Specific
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Size of our program stack (in bytes)
+  ;We need a relatively large stack, since some of our code is recursive
+  ;  and therefore can use quite a bit of stack space.
+  ;----------------------------------------------------------------------------
+  ProgStackSize EQU 512
+
+  ;----------------------------------------------------------------------------
+  ;Maximum size of Vendor String
+  ;----------------------------------------------------------------------------
+  MaxStrLength EQU 40
+
+  ;----------------------------------------------------------------------------
+  ;File Buffer Related
+  ;----------------------------------------------------------------------------
+  FileBufferSize EQU 65536-FileBuffer ;Size of the File Buffer
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;STRUCTURES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;==============================================================================
+;DOS/CPU Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Memory Control Block (MCB)
+  ;----------------------------------------------------------------------------
+  MCBStruc STRUC
+    MCBID              DB        ?  ;Memory Control Block ID
+      MCBIDValid      EQU       'M' ;Memory Block is Valid
+      MCBIDLastInList EQU       'Z' ;Memory Block is Last in List
+    MCBOwnerID         DW        ?  ;PSP Segment of Owner
+                                    ;   0 = Owns Self
+                                    ;   6 = DR-DOS XMS UMB
+                                    ;   7 = DR-DOS Excluded Upper Memory
+                                    ;   8 = Belongs to DOS
+                                    ;FFFx = 386Max
+    MCBSize            DW        ?  ;Size in Paragraphs
+    MCBFiller          DB 3 DUP (?) ;Filler
+    MCBOwnerName       DB 8 DUP (?) ;Owner Name
+   ENDS
+  MCBStrucSize EQU (TYPE MCBStruc) ;Should be 16 bytes
+
+  ;----------------------------------------------------------------------------
+  ;Program Segment Prefix (PSP)
+  ;----------------------------------------------------------------------------
+  ;Program Segment Prefix
+  PSPStruc      STRUC
+    PSPDOSExit     DW       20CDh ;Int 20h Call
+    PSPNextSegment DW          ?  ;Segment of First Byte of Memory beyond Program
+    PSPCPMCall5    DB   6 DUP (?) ;CPM Far Call 5
+    PSPInt22Addr   DD          ?  ;Stored Int 22h Handler
+    PSPInt23Addr   DD          ?  ;Stored Int 23h (Ctrl-Break) Handler
+    PSPInt24Addr   DD          ?  ;Stored Int 23h (Critical Error) Handler
+    PSPParentPSP   DW          ?  ;Segment of Parent PSP
+    PSPJFT         DB  20 DUP (?) ;Job File Table (20 File Handles)
+    PSPEnvirSeg    DW          ?  ;Environment Segment for PSP
+    PSPSSSPOnEntry DD          ?  ;Processes SS:SP on Entry to last Int 21h Call
+    PSPJFTSize     DW          ?  ;Number of entries in JFT (default = 20)
+    PSPJFTPointer  DD          ?  ;Pointer to JFT (Default = PSP:0018h)
+    PSPPreviousPSP DD          ?  ;Pointer to previous PSP (Default = FFFF:FFFF)
+    PSPFiller1     DB  18 DUP (?) ;Misc stuff used by SHARE, Windows, etc.
+                                  ;Memory Below here available to TSR!
+    PSPFiller2     DB   2 DUP (?) ;Unused in DOS <= 6.00
+    PSPInt21       DW       21CDh ;Int 21h Call
+    PSPRETF        DB        0CBh ;RETF Call
+    PSPFiller3     DB   9 DUP (?) ;Can be used to make Extended FCB from FCB1
+    PSPFCB1        DB  16 DUP (?) ;First File Control Block
+    PSPFCB2        DB  16 DUP (?) ;Second File Control Block
+    PSPFiller4     DB   4 DUP (?) ;Unused
+    PSPCmdLineLen  DB          ?  ;Command Line Length & DTA
+    PSPCmdLine     DB 127 DUP (?) ;Command Line String
+   ENDS
+  PSPStrucSize EQU (TYPE PSPStruc) ;Should be 256 bytes
+
+  ;----------------------------------------------------------------------------
+  ;Structure needed to Initialize DOS EXEC Function
+  ;----------------------------------------------------------------------------
+  ParamBlockStruc STRUC
+    PBEnvirSegment   DW ? ;Environment Segment to use (0 = Copy Callers Segment)
+    PBCmdTailPtr     DD ? ;Pointer to Command Tail
+    PBFCB1Offset     DD ? ;Pointer to File Control Block #1
+    PBFCB2Offset     DD ? ;Pointer to File Control Block #2
+    PBSSSPOnReturn   DD ? ;Holds Childs Initial SS:SP on Return (if AL = 01)
+    PBCSIPOnReturn   DD ? ;Holds Entry Point (CS:IP) on Return (if AL = 01)
+   ENDS
+  ParamBlockSize EQU (TYPE ParamBlockStruc) ;Size of EXEC Parameter Block
+
+  ;----------------------------------------------------------------------------
+  ;DTA (Disk Transfer Area) after Find First Matching File (INT 21h, Func 4Eh)
+  ;The first several bytes of the DTA are DOS version specific, and
+  ;  we don't care about that data anyway.  We only care about the data
+  ;  that is documented and the same across all versions of DOS.
+  ;----------------------------------------------------------------------------
+  FindFirstStruc   STRUC            ;Find First Matching File
+    FFVerSpecific     DB 21 DUP (0) ;DOS Version-specific Data
+    FFAttribs         DB         ?  ;File Attributes
+      FAttrReadOnly  EQU        01h ;Read-Only
+      FAttrHidden    EQU        02h ;Hidden
+      FAttrSystem    EQU        04h ;System
+      FAttrVolume    EQU        08h ;Volume Label
+      ;Bit 3 = Execute-only (Novell Netware)
+      FAttrDirectory EQU        10h ;Directory
+      FAttrArchive   EQU        20h ;Archive
+      FAttrUnused    EQU        40h ;Unused
+                                    ;DOS 3+ returns this bit set if file
+                                    ;  is actually a character device
+                                    ;DOS Window underneath Windows XP doesn't
+      ;Bit 7 = Delete Pending (OpenDOS, NovellDOS)
+      ;      = Shareable (Novell Netware)
+    FFTime            DW         ?  ;File Creation Time
+    FFDate            DW         ?  ;File Creation Date
+    FFSize            DD         ?  ;File Size
+    FFName            DB 13 DUP (?) ;ASCIIZ File Name & Extension
+   ENDS
+
+   FAttrToUse EQU FAttrHidden+FAttrSystem
+     ;Attributes to use in DOS's Find First Matching File Function
+     ;DOS ignores the Read-Only and and Archive bits, so they don't matter
+
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;MACROS
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+  SwapDSES MACRO ;Exchange DS & ES with each other
+    PUSH DS
+    PUSH ES
+    POP  DS
+    POP  ES
+   #EM
+
+
+;ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
+;DATA
+;ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
+
+;==============================================================================
+;Miscellaneous Strings we need to write to the screen
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Help Message to write on Errors.
+  ;This MUST also be the first Data at the top of the File.  If it is, the user
+  ;  can simply do a "TYPE VENDORID.COM" and get the Help Screen, without even
+  ;  needing to execute the Program.
+  ;------------------------------------------------------------------------------
+  Copyright:
+    DB CR
+    DB 'VENDORID 0.07, (C) 2007-2009, Bret E. Johnson.',CR,LF
+    DB LF,0
+
+  SyntaxMsg:
+    DB CR
+    DB 'SYNTAX: VENDORID [Options]',CR,LF
+    DB LF
+    DB '  ? Õ Show this HELP screen',CR,LF
+    DB '  O Õ Show all aliases for these command line OPTIONS',CR,LF
+    DB '  E Õ Show all ErrorLevels (DOS Return Codes)',CR,LF
+    DB LF
+    DB 'The Following Options require a Vendor Type (PCI, PNP, or USB) to be entered',CR,LF
+    DB '  first, and also require an appropriate Data File (VENDORID.PCI, .PNP, .USB)',CR,LF
+    DB '  to be located in the same directory as this executable file (VENDORID.COM).',CR,LF
+    DB LF
+    DB '  PNP aaa     Õ Show Vendor Name for PNP Vendor ID aaa',CR,LF
+    DB '                    aaa is a three-letter acronym (e.g., SNY = Sony Corp).',CR,LF
+    DB '  {PCI/USB} # Õ Show Vendor Name for {PCI/USB} Vendor ID #',CR,LF
+    DB '                    # is Decimal (0-65535) or Hex (0h-FFFFh, 0x0-0xFFFF).',CR,LF
+    DB LF
+    DB '  {PCI/PNP/USB} "String" Õ Search for "String" in {PCI/PNP/USB} Vendor Names',CR,LF
+    DB '                              Search is case-insensitive.',CR,LF
+    DB LF
+    DB '  {PCI/PNP/USB} A Õ List ALL {PCI/PNP/USB} Vendor IDs and Names',CR,LF
+    DB '                       You may want to use one or more of the DOS Filters',CR,LF
+    DB '                       (FIND, SORT, MORE) with the ALL Option.',CR,LF
+    DB '                       "VENDORID USB All | FIND "h  " | SORT /+8 | MORE",',CR,LF
+    DB '                       for example, will sort the entire USB Vendor Name',CR,LF
+    DB '                       Table by Vendor Name, and pause after each screen.',CR,LF
+    DB '  {PCI/PNP/USB} S Õ List the {PCI/PNP/USB} data SOURCE details',CR,LF
+    DB LF
+    DB '  If running from inside another program (not running from the command-line),',CR,LF
+    DB '    the Option can be followed with a hex address (Segment:Offset)',CR,LF
+    DB '    to which the output will be written.  See VENDORID.DOC for details.'
+    DB 0,EOF
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to print numbers and such to the screen
+  ;----------------------------------------------------------------------------
+  HexString: DB '0000h',0
+  CrLfMsg:   DB CR,LF,0
+  SingleMsg: DB ' '
+  NoMsg:     DB 0
+  Space4Msg: DB ' '
+  Space3Msg: DB ' '
+  Space2Msg: DB ' '
+  SpaceMsg:  DB ' ',0
+  TotalMsg:  DB '  _Total Records_',CR,LF,0
+
+  PCISpaceMsg: DB 'PCI ',0
+  PNPSpaceMsg: DB 'PNP ',0
+  USBSpaceMsg: DB 'USB ',0
+
+  ;----------------------------------------------------------------------------
+  ;Strings and Data needed to Pause the screen
+  ;----------------------------------------------------------------------------
+  PauseMsg:
+    DB CR,LF
+    DB ' MORE   (Esc stops Pausing, Ctrl-C stops Completely, any other Continues)',CR,0
+  PauseNMsg:
+    DB ' MORE                                                                    ',CR,LF,0
+  PauseDMsg:
+    DB '                                                                               ',CR,0
+  PauseRows       DW ? ;Number of rows per screen
+  PauseHeaderPtr  DW 1 ;Pointer to Header Message (start with a fake one <> 0)
+  PauseHeaderSize DW 2 ;Number of lines in the Header Message
+  PauseRowCount   DW 2 ;Current Row Counter
+
+
+;==============================================================================
+;Alias Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to print Command Line Aliases to the screen
+  ;----------------------------------------------------------------------------
+  AliasHdrMsg:
+    DB '                   ALIASES FOR COMMAND-LINE OPTIONS',CR,LF
+    DB 'ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ',CR,LF
+    DB 0
+
+  ;----------------------------------------------------------------------------
+  ;Table needed to temporarily store Aliases.
+  ;They are originally sorted in reverse alphabetical order.
+  ;To write them in forward alphabetical order, we temporarily store
+  ;  the String Pointers, in the original reverse order, in this table.
+  ;  We then write the strings, starting with the last entry in this table
+  ;  and moving backwards.
+  ;The number of entries in this table must be AT LEAST as big as the largest
+  ;  number of Aliases for a single command Option.  Most Options don't have
+  ;  more than a dozen or so Aliases.
+  ;----------------------------------------------------------------------------
+  AliasSortTbl: DW 50 DUP (?) ;Table to store Alias Strings (to reverse order)
+
+
+;==============================================================================
+;Data needed to determine who our Parent Program is
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;ASCIIZ Name of our Parent (the name stored in the MCB for our Parents PSP)
+  ;----------------------------------------------------------------------------
+  ParentName: DB 9 DUP (0)
+
+  ;----------------------------------------------------------------------------
+  ;Is our Parent the DOS Shell?
+  ;----------------------------------------------------------------------------
+  ParentIsShell DB No
+
+  ;----------------------------------------------------------------------------
+  ;CallBack Address that may be provided by another program
+  ;An offset of -1 (the first word) indicates an invalid address
+  ;----------------------------------------------------------------------------
+  CallBackAddr DD -1
+
+  ;----------------------------------------------------------------------------
+  ;Table of possible DOS Shell programs (COMMAND.COM or equivalents)
+  ;Must be capitalized, 8 characters max ASCIIZ (not including 0 at end)
+  ;More things could be added to this table if they are discovered;
+  ;  e.g., if FreeDOS or DR DOS or ... use a Shell Name other than COMMAND
+  ;----------------------------------------------------------------------------
+  DOSShellTbl:
+    DB 'COMMAND',0 ;Standard DOS
+    DB 'CMD',0     ;Windows NT & IBM OS/2
+    DB 'NDOS',0    ;Norton Shell (from Norton Utilities)
+    DB '4DOS',0    ;4DOS
+    DB '4NT',0     ;4NT
+    DB '4OS2',0    ;4OS2
+    DB 0           ;End of Table
+
+
+;==============================================================================
+;Miscellaneous Data
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Miscellaneous Yes/No Flags
+  ;----------------------------------------------------------------------------
+  ProgFlags       DB  ?  ;Miscellaneous Yes/No Flags
+    UsePCI       EQU 01h ;Use PCI Data
+    UseUSB       EQU 02h ;Use USB Data
+    UsePNP       EQU 04h ;Use PNP Data
+    ReadingFile  EQU 10h ;Reading Data File (instead of Command Line)
+    Int24Changed EQU 20h ;We have redirected Int 24h (DOS Critical Error Flag)
+
+
+;==============================================================================
+;File Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;We temporarily modify this vector while Opening the Data File
+  ;----------------------------------------------------------------------------
+  Int24Vect DD ? ;Old Interrupt 24 (Critical Error) Vector
+
+  ;----------------------------------------------------------------------------
+  ;File Error-related Strings
+  ;----------------------------------------------------------------------------
+  FileErrorMsg:
+    DB 'Error Opening/Reading Data File ',0
+  FileErrorMsg2:
+    DB ':',CR,LF
+    DB '  ',0
+
+  FileErrMsgUnknown:
+    DB  'Unknown Error.',0             ;>5
+  FileErrMsg1:
+    DB  'File Sharing Error.',0        ;1
+    DB  'File not Found.',0            ;2
+    DB  'Path not Found.',0            ;3
+    DB  'No File Handles Available.',0 ;4
+    DB  'Access denied.',0             ;5
+
+  FileHandle  DW ? ;File Handle
+  FilePointer DD ? ;Current Data File Pointer (bytes from beginning of file)
+  FileSize    DD ? ;Size of Data File
+
+
+;==============================================================================
+;DOS Environment Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Variables to search for an extended Command Line String
+  ;This should only be valid/needed if the Command Line Size (PSP:[80h]) is 7Eh
+  ;----------------------------------------------------------------------------
+  CmdLineVarString:  DB 'CMDLINE='         ;Environment Variable String
+  CmdLineVarSize    EQU $-CmdLineVarString ;Length of String
+  CmdLineVarPointer  DW -1                 ;Pointer to Program Environment Variable
+
+
+;==============================================================================
+;Data File Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Variables to Locate the Data File
+  ;----------------------------------------------------------------------------
+  PathToUse:     DB MaxPathSize DUP (0) ;Path to Use
+  OurPathPointer DW -1                  ;Pointer to our Path String
+  CurrentPath:   DB  0                  ;Current Path (Zero-Length ASCIIZ)
+  PCIFileName:   DB 'VENDORID.PCI',0    ;PCI Data File Name
+  PNPFileName:   DB 'VENDORID.PNP',0    ;PNP Data File Name
+  USBFileName:   DB 'VENDORID.USB',0    ;USB Data File Name
+
+  ;----------------------------------------------------------------------------
+  ;DOS Error Code Returned while Opening/Reading from the file
+  ;----------------------------------------------------------------------------
+  FileError DW 0
+
+  ;----------------------------------------------------------------------------
+  ;Error Message for when the Data File is not found
+  ;----------------------------------------------------------------------------
+  NoDataFileMsg:
+    DB 'Error! Could not find Data File ',0
+
+  ;----------------------------------------------------------------------------
+  ;Error Message for when the Data File is Binary instead of Text
+  ;----------------------------------------------------------------------------
+  DataFileBinaryMsg:
+    DB 'Error! Incorrect format for Data File ',0
+
+
+;==============================================================================
+;Special Strings needed to print the Table Data
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;"Vendor Name" to use when we get a Vendor ID that is not in the Table
+  ;----------------------------------------------------------------------------
+  UnrecognizedMsg: DB 'No Matching Record Found'
+                   DB (MaxStrLength-($-UnrecognizedMsg)) DUP (' ')
+                   DB 0
+
+  ;----------------------------------------------------------------------------
+  ;Screen Header to print the Entire Table
+  ;----------------------------------------------------------------------------
+  HeaderMsg1:
+    DB ' ID                ',0
+    ;                      xxx
+  HeaderMsg2:
+    DB                       'VENDOR NAME',CR,LF
+    DB 'ƒƒƒƒƒ  ƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒƒ',CR,LF
+    DB 0
+
+  ;----------------------------------------------------------------------------
+  ;Buffer to store a Vendor Name
+  ;----------------------------------------------------------------------------
+  VendorNameBuff:
+    DB MaxStrLength DUP (' ')
+    DB 0
+
+  ;----------------------------------------------------------------------------
+  ;Buffer to store the Test String
+  ;----------------------------------------------------------------------------
+  TestString:
+    DB MaxStrLength+1 DUP (0)
+
+
+;==============================================================================
+;Help Screen Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Data needed if the User has changed the name of the program from VENDOIRD
+  ;----------------------------------------------------------------------------
+  RealName:
+    DB 'VENDORID',0 ;Real name of our program (MUST end in 0)
+                    ;  & MUST have enough space for 8-char name
+  RealNameSz DW 8   ;Size of RealName (not incl 0)
+
+
+;==============================================================================
+;ErrorLevel Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;ErrorLevels, and Table for ErrorLevel Description Strings
+  ;----------------------------------------------------------------------------
+  ErLvlOption      EQU 1 ;Bad Option on the command line
+  ErLvlDOSVer      EQU 2 ;DOS Version too old
+  ErLvlNoDataFile  EQU 3 ;Missing Data File
+  ErLvlBadDataFile EQU 4 ;Data File is Bad/Corrupted/Incorrect
+
+  ErrLvlHdr:
+    DB  CR,LF
+    DB '                      ERRORLEVELS (DOS RETURN CODES)',CR,LF
+    DB '  ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ',CR,LF
+    DB '   0 No Error.',CR,LF
+    DB 0
+
+  ErrLvlTbl:
+    DB ErLvlOption
+       DB "Bad Command-line Option.",0
+    DB ErLvlDOSVer
+       DOSVerMsg:
+       DB "DOS must be at least version 3.00.",0
+    DB ErLvlNoDataFile
+       DB "Data File (VENDORID.PCI, .PNP, or .USB) is missing.",0
+    DB ErLvlBadDataFile
+       DB "Data File (VENDORID.PCI, .PNP, or .USB) is incorrect or corrupted.",0
+    DB -1,-1 ;End of Table
+
+
+;==============================================================================
+;Data Source Related
+;==============================================================================
+
+  DataSourcesMsg:
+    DB 'Data Source(s):',CR,LF
+    DB 0
+
+  NoSourcesMsg:
+    DB '  No Sources Listed in Data File',0
+
+
+;==============================================================================
+;Command-line (Parsing) Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Data needed to Parse the command line for Options
+  ;----------------------------------------------------------------------------
+  ParseError DB  No ;Error while Parsing Command Line?
+
+  ;----------------------------------------------------------------------------
+  ;Various Parsing-related messages we may need to print to the screen
+  ;----------------------------------------------------------------------------
+  ParseCmdMsg:
+    DB 'Error in the command-line Options for VENDORID:',CR,LF,0
+  ParseErrMsg:
+    DB '^ Error',CR,LF,LF,0
+  ParseErrMsg2:
+    DB 'Type "VENDORID ?" for Help.',0
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to write the Command-line error message
+  ;----------------------------------------------------------------------------
+  MoreLeftMsg:   DB '<<-More}  ',0
+  MoreRightMsg:  DB '  {More->>',0
+  MoreMsgSize   EQU $-MoreRightMsg
+
+  ;----------------------------------------------------------------------------
+  ;Command Line Options with no single-character equivalents
+  ;These must be in the same numerical order that we want the
+  ;  Alias Option to Sort them in!
+  ;----------------------------------------------------------------------------
+  OptionPCI EQU 1 ;Do PCI
+  OptionPNP EQU 2 ;Do PNP
+  OptionUSB EQU 3 ;Do USB
+
+  ;----------------------------------------------------------------------------
+  ;Command Line Options
+  ;----------------------------------------------------------------------------
+  SwitchList:
+    DB 'Help',0
+    DB  0, '?'
+      ; ^              Beginning-of-List Marker
+      ;    ^   ^        Code(s) to use
+
+    DB 'USB',0
+    DB  0, OptionUSB
+
+    DB 'Sources',0
+    DB 'SourceDetails',0
+    DB 'SourceData',0
+    DB 'Source',0
+    DB  0, 'S'
+
+    DB 'PNP',0
+    DB  0, OptionPNP
+
+    DB 'PCI',0
+    DB  0, OptionPCI
+
+    DB 'OptionAliases',0
+    DB 'OptionAlias',0
+    DB  0, 'O'
+
+    DB 'Hlp',0
+    DB  0, '?'
+
+    DB 'H',0
+    DB  0, '?'
+
+    DB 'ErrorLvlTbl',0
+    DB 'ErrorLvlTable',0
+    DB 'ErrorLvls',0
+    DB 'ErrorLvl',0
+    DB 'ErrorLevelTbl',0
+    DB 'ErrorLevelTable',0
+    DB 'ErrorLevels',0
+    DB 'ErrorLevel',0
+    DB  0, 'E'
+
+    DB 'ErrLvlTbl',0
+    DB 'ErrLvlTable',0
+    DB 'ErrLvls',0
+    DB 'ErrLvl',0
+    DB 'ErrLevelTbl',0
+    DB 'ErrLevelTable',0
+    DB 'ErrLevels',0
+    DB 'ErrLevel',0
+    DB  0, 'E'
+
+    DB 'ErLvlTbl',0
+    DB 'ErLvlTable',0
+    DB 'ErLvls',0
+    DB 'ErLvl',0
+    DB 'ErLevelTbl',0
+    DB 'ErLevelTable',0
+    DB 'ErLevels',0
+    DB 'ErLevel',0
+    DB  0, 'E'
+
+    DB 'DataSources',0
+    DB 'DataSource',0
+    DB  0, 'S'
+
+    DB 'CommandLineAliases',0
+    DB 'CommandLineAlias',0
+    DB  0, 'O'
+
+    DB 'CmdLineAliases',0
+    DB 'CmdLineAlias',0
+    DB  0, 'O'
+
+    DB 'AllVendors',0
+    DB 'AllVendorIDs',0
+    DB  0, 'A'
+
+    DB 'Aliases',0
+    DB 'Alias',0
+    DB  0, 'O'
+
+    DB 0 ;End of list
+
+
+  ;----------------------------------------------------------------------------
+  ;Switches for Data File Parsing
+  ;----------------------------------------------------------------------------
+  SwitchListFile:
+    DB 'Source',0
+    DB 'DataSource',0
+    DB  0, 'S'
+
+    DB  0 ;End of list
+
+  ;----------------------------------------------------------------------------
+  ;TABLE OF SUBROUTINE OFFSETS TO PROCESS THE VARIOUS COMMAND LINE OPTIONS
+  ;----------------------------------------------------------------------------
+  SwitchTbl:
+    DB  '?'
+       DW DoSwitchHelp ;Help
+    DB  'A'
+       DW DoSwitchA    ;Write All Vendors
+    DB  'E'
+       DW DoSwitchE    ;ErrorLevel Table
+    DB  'O'
+       DW DoSwitchO    ;Command Line Aliases
+    DB  'S'
+       DW DoSwitchS    ;Show Source Details
+
+    DB  OptionPCI
+       DW DoSwitchPCI  ;Use PCI Data
+    DB  OptionPNP
+       DW DoSwitchPNP  ;Use PNP Data
+    DB  OptionUSB
+       DW DoSwitchUSB  ;Use USB Data
+
+    DB  0              ;End of Table
+
+
+;ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
+;CODE
+;‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
+
+;------------------------------------------------------------------------------
+;DO THE PROGRAM THING!
+;Inputs:
+;Outputs: Lots of Stuff
+;Changes: Everything
+;------------------------------------------------------------------------------
+Main:
+  CLD                    ;Go forward with string functions
+  MOV  SP,FileBuffer     ;Reset Stack Pointer
+  CALL ResizeMemory      ;Resize our Memory Allocation
+  CALL CopyNameToMCB     ;Copy our Program name to the MCB
+  CALL GetRealName       ;Get the Real Program Name
+  CALL SetupPauseNoHdr   ;Set up the Pause
+  CALL TestParentShell   ;See if our Parent is a DOS Command Shell
+  JNZ >M10               ;If not, don't write the Copyright
+  MOV  DX,Copyright      ;If so, write the
+  CALL WriteItDX         ;  Copyright message
+M10:                     ;Copyright written, if appropriate
+  CALL TestCompatibility ;Test for compatibility, quit if Error
+  CALL GetOurPath        ;Get the Pointer to Our Path
+  CALL GetEnvVars        ;Get the Environment Variable Pointers
+  CALL ParseIt           ;Parse the command line
+  MOV  DX,NoMsg          ;Write nothing
+  XOR  AL,AL             ;AL = ErrorLevel = 0
+M90:                     ;Done with Main
+
+;------------------------------------------------------------------------------
+;PRINT MESSAGE IN DX AND QUIT WITH ERRORLEVEL IN AL
+;Inputs:  AL = Errorlevel to exit program with
+;         DS:[DX] = Message to Print (to ERR)
+;Outputs:
+;Changes: Quits program
+;------------------------------------------------------------------------------
+Exit:
+  CALL CloseFile  ;Close the Data File if it is still Open
+  CALL Restore24  ;Restore DOS Critical Error Handler if we still own it
+  OR   AL,AL      ;Was there an Error?
+  JZ  >X80        ;If not, jump to handle a normal termination
+;  CALL BeepErr    ;If error, Beep Once
+  CALL WriteZErr  ;Write message to ERR
+  MOV  DX,CrLfMsg ;Write a
+  CALL WriteZErr  ;  new line
+  JMP >X90        ;Jump to quit
+X80:              ;No Error - Write to CON
+  CALL WriteItDX  ;Write the message to CON
+X90:              ;We're done!!
+  MOV  AH,4Ch     ;Service 4Ch (terminate program)
+  INT  21h        ;Do it
+
+;------------------------------------------------------------------------------
+;MAKE SURE THE MCB (MEMORY CONTROL BLOCK) CONTAINS OUR PROGRAM NAME
+;Inputs:  DS = Local Data Area
+;         DS:RealName = ASCIIZ Real Name of our program
+;         CLD Already Issued
+;Outputs:
+;Changes: Data in MCB
+;NOTES:   This makes sure that the MCB (Memory Control Block) for our
+;           program contains our program name.  DOS 4+ does this
+;           automatically, but DOS versions 1-3 do not.  This code
+;           does not verify whihc DOS version is in use, but simply
+;           fills in the MCB no matter what.
+;         Our program name is needed inthe MCB to make sure other programs
+;           can identify that we are installed in memory.  This code should
+;           be added to all TSR's, so that memory-mapping programs
+;           (like MAPMEM or ISLOADED) can tell which TSR's are installed
+;           in memory.  It should also be added to all programs that
+;           EXEC other programs, so that the EXEC'd program can figure out
+;           who called it.
+;         Programs that are not TSR's and do not EXEC other programs
+;           do not need this code.
+;------------------------------------------------------------------------------
+CopyNameToMCB:
+  PUSH CX,DI,SI,ES              ;Save used registers
+  MOV  CX,DS                    ;Point ES:[DI]
+  DEC  CX                       ;  at the Owners Name
+  MOV  ES,CX                    ;  in the MCB
+  MOV  DI,(OFFSET MCBOwnerName) ;  of our program
+  MOV  SI,RealName              ;Point DS:[SI] at our Program Name
+  MOV  CX,4                     ;Copy 4 words (8 bytes)
+
+  REP  MOVSW                    ;Copy our program name to the MCB
+  POP  ES,SI,DI,CX              ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO DETERMINE WHO OUR PARENT PROGRAM IS
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;COPY THE CAPITALIZED NAME OF OUR PARENT PROGRAM TO A LOCAL STRING (PARENTNAME)
+;Inputs:  ParentIsShell = No
+;Outputs: ParentIsShell = Yes if Parent Program has a Shell Name
+;                         ZF = Set
+;                       = No if Parent Program does not have a Shell Name
+;                         ZF = Clear
+;Changes:
+;------------------------------------------------------------------------------
+TestParentShell:
+  PUSH AX,BX,DI,SI       ;Save used registers
+  CALL GetParentNameCaps ;Get our Parents Capitalized Name
+  JZ  >S80               ;If invalid, assume we're at a command-line
+  MOV  SI,DOSShellTbl    ;Point at our table of Shell Names
+S10:                     ;Loop to here for each table entry
+  MOV  DI,ParentName     ;Point DI at our Parents Name
+  MOV  BX,SI             ;Save the current table pointer
+  CMP  B [BX],0          ;End of the Table?
+  JE  >S90               ;If so, it's not a Command Shell
+S20:                     ;Loop to here for each character in the string
+  MOV  AL,[BX]           ;Get the next table character
+  OR   AL,AL             ;End of the table string?
+  JZ  >S40               ;If so, handle it
+S30:                     ;Not end of table string
+  CMP  AL,[DI]           ;Does the character match?
+  JNE >S60               ;If not, try the next table entry
+  INC  BX                ;If so, increment
+  INC  DI                ;  our Pointers
+  JMP  S20               ;and keep testing
+S40:                     ;End of our table string
+  CMP  B [DI],0          ;End of the Parents Name string?
+  JE  >S80               ;If so, it's a match
+S60:                     ;Not a match
+  CALL SkipOverStringSI  ;Point at the next table entry
+  JMP  S10               ;Keep going until we're done
+S80:                     ;Is a Command Shell
+  MOV  ParentIsShell,Yes ;Store the result for later
+S90:                     ;Done
+  CMP  ParentIsShell,Yes ;Set the return flag
+  POP  SI,DI,BX,AX       ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;COPY THE CAPITALIZED NAME OF OUR PARENT PROGRAM TO A LOCAL STRING (PARENTNAME)
+;Inputs:  ES = Local Data Area
+;         CLD already issued
+;Outputs: ParentName
+;         ZF = Clear if ParentName is valid (greater than 0 length)
+;            = Set if Invalid (0-length, such as under the DOSBox program)
+;Changes:
+;------------------------------------------------------------------------------
+GetParentNameCaps:
+  PUSH AX,CX,DI,SI,DS         ;Save used registers
+  MOV  AX,[PSPParentPSP]      ;Point DS at
+  DEC  AX                     ;  the MCB of our
+  MOV  DS,AX                  ;  Parents PSP
+  MOV  SI,OFFSET MCBOwnerName ;Point DS:[SI] at the Owners name
+  MOV  DI,ParentName          ;Point ES:[DI] at our storage area
+  MOV  CX,8                   ;Copy 8 bytes
+P10:                          ;Loop to here for each character
+  LODSB                       ;Get the next byte
+  CALL Capitalize             ;Capitalize it
+  STOSB                       ;Store it
+  LOOP P10                    ;Keep going until we're done
+  CMP  B ES:ParentName[0],0   ;Set return flag
+  POP  DS,SI,DI,CX,AX         ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO TEST THE COMPUTER FOR MINIMUM COMPATIBILITY (DOS VERSION, ETC)
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;TEST THE COMPUTER TO SEE IF IT'S COMPATIBLE (CPU, DOS VERSION, WHATEVER)
+;Inputs:  InMemory
+;Outputs: Quits the program if Computer is Incompatible
+;         Returns if Computer is OK
+;         Stores all kinds of values in memory variables
+;Changes:
+;------------------------------------------------------------------------------
+TestCompatibility:
+  PUSH AX,DX          ;Save used registers
+  MOV  AL,ErLvlDOSVer ;Assume incorrect
+  MOV  DX,DOSVerMsg   ;  DOS Version
+  CALL TestDOSVer     ;  new enough?
+  JNC >C90            ;If not, quit
+C70:                  ;The computer is incompatible for some reason
+  JMP  Exit           ;Quit!
+C90:                  ;The computer is compatible!
+  POP  DX,AX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST THE CURRENT DOS VERSION
+;Inputs:  MinDOSVer (EQUate)
+;Outputs: CF = Clear if DOS version >= MinDOSVer
+;         CF = Set if DOS version < MinDOSVer
+;Changes:
+;------------------------------------------------------------------------------
+TestDOSVer:
+  PUSH AX,BX,CX     ;Save used registers
+  MOV  AX,3000h     ;Service 30h (get DOS version number)
+                    ;  DOS 5.0 requires AL = 00h, may change BX and CX
+  INT  21h          ;Do it (Returns AL= Major, AH = Minor)
+  XCHG AL,AH        ;Swap Major and Minor versions for testing
+  CMP  AX,MinDOSVer ;Is the version new enough?
+  JAE >D80          ;If so, it's OK
+D70:                ;DOS is older than the minimum
+  STC               ;Set the "too old" flag
+  JMP >D90          ;We're done
+D80:                ;DOS is >= the minimum
+  CLC               ;Set the OK flag
+D90:                ;We're done
+  POP  CX,BX,AX     ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO LOCATE THE APPROPRIATE DATA FILE
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;FIND THE LOCATION OF A DATA FILE
+;Inputs:  [DI] = FileName to Look for (ASCIIZ)
+;Outputs: CF = Clear if OK (File Found)
+;              PathToUse = Path & FileName Concatenated Together
+;            = Set if Error (File not Found)
+;              PathToUse = Undefined
+;              Writes Error Message to Screen
+;Changes: Various Path pointer Registers (OurPathPointer, etc.)
+;------------------------------------------------------------------------------
+FindDataFile:
+  PUSH DX,SI,ES          ;Save used registers
+F10:                     ;Do Our Path
+  MOV  SI,OurPathPointer ;Point [SI] at our program's Path
+  CMP  SI,-1             ;Valid?
+  JE  >F20               ;If not, skip it
+  MOV  ES,[PSPEnvirSeg]  ;Point ES at the Environment Segment
+  CALL CopyPathName      ;Copy it
+  CALL FindFile          ;File exists?
+  JNC >F80               ;If so, we're done
+  JMP >F70               ;If not, error
+F20:                     ;Do Current Path
+  MOV  ES,CS             ;Point ES at us
+  MOV  SI,CurrentPath    ;Point at the Current Path
+  CALL CopyPathName      ;Copy it
+  CALL FindFile          ;File exists?
+  JNC >F80               ;If so, we're done
+F70:                     ;Error
+  MOV  DX,NoDataFileMsg  ;If not, write the first part
+  CALL WriteZErr         ;  of the Error Message
+  MOV  DX,PathToUse      ;Write the
+  CALL WriteZErr         ;  File Name
+  STC                    ;Set Error Flag
+  JMP >F90               ;Done
+F80:                     ;Found our File
+  MOV  DX,[9Ah]          ;Store
+  MOV  W FileSize[0],DX  ;  the
+  MOV  DX,[9Ch]          ;  Size
+  MOV  W FileSize[2],DX  ;  of
+  SUB  W FileSize[0],1   ;  the
+  SBB  W FileSIze[2],0   ;  File
+  CLC                    ;Set OK flag
+F90:                     ;Done
+  POP  ES,SI,DX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;SEE IF THE DATA FILE EXISTS
+;Inputs:  PathToUse
+;Outputs: CF = Clear if OK (File Found)
+;            = Set if Error (File not Found)
+;Changes:
+;------------------------------------------------------------------------------
+FindFile:
+  PUSH AX,CX,DX      ;Save used registers
+  MOV  AX,4E00h      ;Function 4Eh (Find First Matching File)
+  MOV  CX,FAttrToUse ;Search for any file, including Hidden
+  MOV  DX,PathToUse  ;DS:DX = ASCIIZ FileName to search for
+  INT  21h           ;Do it (returns CF)
+  POP  DX,CX,AX      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CREATE A COMPLETE PATH NAME GIVEN A PATH AND A FILE NAME
+;Inputs:  ES:[SI] = Path name to Copy
+;         DS:[DI] = FileName to Append to the Path
+;Outputs: PathToUse = Path & File Concatenated Together
+;NOTES: The Path String can either end with a 0 (ASCIIZ String) or a SemiColon
+;         (the way strings are stored in the PATH Environment variable).
+;       This code will properly handle an empty Path String, which will
+;         simply set PathToUse to the FileName.
+;       The FileName must be an ASCIIZ String.
+;------------------------------------------------------------------------------
+CopyPathName:
+  PUSH AX,BX,CX,DI,SI,DS,ES  ;Save used registers
+  SwapDSES                   ;Point ES at our Data, DS at Data Path
+  MOV  BX,DI                 ;Save File Name Pointer
+  XOR  AX,AX                 ;Fill with Zeroes
+  MOV  CX,(MaxPathSize/2)    ;Number of Words to Write
+  MOV  DI,PathToUse          ;Where to write them
+  PUSH DI                    ;Save Pointer
+  REP  STOSW                 ;Reset the Buffer
+  POP  DI                    ;Restore Pointer
+  XOR  CX,CX                 ;Start String Length Counter at 0
+N10:                         ;Loop to here for each character in Path
+  LODSB                      ;Get next character
+  OR   AL,AL                 ;End of Path?
+  JZ  >N20                   ;If so, do Filename
+  CMP  AL,';'                ;End of Path (Environment PATH)?
+  JE  >N20                   ;If so, do FileName
+  INC  CL                    ;Increment String Length Counter
+  STOSB                      ;If not, store the character
+  JMP  N10                   ;Keep going
+N20:                         ;Done with Path
+  OR   CL,CL                 ;Any characters at all in the Path?
+  JZ  >N30                   ;If so, is Current Path, and don't want backslash!
+  CMP  B ES:[DI-1],Backslash ;Path ends in a Backslash?
+  JE  >N30                   ;If so, it's OK
+  MOV  AL,Backslash          ;If not, store
+  STOSB                      ;  a Backslash
+N30:                         ;Path is OK
+  MOV  DS,ES                 ;Point DS:[SI]
+  MOV  SI,BX                 ;  at the File Name
+N40:                         ;Loop to here for each character in File name
+  LODSB                      ;Get next character
+  OR   AL,AL                 ;End of File Name?
+  JZ  >N90                   ;If so, we're done
+  STOSB                      ;If not, store it
+  JMP  N40                   ;Keepgoing
+N90:                         ;Done
+  POP  ES,DS,SI,DI,CX,BX,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE PATH THAT OUR PROGRAM IS IN
+;Inputs:
+;Outputs: OurPathPointer = Pointer to Our Path String (in Environment Segment)
+;                        = -1 if we couldn't find our own Path
+;Changes:
+;------------------------------------------------------------------------------
+GetOurPath:
+  PUSH AX,BX,CX,DI,SI   ;Save used registers
+  PUSH DS,ES            ;Save used registers
+  MOV  BX,OFFSET OurPathPointer ;Point at where we're storing
+  MOV  DS,[PSPEnvirSeg] ;Point DS and ES
+  MOV  ES,DS            ;  at the Environment segment
+  XOR  DI,DI            ;Point at the beginning of Environment list
+  MOV  CX,-1            ;Max out the count limiter
+  XOR  AX,AX            ;Need to look for a double 0
+N10:                    ;Loop to here to skip over Environment vars
+  REPNE SCASB           ;Look for the end of this environment variable
+  CMP  [DI],AL          ;Is it the end of the variable list (double 0)?
+  JNE  N10              ;If not, keep skipping over Environment vars
+  CMP  [DI+1],AX        ;If so, is there a string after the Envir?
+  JE  >N70              ;If not, we're done
+  ADD  DI,3             ;Point DI and SI at the
+  MOV  SI,DI            ;  True Name
+  MOV  CS:[BX],DI       ;Store the Pointer
+N20:                    ;Loop to here to find the end of the PATH
+  LODSB                 ;Get the next character of the name
+  CMP  AL,':'           ;Is it a Colon?
+  JE  >N30              ;If so, possible end-of-path
+  CMP  AL,Backslash     ;Is it a backslash?
+  JE  >N30              ;If so, possible end-of-path
+  OR   AL,AL            ;End of File Name?
+  JZ  >N50              ;If so, we're done
+  JMP >N40              ;If not, keep looking
+N30:                    ;Update end-of-path Pointer
+  MOV  DI,SI            ;Save possible end-of-path pointer
+N40:                    ;Not end-of-path yet
+  JMP  N20              ;Keep looking
+N50:                    ;At end of Path
+  CMP  DI,CS:[BX]       ;Was there a real path?
+  JE  >N70              ;If not, error
+  MOV  B [DI],0         ;If OK, put 0 at end of Path
+  JMP >N90              ;Done
+N70:                    ;No Path
+  MOV  W CS:[BX],-1     ;Set Pointer as Invalid
+N90:                    ;Done
+  POP  ES,DS            ;Restore used registers
+  POP  SI,DI,CX,BX,AX   ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE 'PCI ' OR 'USB ' AS APPROPRIATE FOR THE SWITCHES
+;Inputs:  CS = DS = Local Data Area
+;         ProgFlags.UseUSB, ProgFlags.UsePCI, ProgFlags.UsePNP
+;Outputs: Writes 'PCI ', 'PNP, or 'USB ', as appropriate
+;Changes:
+;------------------------------------------------------------------------------
+WritePCIPNPOrUSB:
+  PUSH DX               ;Save used registers
+  MOV  DX,PCISpaceMsg   ;Assume PCI
+  TEST ProgFlags,UsePCI ;Is it PCI?
+  JNZ >W90              ;If so, continue
+  MOV  DX,PNPSpaceMsg   ;Assume PNP
+  TEST ProgFlags,UsePNP ;Is it PNP?
+  JNZ >W90              ;If so, continue
+  MOV  DX,USBSpaceMsg   ;If not, it's USB
+W90:                    ;Done
+  CALL WriteItDX        ;Write it
+  POP  DX               ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;FILLS THE VENDOR NAME BUFFER WITH DATA
+;Inputs:  DS = ES = Local Data Area
+;         [SI] = Vendor Name String to use
+;Outputs: Fills the VendorNameBuff with Appropriate Data
+;Changes:
+;------------------------------------------------------------------------------
+FillVendorNameBuff:
+  PUSH AX,CX,DI,SI         ;Save used registers
+  MOV  DI,VendorNameBuff   ;ES:[DI] = Buffer to Initialize
+  MOV  CX,(MaxStrLength/2) ;CX = Number of Words to Write
+  MOV  AX,' '+(' ' SHL 8)  ;Write Spaces
+  REP  STOSW               ;Do it
+  MOV  CX,MaxStrLength     ;CX = Maximum number of characters to get
+  MOV  DI,VendorNameBuff   ;ES:[DI] = Buffer to Fill
+F10:                       ;Loop to here for each character
+  CALL GetNextChar         ;Get the Next Character
+  OR   AL,AL               ;End of Name?
+  JZ  >F90                 ;If so, we're done
+  CMP  AL,';'              ;Possible comment?
+  JNE >F40                 ;If not, just store it
+  CALL GetNextChar         ;If so, get the next character after that
+  CMP  AL,';'              ;A Semicolon in the string?
+  JNE >F90                 ;If not, we're done
+F40:                       ;Store the character
+  STOSB                    ;Store the character
+  LOOP F10                 ;Keep going until wer'e done
+F90:                       ;Done
+  POP  SI,DI,CX,AX         ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;OPEN THE DATA FILE
+;Inputs:  CS = DS = Local Data Area
+;         ProgFlags.UsePCI or ProgFlags.UseUSB
+;         FilePointer = 0 (Beginning of FIle)
+;Outputs: If File Found and Opened correctly:
+;           [SI] = First Line of File
+;                  (Use GetNextLine to retrieve remaining lines)
+;           FileHandle = Handle of Opened File
+;           FilePointer = 0 (Beginning of File)
+;           PathToUse = Data File Name (including Path)
+;         Quits Program with appropriate error if Data File is unspecified,
+;           not found, could not be opened, or appears to be incorrect format
+;Changes:
+;------------------------------------------------------------------------------
+OpenDataFile:
+  PUSH AX,BX,DX,DI           ;Save used registers
+  OR   ProgFlags,ReadingFile ;Mark as working with File Data
+  MOV  BX,OFFSET ProgFlags   ;[BX] = ProgFlags
+  MOV  AL,ErLvlNoDataFile    ;Assume Data File
+  MOV  DX,NoMsg              ;  is missing
+  MOV  DI,PCIFileName        ;Assume PCI
+  TEST B [BX],UsePCI         ;Is it PCI?
+  JNZ >O10                   ;If so, continue
+  MOV  DI,PNPFileName        ;Assume PNP
+  TEST B [BX],UsePNP         ;Is it PNP?
+  JNZ >O10                   ;If so, continue
+  MOV  DI,USBFileName        ;If not, it must be USB
+O10:                         ;[DI] = Data File Name to Open
+  CALL FindDataFile          ;Look for the File
+  JC  >O70                   ;If not there, Error
+  CALL Change24              ;Point DOS Critical Error Handler at us
+  CALL OpenFile              ;Open the File
+  JNZ >O20                   ;If OK, we're done
+  CALL HandleFileError       ;If Error, Handle it
+                             ;  This Termiantes the Program!
+O20:                         ;File Opened
+  XOR  SI,SI                 ;Point at the first line of the file
+  CALL GetNextLine           ;  (quits with error if file is binary)
+  JMP >O90                   ;Done
+O70:                         ;Error ([DX] = Error Message, AL = ErrorLevel)
+  JMP  Exit                  ;Quit Program
+O90:                         ;Done
+  POP  DI,DX,BX,AX           ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT ASCII-EOF STRING TO ASCIIZ STRING
+;Inputs:  DS:[SI] = String to change
+;         CLD already issued
+;Outputs: Modifies last character of String, if necessary
+;Changes:
+;------------------------------------------------------------------------------
+ConvertEOFToZero:
+  PUSH SI          ;Save used registers
+V10:               ;Loop to here to find End-of-String
+  CALL GetNextChar ;Get the next character
+  OR   AL,AL       ;End-of-String?
+  JZ  >V90         ;If so, we're done
+  CMP  AL,EOF      ;End-of-File?
+  JNE  V10         ;If not, keep looking
+  MOV  B [SI-1],0  ;If so, convert it to End-of-Line
+V90:               ;Done
+  POP  SI          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE POINTER TO THE NEXT LINE OF THE DATA FILE
+;Inputs:   DS = ES = Local Data Area
+;         [SI] = Current Line Pointer (0 if first read)
+;         CLD already issued
+;Outputs: [SI] = Next Line Pointer
+;                (EOL & EOF characters replaced with zeroes)
+;         If End of Buffer is reached, automatically loads next chunk of
+;           the file into the buffer
+;         CF = Clear if EOF is not reached yet
+;            = Set if EOF has been reached
+;Changes:
+;------------------------------------------------------------------------------
+GetNextLine:
+  PUSH AX                  ;Save used registers
+  MOV  AX,-1               ;Assume not a new read from the file
+  OR   SI,SI               ;Is this the very first line?
+  JNZ >X20                 ;If not, handle it
+X10:                       ;Need to refill the Buffer with Data
+  CALL ReadFile            ;Read the Data From the File
+  JNC >X12                 ;If no error, continue
+  CALL HandleFileError2    ;If Error, handle it
+                           ;  This termiantes the Program!
+X12:                       ;No error
+  OR   SI,SI               ;First Data Read?
+  JNZ >X15                 ;If not, continue
+  CALL TestBinary          ;If so, test for a Binary File (Quits if Error)
+X15:                       ;Handled Binary Test, if Appropriate
+  MOV  SI,FileBuffer       ;[SI] = Beginning of Buffer
+  XOR  AX,AX               ;Mark as a New File Read
+X20:                       ;Skipped over previous line's EOL characters
+  CALL SkipZeroesSI        ;Skip over potential EOL's at beginning of line
+  JZ  >X70                 ;If End-of-File, quit
+  CALL TestEndOfBuffSI     ;Test for End-of-Buffer
+  JC  >X40                 ;If so, jump to handle it
+  OR   AX,AX               ;If not, is this the first line after a read?
+  JZ  >X80                 ;If so, we're done
+X30:                       ;Loop to here to skip over previous string
+  CALL GetNextChar         ;Skip the next character
+  OR   AL,AL               ;End of Line?
+  JNZ  X30                 ;If not, keep looking
+  OR   SI,SI               ;Did we go past the end of the Buffer?
+  JNZ >X35                 ;If not, continue
+  DEC  SI                  ;If so, point back at the End-of-Buffer
+X35:                       ;Skipped over previous Line
+  CALL SkipZeroesSI        ;Skip over potential EOL's at beginning of line
+  JZ  >X70                 ;If End-of-File, quit
+  CALL TestEndOfBuffSI     ;Test for End-of-Buffer
+  JNC >X80                 ;If not, we're done
+X40:                       ;Line goes past end of buffer
+  SUB  SI,65535            ;Adjust the
+  NEG  SI                  ;  File Pointer
+  INC  SI                  ;  the the
+  SUB  W FilePointer[0],SI ;  beginning
+  SBB  W FilePointer[2],0  ;  of the
+  JMP  X10                 ;  Line
+X70:                       ;End-of-File
+  STC                      ;Set return Flag
+  JMP >X90                 ;Done
+X80:                       ;Not End-of-File
+  CLC                      ;Set return Flag
+X90:                       ;Done
+  POP  AX                  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST TO SEE IF THE DATA FILE APPEARS TO BE BINARY
+;Inputs:  DS = ES = Local Data Area
+;         FileBuffer contains first group of bytes from file
+;         CLD already issued
+;Outputs: If File is Text, simply returns
+;         If file is Binary, Exits with Error Message
+;Changes
+;------------------------------------------------------------------------------
+TestBinary:
+  PUSH AX,CX,SI          ;Save used registers
+  MOV  SI,FileBuffer     ;[SI] = Buffer to test
+  MOV  CX,FileBufferSize ;CX = Number of Bytes to Test
+B10:                     ;Loop to here for each character
+  CALL GetNextChar       ;Get the next character
+  CALL TestValidChar     ;Is it a Valid ASCII character?
+  JC  >B70               ;If not, quit with Error
+  LOOP B10               ;Keep going until we're done
+  JMP >B90               ;If we're here, the entire buffer is OK
+B70:                     ;Error (Binary File)
+  CALL WriteBadFile      ;Write the Error Message and quit
+B90:                     ;Done
+  POP  SI,CX,AX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST A CHARACTER TO SEE IF IT'S VALID ASCII OR NOT
+;Inputs:  AL = Character to test
+;Outputs: CF = Clear if Character is OK (Valid ASCII or Control Character)
+;            = Set if invalid character
+;Changes:
+;------------------------------------------------------------------------------
+TestValidChar:
+  CMP  AL,127 ;Invalid ASCII?
+  JE  >V70    ;If so, Error
+  CMP  AL,255 ;Invalid ASCII?
+  JE  >V70    ;If so, Error
+  CMP  AL,' ' ;Valid ASCII?
+  JAE >V80    ;If so, it's OK
+  OR   AL,AL  ;Valid ASCII (our CR/LF Changes)?
+  JZ  >V80    ;If so, it's OK
+  CMP  AL,EOF ;Valid ASCII?
+  JE  >V80    ;If so, it's OK
+  CMP  AL,Tab ;Valid ASCII?
+  JE  >V80    ;If so, it's OK
+V70:          ;Error (Invalid Character)
+  STC         ;Set return flag
+  JMP >V90    ;Done
+V80:          ;OK (Calid ASCII or Control Character)
+  CLC         ;Set return flag
+V90:          ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP OVER ZEROES AT BEGENNING OF POTENTIAL NEW LINE
+;Inputs:   DS = ES = Local Data Area
+;         [SI] or [BX] = Potential Line Pointer
+;Outputs: [SI] or [BX] = New Pointer (Zeroes Skipped Over)
+;         ZF = Clear if OK (not End-of-File)
+;            = Set if Error (End-of-File)
+;Changes:
+;------------------------------------------------------------------------------
+SkipZeroesSI:
+K10:              ;Loop to here for each Zero
+  CMP  B [SI],EOF ;Is it End-of-File?
+  JE  >K90        ;If so, we're done
+  CMP  B [SI],0   ;Is it Zero?
+  JNE >K90        ;If not, we're done
+  INC  SI         ;If so, increment the pointer
+  JNZ  K10        ;If not past End of Buffer, keep looking
+  DEC  SI         ;If so, point back at End-of-Buffer
+K90:              ;Done
+  CMP  B [SI],EOF ;Set return flag
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AND SEE IF A DATA LINE GOES PAST THE END-OF-BUFFER
+;Inputs:  DS = ES = Local Data Area
+;         [SI] or [BX] = Line Pointer
+;Outputs: CF = Clear if OK (Line does not go past End-of-Buffer)
+;            = Set if Error (Line goes past End-of-Buffer)
+;Changes:
+;------------------------------------------------------------------------------
+TestEndOfBuffSI:
+  PUSH SI         ;Save used registers
+  CMP  SI,-1      ;Starting at End-of-Buffer?
+  JE  >B70        ;If so, we're done
+B10:              ;Loop to here for each character in the string
+  CMP  B [SI],0   ;End-of-Line?
+  JE  >B80        ;If so, we're done
+  CMP  B [SI],EOF ;End-of-File?
+  JE  >B80        ;If so, we're done
+  INC  SI         ;If not, increment Pointer
+  JNZ  B10        ;If not past End-of-Buffer, keep looking
+B70:              ;Error
+  STC             ;Set return flag
+  JMP >B90        ;Done
+B80:              ;OK
+  CLC             ;Set return flag
+B90:              ;Done
+  POP  SI         ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;ATTEMPT TO OPEN THE FILE
+;Inputs:  DS = ES = TSR Data Segment
+;         PathToUse = FIle to Open (may include a Path)
+;Outputs: ZF = Clear if File is opened
+;              FileHandle = FIle Handle
+;         ZF = Set if file couldn't be opened for some reason
+;              FileHandle = 0
+;              FileError = DOS Error Code
+;Changes:
+;------------------------------------------------------------------------------
+OpenFile:
+  PUSH AX,BX,DX      ;Save used registers
+  MOV  AX,3D20h      ;Service 3D (Open File), Read Only, Deny Write to others
+  MOV  DX,PathToUse  ;Point at the File Name
+  INT  21h           ;Open the file
+  JNC >P80           ;If OK, we're done
+P70:                 ;Error
+  MOV  FileError,AX  ;Store the DOS Error Code
+  XOR  BX,BX         ;Set Handle to 0
+  JMP >P90           ;We're done
+P80:                 ;OK
+  MOV  BX,AX         ;Put Handle in BX
+P90:                 ;Done
+  MOV  FileHandle,BX ;Store the Handle
+  OR   BX,BX         ;Set return flag
+  POP  DX,BX,AX      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;READ SOME DATA FROM THE FILE INTO OUR MEMORY BUFFER
+;Inputs:  DS = ES = Local Data Area
+;         FileHandle = File Handle
+;         FilePointer = File Pointer to start reading data from
+;         CLD already issued
+;Outputs: CF = Clear if OK (Data was read from file)
+;              FileBuffer contains Data
+;              If Buffer is not full, Buffer ends in EOF (ASCII 26)
+;              FilePointer = Pointer location after the Read
+;              EOL characters are replaced with Zeroes
+;            = Set if Error
+;              FileError = Error Code
+;              FIle is Closed
+;Changes:
+;------------------------------------------------------------------------------
+ReadFile:
+  PUSH AX,BX,CX,DX,DI        ;Save used registers
+R10:                         ;Fill Buffer with EOF's
+  MOV  AX,EOF+(EOF SHL 8)    ;Write EOF's
+  MOV  CX,(FileBufferSize/2) ;CX = Number of words to write
+  MOV  DI,FileBuffer         ;ES:[DI] = Buffer
+  REP  STOSW                 ;Fill the Buffer
+R20:                         ;Position File Pointer
+  MOV  AX,4200h              ;Function 42h = Position File Pointer
+                             ;  00h = Offset from Beginning of File
+  MOV  BX,FileHandle         ;BX = File Handle
+  CALL TestFilePointer       ;Make sure the Pointer is not too big
+  JC  >R70                   ;If it is, we're done
+  MOV  CX,W FilePointer[2]   ;CX:DX =
+  MOV  DX,W FilePointer[0]   ;  Offset to use
+  INT  21h                   ;Do it
+  JC  >R70                   ;If error, quit
+R30:                         ;Read Data into Buffer
+  MOV  AH,3Fh                ;AH = Function 3Fh = Read from File
+  MOV  BX,FileHandle         ;BX = File Handle
+  MOV  CX,FileBufferSize     ;CX = Number of Bytes to Read
+  MOV  DX,FileBuffer         ;DS:[DX] = Buffer
+  INT  21h                   ;Do it
+  JC  >R70                   ;If error, handle it
+  ADD  W FilePointer[0],AX   ;Add the number of bytes read
+  ADC  W FilePointer[2],0    ;  to the File Pointer
+R40:                         ;Replace all EOL characters with zeroes
+  MOV  CX,FileBufferSize     ;CX = Number of bytes to test
+  MOV  DI,FileBuffer         ;[DI] = Buffer
+R42:                         ;Loop to here for each possilobe EOL character
+  CMP  B [DI],CR             ;EOL character?
+  JE  >R44                   ;If so, jump to handle it
+  CMP  B [DI],LF             ;EOL character?
+  JNE >R46                   ;If not, skip to the next character
+R44:                         ;Is EOL character
+  MOV  B [DI],0              ;Replace it with a zero
+R46:                         ;EOL character handled, if appropriate
+  INC  DI                    ;Increment Pointer
+  LOOP R42                   ;Keep going until we're done
+  JMP >R80                   ;Done
+R70:                         ;Error
+  CALL CloseFile             ;Close the File
+  MOV  FileError,AX          ;Store the Error Code
+  STC                        ;Set return flag
+  JMP >R90                   ;Done
+R80:                         ;OK
+  CLC                        ;Set return flag
+R90:                         ;Done
+  POP  DI,DX,CX,BX,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST THE FILE POINTER TO SEE IF IT'S TOO BIG OR NOT
+;Inputs:  DS = ES = Local Data Area
+;         FilePointer = Pointer to Test
+;         FileSize    = Size of File
+;Outputs: CF = Clear if OK
+;            = Set if error
+;Changes:
+;------------------------------------------------------------------------------
+TestFilePointer:
+  PUSH AX                  ;Save used registers
+  MOV  AX,W FilePointer[2] ;File Pointer
+  CMP  AX,W FileSize[2]    ;  too big?
+  JA  >P70                 ;If so, error
+  JB  >P80                 ;If high word is smaller, we don't care about low
+  MOV  AX,W FilePointer[0] ;File Pointer
+  CMP  AX,W FileSize[0]    ;  too big?
+  JB  >P80                 ;If not, continue
+P70:                       ;Error
+  STC                      ;Set return flag
+  JMP >P90                 ;Done
+P80:                       ;OK
+  CLC                      ;Set return flag
+P90:                       ;Done
+  POP  AX                  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CLOSE THE FILE
+;Inputs:  DS = ES = Local Data Area
+;         FileHandle = Handle to use (0 if File was never opened)
+;Outputs: CF = Clear if it worked OK
+;            = Set if error
+;              FileError = DOS Error Code
+;Changes:
+;------------------------------------------------------------------------------
+CloseFile:
+  PUSH AX,BX         ;Save used registers
+  MOV  AH,3Eh        ;Service 3Eh (Close File)
+  MOV  BX,FileHandle ;BX = File Handle to use
+  OR   BX,BX         ;Did we ever open the file?
+  JZ  >C90           ;If not, don't try to close it!
+  INT  21h           ;Do it
+  JC  >C70           ;If error, handle it
+  MOV  FileHandle,0  ;Mark it as closed
+  JMP >C90           ;Done
+C70:                 ;Error
+  MOV  FileError,AX  ;If so, store the DOS Error Code
+C90:                 ;Done
+  POP  BX,AX         ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CHANGE OR RESTORE INT 24h (CRITICAL ERROR HANDLER) TO OUR CODE
+;Inputs:  DS = ES = TSR Data Segment
+;Outputs: ProgFlags.Int24Changed
+;Changes: Interrupt 24 vector
+;------------------------------------------------------------------------------
+Change24:
+  MOV  Int24Vect[0],Int24      ;Put our CS:IP
+  PUSH CS                      ;  into the
+  POP  W Int24Vect[2]          ;  data area
+  OR   ProgFlags,Int24Changed  ;Mark it as changed
+  JMP >W00                     ;Jump to do it
+Restore24:
+  TEST ProgFlags,Int24Changed  ;Did we ever change it in the first place?
+  JZ  >W90                     ;If not, don't restore it
+  AND  ProgFlags,(NOT Int24Changed) ;If so, mark it as unchanged
+W00:
+  PUSHF                        ;Save flags
+  PUSH AX,DI,SI,ES             ;Save used registers
+  XOR  DI,DI                   ;Point ES:[DI] at
+  MOV  ES,DI                   ;  the interrupt
+  MOV  DI,(24h*4)              ;  vector table
+  MOV  SI,OFFSET Int24Vect     ;Point DS:[SI] at our data area
+  CLD                          ;Go forward
+  CLI                          ;Disable interrupts
+  MOV  AX,ES:[DI]              ;Get the real vector IP
+  MOVSW                        ;Put our IP in the vector table
+  MOV  [SI-2],AX               ;Store the original IP in our memory
+  MOV  AX,ES:[DI]              ;Get the real vector CS
+  MOVSW                        ;Put our CS in the vector table
+  MOV  [SI-2],AX               ;Store the original CS in our memory
+  STI                          ;Enable interrupts
+  POP  ES,SI,DI,AX             ;Restore used registers
+  POPF                         ;Restore flags
+W90:                           ;DOne
+  RET
+
+;------------------------------------------------------------------------------
+;CRITICAL ERROR HANDLER - JUST RETURN TO DOS WITH A FAILED CODE
+;Inputs:  CS = TSR Data Segment
+;Outputs:
+;Changes: AL
+;------------------------------------------------------------------------------
+Int24:
+  MOV  AL,3 ;Mark the operation as failed
+  IRET
+
+;------------------------------------------------------------------------------
+;HANDLE A FILE OPEN/READ/CLOSE ERROR
+;Inputs:  DS = ES = Local Data Area
+;         FileError = DOS Error Code form File Processing
+;Outputs: Writes appropriate Error Message to screen
+;Changes: Terminates Program
+;------------------------------------------------------------------------------
+HandleFileError2:
+  CALL WriteCrLfErr       ;Move
+  CALL WriteCrLfErr       ;  down
+HandleFileError:
+  MOV  DX,FileErrorMsg    ;Write the first part of
+  CALL WriteZErr          ;  the Error Message
+  MOV  DX,PathToUse       ;Write the
+  CALL WriteZErr          ;  FileName
+  MOV  DX,FileErrorMsg2   ;Move
+  CALL WriteZErr          ;  down
+  MOV  DX,FileError       ;Get the appropriate
+  CALL GetFileErrorMsg    ;  Error Message to write (returns DX)
+  MOV  AL,ErLvlNoDataFile ;AL = ErrorLevel to use
+  JMP  Exit               ;Quit
+
+;------------------------------------------------------------------------------
+;GET DOS FILE ERROR MESSAGE THAT MATCHES A FILE ERROR NUMBER
+;Inputs:  DX = File Error Number to look for
+;Outputs: DX = Error Message associated with Error Number
+;Changes:
+;------------------------------------------------------------------------------
+GetFileErrorMsg:
+  PUSH AX,CX,SI             ;Save used registers
+  MOV  SI,FileErrMsgUnknown ;Assume Unknown Error
+  CMP  DX,5                 ;Is it an Error from our Lookup Table?
+  JA  >F90                  ;If not, it's Unknown
+  MOV  CX,DX                ;If so, put Loop Counter in CX
+F10:                        ;Loop to here to find the correct string
+  CALL SkipOverStringSI     ;Skip over this string
+  LOOP F10                  ;Keep going until we get to the correct string
+F90:                        ;Done
+  MOV  DX,SI                ;Point [DX] at the string
+  POP  SI,CX,AX             ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO PARSE THE COMMAND LINE FOR SWITCHES, AND PRINT ERRORS.
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;PARSE THE COMMAND LINE FOR SWITCHES
+;Inputs:
+;Outputs: All kinds of stuff!
+;Changes:
+;------------------------------------------------------------------------------
+ParseIt:
+  PUSH SI                   ;Save used registers
+  CALL FixCmdLineCR         ;Replace CR at end of Command Line with a 0
+  MOV  SI,81h               ;Assume "real" Command Line
+  CMP  CmdLineVarPointer,-1 ;Have a CMDLINE Environment variable?
+  JE  >P50                  ;If not, just do regular command line
+  MOV  SI,CmdLineVarPointer ;If so, point at the variable
+P50:                        ;Pointed at Command Line Tail
+  CALL ParseCmdLine         ;Parse Command Line
+  POP  SI                   ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;PARSE THE COMMAND LINE FOR SWITCHES
+;Inputs:  [SI] = Option String to Parse
+;Outputs:
+;Changes: SI
+;------------------------------------------------------------------------------
+ParseCmdLine:
+  PUSH AX               ;Save used registers
+  CALL IsSpaceOrEOL     ;Anything at all on the command line?
+  JNZ >P10              ;If so, continue
+  CALL DoHelp           ;If not, just write the Help Message
+                        ;  This Terminates the Program!
+P10:                    ;Look for the next switch
+  CALL IsSpaceOrEOX     ;Look for a valid character
+  JZ  >P90              ;If EOL, we're done
+  CMP  AL,'/'           ;Is it a slash?
+  JE  >P15              ;If so, jump to handle it
+  CMP  AL,'-'           ;Is it a dash?
+  JNE >P20              ;If not, jump to handle it
+P15:                    ;It's a slash or a dash
+  CALL IsSpaceOrEOX     ;Look for a valid switch character
+  JZ  >P70              ;If EOL, Error
+P20:                    ;Accounted for Slashes and Dashes
+  DEC  SI               ;Point back at the Start of the Number
+  CALL GetNumber        ;Is it a Number?
+  JC  >P30              ;If not, try next possibility
+  CALL DoSwitchNumber   ;If so, process the Number
+                        ;  This terminates the program!
+P30:                    ;Not a Number
+  CALL GetNextChar      ;Get the next character
+  CMP  AL,Quote1        ;Is it a Single Quote?
+  JE  >P35              ;If so, handle it
+  CMP  AL,Quote2        ;Is it a Double Quote?
+  JE  >P35              ;If so, handle it
+  CMP  AL,Grave         ;If not, is it a Grave Quote?
+  JNE >P40              ;If not, handle it
+P35:                    ;Is a String
+  CALL DoSwitchString   ;Process the String
+                        ;  This terminates the program!
+P40:                    ;Not a Number or a String
+  DEC  SI               ;Point back at the character
+  TEST ProgFlags,UsePNP ;Do we need to test for a PNP ID yet?
+  JZ  >P50              ;If not, skip it
+  CALL GetPNPNumber     ;Look for a PNP string (returns encoded value in AX)
+  JC  >P50              ;If not, look for another switch
+  CALL DoSwitchDoPNP    ;Handle PNP switch
+                        ;  This terminates the program!
+P50:                    ;Not a PNP Vendor ID
+  CALL GetSwitch        ;See if it matches one of our Switches from the Table
+                        ;  This may terminate the program!
+  JNZ  P10              ;If a match, look for the next switch
+P70:                    ;Error - tell the user where it was
+  CALL WriteCmdErr      ;Display the error for the user
+  MOV  AL,ErLvlOption   ;ErrorLevel = Bad Option on command line
+  MOV  DX,NoMsg         ;Point at an empty message
+  JMP  Exit             ;Print error message and quit
+P90:                    ;We're done
+  POP  AX               ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE SWITCH CHARACTERS, AND DO WHATEVER IT IS THEY'RE ASKING
+;Inputs:  DS:[SI] = Command line pointer
+;Outputs: Lots of stuff!!!
+;         ParseError
+;         ZF = Set if Error
+;            = Clear if OK
+;Changes:
+;------------------------------------------------------------------------------
+GetSwitch:
+  PUSH AX,BX,DI,BP         ;Save used registers
+  MOV  BX,SwitchList       ;Point at the list of switch code words
+  CALL GetCode             ;See if its a match
+  JNC >S10                 ;If so, jump to test it
+  CALL GetNextChar         ;If not, it's a single character
+  CALL Capitalize          ;Capitalize it
+S10:                       ;We have a Switch to test!
+  MOV  BX,SwitchTbl        ;Point at the Table of Offsets
+S20:                       ;Loop to here for each table entry
+  MOV  AH,[BX]             ;Get the switch from our table?
+  OR   AH,AH               ;Is it the end of the table?
+  JZ  >S70                 ;If so, there's an error
+  CMP  AL,AH               ;If a valid entry, is it a match?
+  JE  >S30                 ;If so, jump to handle it
+  ADD  BX,3                ;If not, point at the next table entry
+  JMP  S20                 ;And keep looking
+S30:                       ;It's a match from the table
+  MOV  DI,OFFSET ProgFlags ;Point [DI] at ProgFlags
+  CALL W [BX+1]            ;Do the Switch stuff
+  JMP >S90                 ;And quit
+S70:                       ;There's an error
+  MOV  ParseError,Yes      ;Mark the error flag
+S90:                       ;We're done
+  CMP  ParseError,Yes      ;Set/Clear the error flag
+  POP  BP,DI,BX,AX         ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE FOR PROCESSING SPECIFIC COMMAND-LINE SWITCHES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;WRITE THE HELP (SYNTAX) MESSAGE AND QUIT
+;Inputs:  DS = ES = Local Data Area
+;         [DI] = ProgFlags
+;         [SI] = Command Line Pointer
+;Outputs: Writes Help Message to the screen
+;Changes: Quits program
+;------------------------------------------------------------------------------
+DoSwitchHelp:
+  CALL IsSpaceOrEOX   ;Anything after this on the Command Line?
+  JZ  >H00            ;If not, continue
+  MOV  ParseError,Yes ;If so, Error
+  RET
+
+H00:
+DoHelp:
+  MOV  DX,SyntaxMsg ;Point at the last part of the Help Message
+  XOR  AL,AL        ;ErrorLevel = 0
+  JMP  Exit         ;Quit
+
+;------------------------------------------------------------------------------
+;WRITE ERRORLEVEL TABLE TO THE SCREEN AND QUIT
+;Inputs:  DS = ES = Local Data Area
+;         [DI] = ProgFlags
+;         [SI] = Command Line Pointer
+;Outputs: Writes ErrorLevel Table to the Screen
+;Changes: Quits Program
+;------------------------------------------------------------------------------
+DoSwitchE:
+  CALL IsSpaceOrEOX   ;Anything after this on the Command Line?
+  JZ  >V00            ;If not, continue
+  MOV  ParseError,Yes ;If so, Error
+  RET
+
+V00:
+  MOV  DX,ErrLvlHdr         ;Write the
+  CALL SetupPause           ;  Table Header
+  MOV  AL,1                 ;Start with ErrorLevel 1
+V10:                        ;Loop to here for each table entry
+  MOV  BX,ErrLvlTbl         ;Table to search
+  CALL SearchByte2StringTbl ;Valid ErrorLevel?
+  JC  >V50                  ;If not, keep looking
+  CALL WriteSpace           ;Move Over
+  CALL ByteToString         ;If valid, write the Number
+  CALL WriteSpace           ;Write a space
+  MOV  DX,BX                ;Write the
+  CALL WriteZPause          ;  Description String
+  CALL WriteCrLf            ;Write a New Line
+V50:                        ;Done with this entry
+  INC  AL                   ;Increment ErrorLevel
+  JNZ  V10                  ;If not rolled over yet, keep looking
+V90:                        ;Done
+  MOV  DX,NoMsg             ;Don't write anything
+  XOR  AL,AL                ;ErrorLevel = 0
+  JMP  Exit                 ;Quit
+
+;------------------------------------------------------------------------------
+;PRINT THE COMMAND LINE ALIASES AND QUIT
+;Inputs:  DS = ES = Local Data Area
+;         [DI] = ProgFlags
+;         [SI] = Command Line Pointer
+;Outputs: Writes Aliases to the Screen
+;Changes: Quits Program
+;------------------------------------------------------------------------------
+DoSwitchO:
+  CALL IsSpaceOrEOX   ;Anything after this on the Command Line?
+  JZ  >A00            ;If not, continue
+  MOV  ParseError,Yes ;If so, Error
+  RET
+
+A00:
+  CALL WriteCrLf          ;Move down
+  MOV  DX,AliasHdrMsg     ;Set up
+  CALL SetupPause         ;  the Header
+  MOV  SI,SwitchList      ;Point at Tbl of Aliases
+  MOV  BX,'?'+('Z' SHL 8) ;BL = Min Value, BH = Max Value to look for
+  CALL DoAliasesGoNoNum   ;Write the Aliases
+  MOV  BX,1+(31 SHL 8)    ;BL = Min Value, BH = Max Value to look for
+  CALL DoAliasesGoNoNum   ;Write the Aliases
+A90:                      ;Done
+  MOV  DX,NoMsg           ;Don't write anything
+  XOR  AL,AL              ;ErrorLevel = 0
+  JMP  Exit               ;Quit
+
+;------------------------------------------------------------------------------
+;USE PCI, PNP, OR USB DATA
+;Inputs:   DS = ES = Local Data Area
+;         [DI] = ProgFlags
+;         [SI] = Command Line Pointer
+;Outputs: Sets Appropriate Flags
+;Changes: Quits Program
+;------------------------------------------------------------------------------
+DoSwitchPCI:
+  PUSH AX             ;Save used registers
+  MOV  AL,UsePCI      ;AL = Flag to set
+  JMP >P00            ;Do it
+DoSwitchPNP:
+  PUSH AX             ;Save used registers
+  MOV  AL,UsePNP      ;AL = Flag to set
+  JMP >P00            ;Do it
+DoSwitchUSB:
+  PUSH AX             ;Save used registers
+  MOV  AL,UseUSB      ;AL = Flag to set
+;  JMP >P00            ;Do it
+P00:
+  CALL IsSpaceOrEOL   ;Anything after this on the command line?
+  JZ  >P70            ;If not, error
+  TEST B [DI],(UsePCI+UsePNP+UseUSB) ;Already received a Switch?
+  JZ  >P90            ;If not, we're OK
+  TEST B [DI],UsePNP  ;Previous switch a PNP?
+  JZ  >P70            ;If not, error
+  SUB  SI,3           ;If so, point back at the 'PNP'
+  JMP >P95            ;Done
+P70:                  ;Error
+  MOV  ParseError,Yes ;Mark as an Error
+P90:                  ;Done
+  OR   [DI],AL        ;Set the appropriate flag
+P95:                  ;Done
+  POP  AX             ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;COMAND-LINE SWITCHES WHICH NEED A PCI OR USB "PREFIX"
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;SHOW DATA SOURCE DETAILS
+;Inputs:   DS = ES = Local Data Area
+;         [DI] = ProgFlags
+;         [SI] = Command Line Pointer
+;Outputs: Writes Data Source Details to the Screen
+;Changes: Quits Program
+;------------------------------------------------------------------------------
+DoSwitchS:
+  TEST B [DI],(UsePCI+UseUSB+UsePNP) ;Did we get a PCI, PNP, or USB Option?
+  JZ  >S070            ;If not, Error
+  CALL GetCallBackAddr ;If so, see if there's a call-back address
+  JNC >S00             ;If so, continue
+  DEC  SI              ;Point back at first character ot Call-Back
+S070:                  ;Error
+  INC  SI,2            ;Increment Pointer for proper error handling
+  MOV  ParseError,Yes  ;Mark As Error
+  RET
+
+S00:
+  CALL OpenDataFile      ;Open the Data File (Rtns [SI], Quits if Error)
+  CMP  ParentIsShell,Yes ;Are we at the command line?
+  JNE >S05               ;If not, don't write the Header
+  CALL WritePCIPNPOrUSB  ;Write
+  MOV  DX,DataSourcesMsg ;  the
+  CALL WriteItDX         ;  Header
+S05:                     ;Header Written, if appropriate
+  XOR  CX,CX             ;CX = Source Line Counter
+S10:                     ;Loop to here for each Line of Data
+  MOV  BP,SI             ;Save Data Pointer
+  CALL TestValidLine     ;Test Line for Validity (Quits if Error)
+                         ;  This may Terminate the Program!
+  CALL IsSpaceOrEOX      ;Skip over spaces
+  JZ  >S50               ;If EOL, done with this line
+  CMP  AL,';'            ;Comment?
+  JE  >S50               ;If so, done with this line
+  DEC  SI                ;If not, point back at the first character
+  MOV  BX,SwitchListFile ;See if it's
+  CALL GetCode           ;  a Source Line
+  JC  >S50               ;If not, skip it
+  OR   CX,CX             ;Is this the first one?
+  JZ  >S20               ;If so, continue
+  CALL WriteCrLf         ;If not, move down
+S20:                     ;New line handled, if appropriate
+  INC  CX                ;Increment Counter
+  CALL SkipColonEquals   ;Skip over the Colon/Equals (if there)
+  CALL Write2Spaces      ;Move over
+  CALL WriteSI2Semi      ;Write the Source String
+S50:                     ;Done with this Line
+  MOV  SI,BP             ;Get the next Line
+  CALL GetNextLine       ;  of Data
+  JNC  S10               ;If not EOF, keep going
+  MOV  DX,NoMsg          ;Assume we had some Source Lines
+  OR   CX,CX             ;Were there any Source Lines in the Data File?
+  JNZ >S90               ;If so, we're done
+  MOV  DX,NoSourcesMsg   ;If not, write appropriate message
+S90:                     ;Done
+  XOR  AL,AL             ;AL = ErrorLevel = 0
+  JMP  Exit              ;Quit Program
+
+;------------------------------------------------------------------------------
+;WRITE ALL VENDORS TO THE SCREEN AND QUIT
+;Inputs:   DS = ES = Local Data Area
+;         [DI] = ProgFlags
+;         [SI] = Command Line Pointer
+;Outputs: Writes All Vendors to the Screen
+;Changes: Quits Program
+;------------------------------------------------------------------------------
+DoSwitchA:
+  TEST B [DI],(UsePCI+UseUSB+UsePNP) ;Did we get a PCI, PNP, or USB Option?
+  JZ  >A070            ;If not, Error
+  CALL GetCallBackAddr ;If so, see if there's a call-back address
+  JNC >A00             ;If so, continue
+  INC  SI              ;Set pointer for proper error handling
+A070:                  ;Error
+  MOV  ParseError,Yes  ;Mark As Error
+  RET
+
+A00:
+  CALL OpenDataFile       ;Open the Data File (Rtns [SI], Quits if Error)
+  CMP  ParentIsShell,Yes  ;Are we at the command line?
+  JNE >A05                ;If not, don't write the Header
+  MOV  DX,HeaderMsg1      ;Write
+  CALL WriteItDX          ;  the
+  CALL WritePCIPNPOrUSB   ;  appropriate
+  MOV  DX,HeaderMsg2      ;  Table
+  CALL WriteItDX          ;  Header
+A05:                      ;Header Written, if appropriate
+  XOR  CX,CX              ;CX = Source Line Counter
+  MOV  DX,VendorNameBuff  ;[DX] = Vendor Name Buffer
+A10:                      ;Loop to here for each Line of Data
+  MOV  BP,SI              ;Save Data Pointer
+  CALL TestValidLine      ;Test Line for Validity (Quits if Error)
+                          ;  This may Terminate the Program!
+  MOV  BX,GetNumber       ;Assume not PNP
+  TEST B [DI],UsePNP      ;Is it PNP?
+  JZ  >A15                ;If not, continue
+  MOV  BX,GetPNPNumber    ;If so, get PNP code
+A15:                      ;[BX] = Code to Call
+  CALL BX                 ;Call the code (returns CF, AX)
+  JC  >A50                ;If not a data line, skip it
+  CALL IsSpaceOrEOL       ;Skip over Spaces
+A20:                      ;Legitimate Vendor Name
+  OR   CX,CX              ;Is this the first one?
+  JZ  >A25                ;If so, don't start a new line
+  CALL WriteCrLf          ;Start a New Line
+A25:                      ;New line handled, if necessary
+  INC  CX                 ;Increment Counter
+  CALL FillVendorNameBuff ;Populate the Vendor Name Buffer
+  TEST B [DI],UsePNP      ;Is it PNP?
+  JNZ >A35                ;If so, jump to handle it
+A30:                      ;Not PNP
+  CALL WriteWordHex       ;Write the Vendor ID
+  CALL Write2Spaces       ;Move over
+  JMP >A40                ;Continue
+A35:                      ;Is PNP
+  CALL WritePNPNum        ;Write the PNP ID
+  CALL Write4Spaces       ;Move over
+A40:                      ;Done writing Number or Acronym
+  CALL WriteItDX          ;Write the Vendor Name
+A50:                      ;Done with this Line
+  MOV  SI,BP              ;Get the next Line
+  CALL GetNextLine        ;  of Data
+  JNC  A10                ;If not EOF, keep going
+A80:                      ;Write Footer
+  MOV  DX,NoMsg           ;Assume not at command line
+  CMP  ParentIsShell,Yes  ;Are we at the Command Line?
+  JNE >A90                ;If not, we're done
+  CALL WriteCrLf2         ;If so, move donw
+  MOV  AX,CX              ;Write the
+  CALL WordToString       ;  Number of Records
+  MOV  DX,TotalMsg        ;Write the Total Message
+A90:                      ;Done with no errors
+  XOR  AL,AL              ;AL = ErrorLevel = 0
+A95:                      ;Done
+  JMP  Exit               ;Quit Program
+
+
+;------------------------------------------------------------------------------
+;WRITE THE VENDOR NAME ASSOCIATED WITH A SPECIFIC VENDOR ID AND QUIT
+;Inputs:   DS = ES = Local Data Area
+;          AX  = Number from Command Line (if PNP, is Encoded Vendor ID)
+;         [SI] = Command Line Pointer
+;Outputs: Searches for and Writes A Specific Vendor ID to the Screen
+;Changes: Quits Program
+;------------------------------------------------------------------------------
+DoSwitchDoPNP:
+  MOV  BL,UsePNP          ;AL = Test Flag
+  JMP >N000               ;Do it
+DoSwitchNumber:
+  MOV  BL,(UsePCI+UseUSB) ;AL = Test Flag
+;  JMP >N000               ;Do it
+N000:
+  TEST ProgFlags,BL       ;Did we get a correct Option?
+  JZ  >N070               ;If not, Error
+  CALL GetCallBackAddr    ;If so, see if there's a call-back address
+  JNC >N00                ;If so, continue
+  INC  SI                 ;Increment Pointer for proper error handling
+N070:                     ;Error
+  MOV  ParseError,Yes     ;Mark As Error
+  RET
+
+N00:
+  CALL OpenDataFile       ;Open the Data File (Rtns [SI], Quits if Error)
+  CMP  ParentIsShell,Yes  ;Are we at the command line?
+  JNE >N20                ;If not, don't write the Header
+  MOV  CX,WriteWordHex    ;Assume PCI or USB
+  TEST ProgFlags,UsePNP   ;Is it PCI or USB?
+  JZ  >N10                ;If so, continue
+  MOV  CX,WritePNPNum     ;It's PNP
+N10:                      ;CX = Code to call
+  CALL CX                 ;Write the Vendor ID
+  CALL WriteSpace         ;Write
+  CALL WriteEquals        ;  an
+  CALL WriteSpace         ;  equals
+N20:                      ;Header Written, if appropriate
+  MOV  CX,GetNumber       ;Assume PCI or USB
+  TEST ProgFlags,UsePNP   ;Is it PCI or USB?
+  JZ  >N30                ;If so, continue
+  MOV  CX,GetPNPNumber    ;If not, it's PNP
+N30:                      ;CX = Code to call
+  MOV  BX,AX              ;Save the Vendor ID in BX
+N40:                      ;Loop to here for each Line of Data
+  MOV  BP,SI              ;Save Data Pointer
+  CALL TestValidLine      ;Test Line for Validity (Quits if Error)
+                          ;  This may Terminate the Program!
+  CALL CX                 ;Get the Number
+  JC  >N50                ;If none, it's not a Data Line
+  CMP  AX,BX              ;Is it the one we're looking for?
+  JNE >N50                ;If not, skip this line
+  CALL IsSpaceOrEOL       ;If so, skip Spaces
+  CALL FillVendorNameBuff ;Populate the Vendor Name Buffer
+  MOV  DX,VendorNameBuff  ;Point at the Vendor Name Buffer
+  JMP >N90                ;Done
+N50:                      ;Done with this Line
+  MOV  SI,BP              ;Get the next Line
+  CALL GetNextLine        ;  of Data
+  JNC  N40                ;If not EOF, keep going
+N40:                      ;No match found
+  MOV  DX,UnrecognizedMsg ;Write the
+N90:                      ;Done with no errors
+  XOR  AL,AL              ;AL = ErrorLevel = 0
+  JMP  Exit               ;Quit Program
+
+;------------------------------------------------------------------------------
+;SEARCH THROUGH THE VENDOR DATA FOR A STRING MATCH, AND WRITE THE VENDOR NAMES
+;Inputs:   DS = ES = Local Data Area
+;          AL  = Quote Character (Single Quote or Double Quote)
+;         [SI] = Command Line Pointer
+;Outputs: Searches for and Writes all matching Vendor IDs and Names
+;Changes: Quits Program
+;------------------------------------------------------------------------------
+DoSwitchString:
+  TEST ProgFlags,(UsePCI+UseUSB+UsePNP) ;Did we get a PCI, PNP, or USB Option?
+  JZ  >G070            ;If not, Error
+  CALL ConvertString   ;Get the String (Fills TestString)
+  JC  >G070            ;If invalid String, Error
+  CALL GetCallBackAddr ;If so, see if there's a call-back address
+  JNC >G00             ;If so, continue
+  INC  SI              ;Increment Pointer for proper error handling
+G070:                  ;Error
+  MOV  ParseError,Yes  ;Mark As Error
+  RET
+
+G00:
+  CALL OpenDataFile       ;Open the Data File (Rtns [SI], Quits if Error)
+  CMP  ParentIsShell,Yes  ;Are we at the command line?
+  JNE >G05                ;If not, don't write the Header
+  MOV  DX,HeaderMsg1      ;Write
+  CALL WriteItDX          ;  the
+  CALL WritePCIPNPOrUSB   ;  appropriate
+  MOV  DX,HeaderMsg2      ;  Table
+  CALL WriteItDX          ;  Header
+G05:                      ;Header Written, if appropriate
+  XOR  CX,CX              ;CX = Line Counter
+  MOV  DX,VendorNameBuff  ;[DX] = Vendor Name Buffer
+G10:                      ;Loop to here for each Line of Data
+  MOV  BP,SI              ;Save Data Pointer
+  CALL TestValidLine      ;Test Line for Validity (Quits if Error)
+                          ;  This may Terminate the Program!
+  MOV  BX,GetNumber       ;Assume not PNP
+  TEST ProgFlags,UsePNP   ;Is it PNP?
+  JZ  >G15                ;If not, continue
+  MOV  BX,GetPNPNumber    ;If so, get PNP code
+G15:                      ;[BX] = Code to Call
+  CALL BX                 ;Call the code (returns CF, AX)
+  JC  >G50                ;If not a data line, skip it
+  CALL IsSpaceOrEOL       ;Skip over Spaces
+  CALL FillVendorNameBuff ;Populate the Vendor Name Buffer
+  CALL TestStrMatch       ;Is it a match?
+  JC  >G50                ;If not, skip it
+G20:                      ;Matching String
+  OR   CX,CX              ;Is this the first one?
+  JZ  >G25                ;If so, don't start a new line
+  CALL WriteCrLf          ;Start a New Line
+G25:                      ;New line handled, if necessary
+  INC  CX                 ;Increment Counter
+  TEST ProgFlags,UsePNP   ;Is it PNP?
+  JNZ >G40                ;If so, jump to handle it
+G35:                      ;Not PNP
+  CALL WriteWordHex       ;Write the Vendor ID
+  CALL Write2Spaces       ;Move over
+  JMP >G45                ;Done
+G40:                      ;Is PNP
+  CALL WritePNPNum        ;Write the PNP ID
+  CALL Write4Spaces       ;Move over
+G45:                      ;Done writing Number or Acronym
+  CALL WriteItDX          ;Write the Vendor Name
+G50:                      ;Done with this Line
+  MOV  SI,BP              ;Get the next Line
+  CALL GetNextLine        ;  of Data
+  JNC  G10                ;If not EOF, keep going
+G60:                      ;Done searching
+  MOV  DX,NoMsg           ;Assume at least one match
+  OR   CX,CX              ;Was there at least one match?
+  JNZ >G90                ;If so, we're done
+  MOV  CL,7               ;If not,
+  CALL WriteSpaces        ;  move over
+  MOV  DX,UnrecognizedMsg ;Point at Error Message
+G90:                      ;Done with no errors
+  XOR  AL,AL              ;AL = ErrorLevel = 0
+  JMP  Exit               ;Quit Program
+
+;------------------------------------------------------------------------------
+;CONVERT A POSSIBLE PNP ID TO A 16-BIT ENCODED NUMBER
+;Inputs:  [SI] = Command-line pointer
+;Ouputs:  CF = Clear if OK
+;              AX = Encoded ID
+;            = Set if error
+;              AX = Undefined
+;              SI = Unchanged
+;Changes:
+;------------------------------------------------------------------------------
+GetPNPNumber:
+  PUSH BX,CX,DX    ;Save used registers
+  MOV  DX,SI       ;Save original pointer
+  XOR  BX,BX       ;Start value at 0
+  MOV  CX,0305h    ;CH = Loop Counter, CL = Shift Value
+N10:               ;Loop to here for each character
+  SHL  BX,CL       ;Slide it over
+  CALL GetNextChar ;Get the next character
+  CALL TestPNPChar ;Valid character?
+  JC  >N70         ;If not, error
+  SUB  AL,('A'-1)  ;If so, convert to a number 1-27
+  OR   BL,AL       ;Mask it in
+  DEC  CH          ;Decrement Loop Counter
+  JNZ  N10         ;If not 0 yet, keep looking
+  CALL GetNextChar ;If 0, get the character after this one
+  DEC  SI          ;Point back at the character
+  CMP  AL,' '      ;Space?
+  JE  >N80         ;If so, we're done
+  CMP  AL,Tab      ;Tab?
+  JE  >N80         ;If so, we're done
+  OR   AL,AL       ;End of Line?
+  JZ  >N80         ;If so, we're done
+  CMP  AL,CR       ;End of Line?
+  JE  >N80         ;If so, we're done
+  CMP  AL,EOF      ;End of File?
+  JE  >N80         ;If so, we're done
+N70:               ;Error
+  MOV  SI,DX       ;Restore original pointer
+  STC              ;Set return flag
+  JMP >N90         ;Done
+N80:               ;OK
+  MOV  AX,BX       ;Put value in AX for the return
+  CLC              ;Set return flag
+N90:               ;Done
+  POP  DX,CX,BX    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST A POSSIBLE PNP VENDOR ID CHARACTER FOR VALIDITY
+;Inputs:  AL = Possible PNP character
+;Ouputs:  CF = Clear if OK
+;              AL = capiltaized letter
+;            = Set if error
+;              AL = unchanged
+;Changes:
+;------------------------------------------------------------------------------
+TestPNPChar:
+  CMP  AL,'A' ;Valid character?
+  JB  >T70    ;If not, error
+  CMP  AL,'Z' ;Valid character?
+  JBE >T80    ;If so, we're done
+  CMP  AL,'a' ;Valid character?
+  JB  >T70    ;If not, error
+  CMP  AL,'z' ;Valid character?
+  JA  >T70    ;If not, error
+  SUB  AL,('a'-'A') ;If so, capitalize it
+  JMP >T80    ;Done
+T70:          ;Error
+  STC         ;Set return flag
+  JMP  >T90   ;Done
+T80:          ;OK
+  CLC         ;Set return flag
+T90:          ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE PNP ENCODED NUMBER AS A PNP ID
+;Inputs:  AX = Encoded PNP Number to write
+;Ouputs:  To screen
+;Changes:
+;------------------------------------------------------------------------------
+WritePNPNum:
+  PUSH AX,BX,CX     ;Save used registers
+  MOV  BX,AX        ;Store number in BX
+  MOV  CL,6         ;Rotate by 6 bits
+  CALL WritePNPChar ;Write the character
+  DEC  CL           ;Rotate by 5 bits
+  CALL WritePNPChar ;Write the character
+  CALL WritePNPChar ;Write the character
+  POP  CX,BX,AX    ;Restore used registers
+  RET
+
+WritePNPChar:
+  ROL  BX,CL      ;Rotate bits
+  MOV  AL,BL      ;  to correct place
+  AND  AL,1Fh     ;Mask out unwanted bits
+  ADD  AL,('A'-1) ;Convert to ASCII
+  CALL WriteAL    ;Write it
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;SUPPORT ROUTINES FOR PROCESSING SPECIFIC COMMAND-LINE SWITCHES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ
+;Support Code Needed to Write Command-Line Aliases
+;ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ
+
+;------------------------------------------------------------------------------
+;WRITE THE LIST OF SWITCH CHARACTERS TO THE SCREEN
+;Inputs:  DS = Local Data Area
+;         ES = TSR Data Area
+;         BL = Minimum Value to look for in the Table
+;         DH = Maximum Value to look for in the Table
+;         SI = Switch List ("Code Word") Table
+;Outputs: Writes List of Switch Characters to the Screen
+;Changes:
+;NOTES:   Sets CH =  0 if we write Blocks for Switches < " "
+;                 = -1 if we write numbers for the all Switches (0-255)
+;                 = -2 if we subtract 128 from the numbers (128-255)
+;------------------------------------------------------------------------------
+;DoAliasesGoNum80h:
+;  PUSH CX               ;Save used registers
+;  MOV  CH,2             ;Mark as writing Numbers, needing to subtract 128
+;  JMP >G00              ;Continue
+;DoAliasesGoNum:
+;  PUSH CX               ;Save used registers
+;  MOV  CH,1             ;Mark as writing Numbers, not needing to modify
+;  JMP >G00              ;Continue
+DoAliasesGoNoNum:
+  PUSH CX               ;Save used registers
+  XOR  CH,CH            ;Mark as not writing Numbers
+;  JMP >G00              ;Continue
+G00:
+  PUSH AX,DI            ;Save used registers
+  MOV  DI,AliasSortTbl  ;Point at the Alias Sort Table
+  MOV  AL,BL            ;Start with the Lower Limit
+G10:                    ;Loop to here for each Alias
+  CALL GetAliasPointers ;Get the Alias Pointers
+  JZ  >G60              ;If none for this entry, go to the next one
+G20:                    ;Have at least one valid Alias
+  CALL WriteCrLf        ;If valid, move down
+  OR   CH,CH            ;Writing Single characters?
+  JNZ >G40              ;If not, handle full numbers
+  MOV  CL,78            ;Write this many characters per line
+  CMP  AL,' '           ;Is there a valid single-character equivalent?
+  JB  >G30              ;If not, don't write it
+  CALL WriteAL          ;If so, write it
+  JMP >G50              ;Continue
+G30:                    ;Not a writable character
+  CALL WriteBlock       ;Write a Block Character
+  JMP >G50              ;Continue
+G40:                    ;Need to write Numbers
+  MOV  CL,76            ;Write this many characters per line
+  PUSH AX               ;Save the number for a second
+  CMP  CH,2             ;Do we need to modify the Number?
+  JNE >G45              ;If not, continue
+  AND  AL,(NOT 80h)     ;Subtract 128 from it
+G45:                    ;Write the Number
+  CALL ByteToString     ;Write the Switch as a Number
+  POP  AX               ;Restore the Number
+G50:                    ;Done writing single character
+  CALL WriteAliases     ;Write the Alias List
+G60:                    ;Done with this Code
+  CMP  AL,BH            ;Have we done the whole list yet?
+  JE  >G90              ;If so, we're done
+  INC  AL               ;If not, go to the next possibility
+  JMP  G10              ;Keep going until we're done
+G90:                    ;Done
+  POP  DI,AX            ;Restore used registers
+  POP  CX               ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET STRING POINTERS FOR ALL ALIASES FOR A SINGLE CHARACTER OPTION
+;Inputs:   DS  = Local Data Area
+;          ES  = TSR Data Area
+;          AL  = Switch Table entry to look for (not 0)
+;         [SI] = Switch Table to look through, sorted backwards
+;         [DI] = Alias Sort Table
+;Outputs:  ZF = Clear if OK
+;               [DI] = Filled with String Pointers, sorted backwards
+;                      Last Entry is always a 0
+;             = Set if no matches found
+;                      First Entry is 0
+;Changes:
+;------------------------------------------------------------------------------
+GetAliasPointers:
+  PUSH AX,BX,CX,DX      ;Save used registers
+  PUSH DI,SI            ;Save used registers
+  MOV  CX,DI            ;Sve original pointer
+P10:                    ;Loop to here for each Table Entry
+  MOV  DX,SI            ;Save beginning Alias Pointer
+P20:                    ;Loop to here to find the end of an Alias List Entry
+  CMP  B [SI],0         ;End of Alias List?
+  JE  >P30              ;If so, handle it
+  CALL SkipOverStringSI ;If not, skip over the string
+  JMP  P20              ;Keep looking
+P30:                    ;End of Alias List Entry
+  MOV  BX,SI            ;Save End-of-Entry Pointer
+  CMP  AL,[SI+1]        ;Is this entry a match?
+  JNE >P50              ;If not, go to the next one
+  MOV  SI,DX            ;Point at Alias String
+P40:                    ;Loop to here for each Alias String
+  CMP  B [SI],0         ;End of the entry?
+  JE  >P50              ;If so, we're done
+  MOV  [DI],SI          ;If not, store it in the sort table
+  INC  DI,2             ;Update the Table Pointer
+  CALL SkipOverStringSI ;Skip over the string
+  JMP  P40              ;Keep going until we have all of the strings
+P50:                    ;Done with this entry
+  MOV  SI,BX            ;Get End-of-Entry Pointer
+  INC  SI,2             ;Skip over End-of-Entry stuff
+  CMP  B [SI],0         ;End of Table?
+  JNE  P10              ;If not, keep looking
+P90:                    ;Done
+  MOV  W [DI],0         ;Make sure last entry is a 0
+  CMP  CX,DI            ;Set return flag
+  POP  SI,DI            ;Restore used registers
+  POP  DX,CX,BX,AX      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE ALL ALIAS STRINGS FOR A SINGLE CHARACTER OPTION
+;Inputs:   DS  = Local Data Area
+;          ES  = TSR Data Area
+;         [DI] = Alias String Pointer Table (Sorted backwards)
+;                  Last Entry is a 0
+;          CL  = Number of characters left available to write on first line
+;                 (76 if Writing Numbers, 78 if Writing Characters)
+;         CLD already issued
+;Outputs:
+;Changes:
+;------------------------------------------------------------------------------
+WriteAliases:
+  PUSH AX,BX,CX,DX    ;Save used registers
+  PUSH DI,SI,ES       ;Save used registers
+  MOV  ES,DS          ;Point ES at the Local Data Area
+  MOV  BL,CL          ;BL = Character Countdown Measurer
+  MOV  BH,CL          ;BH = Original Counter
+  MOV  DX,DI          ;Save start-of-table Pointer
+  MOV  CX,-1          ;Maximize counter
+  XOR  AX,AX          ;Find the last
+  REPNE SCASW         ;  entry in
+  SUB  DI,4           ;  the Table
+W10:                  ;Loop to here for each Alias String
+  CMP  DI,DX          ;Are we done writing?
+  JB  >W90            ;If so, quit
+  MOV  SI,[DI]        ;Get the next string
+  DEC  DI,2           ;Update the table pointer
+  CALL CalcStrSizeSI  ;See how long the string is
+  OR   BL,BL          ;Is the character counter down to 0?
+  JZ  >W20            ;If so, we need to reset it
+  CMP  CL,BL          ;Is this string too long to fit on this line?
+  JB  >W40            ;If not, go ahead and write it
+W20:                  ;Need to start a new line
+  CALL WriteCrLf      ;Start a new line
+  PUSH CX             ;Save String Size for a second
+  MOV  CL,79          ;Calculate how many
+  SUB  CL,BH          ;  spaces to write
+  CALL WriteSpaces    ;Write the spaces
+  POP  CX             ;Restore String Size
+  MOV  BL,BH          ;Reset the character counter
+W40:                  ;Write the Alias String
+  SUB  BL,CL          ;Update the
+  DEC  BL             ;  character counter
+  CALL WriteSpace     ;Write a Space
+  CALL WriteZPauseSI  ;Write the string
+  JMP  W10            ;Keep writing
+W90:                  ;Done
+  CALL WriteCrLf      ;Move down
+  POP  ES,SI,DI       ;Restore used registers
+  POP  DX,CX,BX,AX    ;Restore used registers
+  RET
+
+
+;ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ
+;Support Code Needed to Write Data Source Details
+;ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ
+
+;------------------------------------------------------------------------------
+;WRITE A STRING UP TO THE SEMICOLON
+;Inputs:  CS = DS = Local Data Area
+;         [SI] = ASCIIZ String to write
+;         CLD already issued
+;Outputs: Writes the String up to the Semicolon (if there is one)
+;Changes:
+;------------------------------------------------------------------------------
+WriteSI2Semi:
+  PUSH AX,BX,SI     ;Save used registers
+C10:                ;Loop to here for each character we write
+  CALL GetNextChar  ;Get the next character
+  OR   AL,AL        ;End of String?
+  JZ  >C90          ;If so, we're done
+  CMP  AL,';'       ;Is it a semicolon?
+  JE  >C40          ;If so, handle it
+  CMP  AL,' '       ;Is it a Space?
+  JNE >C50          ;If not, jump to write it
+C20:                ;Next character is a Space - test for EOL
+  MOV  BX,SI        ;Save Pointer
+  CALL IsSpaceOrEOL ;Look for the next non-space character
+  JZ  >C90          ;If EOL, we're done
+  XCHG BX,SI        ;Restore original Pointer, [BX] = Test Pointer
+  CMP  B [BX],';'   ;Is the next non-space character a Semicolon?
+  JNE >C50          ;If not, just write the space
+  CMP  B [BX+1],';' ;Is the character after that one a Semicolon also?
+  JNE >C90          ;If not, we're done
+  JMP >C50          ;If so, jump to write the character
+C40:                ;Semicolon (possible comment)
+  CMP  B [SI],';'   ;Next character also a Semicolon?
+  JNE >C90          ;If not, it's a comment - we're done
+  INC  SI           ;Skip over the second Semicolon
+C50:                ;Legitimate Character
+  CALL WriteAL      ;Write the character
+  JMP  C10          ;Keep going until we're done
+C90:                ;Done
+  POP  SI,BX,AX     ;Restore used registers
+  RET
+
+
+;ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ
+;Support Code Needed to Find Matching Substrings in Vendor Names
+;ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ
+
+;------------------------------------------------------------------------------
+;GET AND MODIFY THE SEARCH STRING FROM THE COMMAND LINE
+;Inputs:  [SI] = Start of String (Command Line)
+;          AL  = Quote character to match (Single or Double Quote)
+;          CLD already issued
+;Outputs: CF = Clear if OK (found a matching quote character)
+;              TestString = ASCII String, Capitalized
+;              [SI] = Character after the String
+;            = Set if Error (no matching quote character found)
+;              [SI] = End of String, or end of Command Line
+;Changes:
+;------------------------------------------------------------------------------
+ConvertString:
+  PUSH AX,CX,DI        ;Save used registers
+  MOV  AH,AL           ;Save original Quote character
+  MOV  CX,MaxStrLength ;CX = Maximum number of characters allowed
+  MOV  DI,TestString   ;ES:[DI] = Where to store the String
+G10:                   ;Loop to here to find the end of the string
+  CALL GetNextChar     ;Get the next character
+  OR   AL,AL           ;Is it EOL?
+  JZ  >G70             ;If so, error
+  CMP  AL,AH           ;Is it the end-of-string?
+  JNE >G20             ;If not, store it
+  CALL GetNextChar     ;If so, get the character after it
+  CMP  AL,AH           ;Is it the same quote character again?
+  JNE >G80             ;If not, it's the end of the string
+G20:                   ;Legitimate character
+  CALL Capitalize      ;Capitalize it
+  STOSB                ;Store it
+  LOOP G10             ;Keep going until we're done
+G30:                   ;If here, Test String was 40 characters!
+  CALL GetNextChar     ;Get the character after the last one (should be quote!)
+  CMP  AL,AH           ;Is it the end quote?
+  JE  >G85             ;If so, it's OK
+G70:                   ;Error (no matching quote character found)
+  STC                  ;Set Error Flag
+  JMP >G90             ;Done
+G80:                   ;OK (found a matching quote character)
+  DEC  SI              ;Point back at the character after the Quote
+G85:                   ;OK (found a matching quote character)
+  CLC                  ;Set OK flag
+G90:                   ;Done
+  POP  DI,CX,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST A SUBSTRING AND A STRING FOR A MATCH (CASE-INSENSITIVE)
+;Inputs:  TestString = SubString to look for (Capitalized)
+;         VendorNameBuff = String to search in
+;Outputs: CF = Clear if Substring is found in String
+;              Set if Substring is not found
+;Changes:
+;------------------------------------------------------------------------------
+TestStrMatch:
+  PUSH AX,BX,CX,DX       ;Save used registers
+  PUSH SI,BP             ;Save used registers
+  MOV  DX,TestString     ;Calculate the size
+  CALL CalcStrSizeDX     ;  of the Test String (CX)
+  JZ  >M80               ;If 0 length, it's an automatic match
+  MOV  BP,DX             ;If not, save the SearchString Pointer
+  SUB  CX,MaxStrLength   ;Calcualte
+  NEG  CX                ;  how many times
+  INC  CX,2              ;  to do the test
+  MOV  SI,(VendorNameBuff+MaxStrLength-1) ;[SI] = Last Character of String
+  STD                    ;Go backwards
+M05:                     ;Loop to here for each trailing Space
+  DEC  CX                ;Do one less test
+  JZ  >M70               ;If Length of Test String is too big, No Match
+  LODSB                  ;Get the next character
+  CMP  AL,' '            ;Is it a space?
+  JE   M05               ;If so, keep looking
+  CLD                    ;Restore Direction Flag
+  MOV  DX,VendorNameBuff ;[DX] = String to search in
+M10:                     ;Loop to here for each possible SubString
+  MOV  SI,DX             ;Set starting point of SubString
+  MOV  BX,BP             ;Point at beginning of SearchString
+M30:                     ;Loop to here for each character
+  CALL GetNextChar       ;Get the next character from the SubString
+  CALL Capitalize        ;Capitalize it
+  CMP  AL,[BX]           ;Does the character match the SearchString?
+  JNE >M50               ;If not, go to the next SubString
+  INC  BX                ;Point at the next SearchString character
+  CMP  B [BX],0          ;End of the SearchString?
+  JE  >M80               ;If so, it's a match
+  JMP  M30               ;If not, keep looking
+M50:                     ;No match in this Substring
+  INC  DX                ;Point at the next possible substring
+  LOOP M10               ;Keep going until we're done
+M70:                     ;Error (no match)
+  STC                    ;Set return flag
+  JMP >M90               ;Done
+M80:                     ;It's a match
+  CLC                    ;Set return flag
+M90:                     ;Done
+  CLD                    ;Restore Direction Flag
+  POP  BP,SI             ;Restore used registers
+  POP  DX,CX,BX,AX       ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;SUPPORT ROUTINES FOR PROCESSING GENERAL COMMAND-LINE SWITCHES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;TEST A LINE FROM THE DATA FILE FOR VALIDITY
+;Inputs:  DS = ES = Local Data Area
+;         [SI] = Beginning of Line from Data File to test
+;Outputs: If Line is OK, this simply returns to the caller
+;         If Error, quits program with appropriate Error Message
+;Changes:
+;------------------------------------------------------------------------------
+TestValidLine:
+  PUSH AX,BX,SI          ;Save used registers
+  CALL ConvertEOFToZero  ;Change EOF to 0, if appropriate
+  CALL IsSpaceOrEOL      ;Skip Spaces
+  JZ  >V90               ;If EOL, it's OK
+  CMP  B [SI],';'        ;Comment Line?
+  JE  >V90               ;If so, it's OK
+  MOV  BX,SwitchListFile ;Another valid type
+  CALL GetCode           ;  of Line?
+  JC  >V20               ;If not, try other possibilities
+V10:                     ;Is a Data Source Line
+  CALL SkipColonEquals   ;Skip the Colon/Equals (if there)
+  CALL IsSpaceOrEOX      ;Get the next character
+  JZ  >V70               ;If EOL, error
+  CMP  AL,';'            ;Possible Comment?
+  JNE >V90               ;If not, it's OK
+  CMP  B [SI],';'        ;Code for a Semicolon?
+  JE  >V90               ;If so, it's OK
+  JMP >V70               ;If not, Error
+V20:                     ;Not a Comment Line or Remark Line
+  MOV  BX,GetNumber      ;Assume PCI or USB
+  TEST ProgFlags,UsePNP  ;Is it PCI or USB?
+  JZ  >V30               ;If so, continue
+  MOV  BX,GetPNPNumber   ;If not, get the PNP Number
+V30:                     ;BX = Code to call
+  CALL BX                ;Does the line start appropriately?
+  JC  >V70               ;If not, Error
+  CALL IsSpaceOrEOL      ;Skip over spaces
+  JZ  >V70               ;If EOL, Error
+  CMP  B [SI],';'        ;Possible Comment?
+  JNE >V90               ;If not, it's OK
+  CMP  B [SI+1],';'      ;SemiColon in String?
+  JE  >V90               ;If so, it's OK
+V70:                     ;Invalid Line
+  CALL WriteBadFile2     ;Write the Bad File Error Message and Quit
+                         ;  This Terminates the Program!
+V90:                     ;Done (Line is OK)
+  POP  SI,BX,AX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE BAD/INCOMPATIBEL FILE FORMAT ERROR MESSAGE
+;Inputs:  CS = DS = Local Data Area
+;Outputs: Writes Error Message to Screen
+;Changes: Quits Program
+;------------------------------------------------------------------------------
+WriteBadFile2:
+  CALL WriteCrLfErr         ;Move down
+WriteBadFile1:
+  CALL WriteCrLfErr         ;Move down
+WriteBadFile:
+  MOV  DX,DataFileBinaryMsg ;Write the first part
+  CALL WriteZErr            ;  of the Error Message
+  MOV  DX,PathToUse         ;Write the File Name
+  MOV  AL,ErLvlBadDataFile  ;AL = ErrorLevel = Incorrect Data File Format
+  JMP  Exit                 ;Done
+
+;------------------------------------------------------------------------------
+;REPLACE THE CARRIAGE RETURN AT THE END OF THE CMD LINE TAIL WITH A 0
+;Inputs:  CS = DS = PSP Segment
+;Outputs:
+;Changes: Last Byte of Command Tail
+;------------------------------------------------------------------------------
+FixCmdLineCR:
+  PUSH AX,CX,DI,ES   ;Save used registers
+  MOV  AL,CR         ;Look for a CR
+  MOV  CX,7Fh        ;Maximize Byte Counter
+  MOV  ES,DS         ;Point ES:[DI]
+  MOV  DI,81h        ;  at the Command Line Tail
+  REPNE SCASB        ;Look for the CR
+  MOV  B ES:[DI-1],0 ;Replace the CR with a 0
+  POP  ES,DI,CX,AX   ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE NEXT CHARACTER FROM THE ENVIRONMENT OR COMMAND LINE
+;Inputs:  [SI] = Pointer (Command Line, Environment, or File Data Pointer)
+;Outputs: AL = The next character
+;         ZF = Set if End-Of-Line (Character = ASCII 0)
+;            = Clear if "real" character
+;Changes: SI
+;------------------------------------------------------------------------------
+GetNextChar:
+  PUSH DS                    ;Save used registers
+  TEST ProgFlags,ReadingFile ;Currently Reading a File?
+  JNZ >N90                   ;If so, don't change
+  CMP  CmdLineVarPointer,-1  ;Need to use the CMDLINE Environment variable?
+  JE  >N90                   ;If not, just do the "real" command line
+N10:                         ;Get next character from the Environment
+  MOV  DS,[PSPEnvirSeg]      ;Point at the Environment Segment
+N90:                         ;DS:[SI] points at the next character
+  LODSB                      ;Get the character from the "real" command line
+  OR   AL,AL                 ;Set ZF if EOL
+  POP  DS                    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP OVER SPACES TO FIND THE NEXT LEGITIMATE CHARACTER, TESTING FOR EOL
+;Inputs:  DS:[SI] = Command Line Pointer
+;Outputs: ZF = Set if EOL
+;               AL  = Unchanged
+;              [SI] = End-of-Line Character
+;            = Clear if not EOL
+;               AL  = First non-space character
+;              [SI] = Character AFTER the next non-space character
+;Changes:
+;------------------------------------------------------------------------------
+IsSpaceOrEOX:
+  CALL IsSpaceOrEOL ;Skip over the spaces
+  JZ  >X90          ;If end-of-line, we're done
+  CALL GetNextChar  ;If not, get the next character
+  OR   AL,AL        ;Set return flag
+X90:                ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP OVER SPACES TO FIND LEGITIMATE CHARACTERS, AND TEST FOR EOL
+;Inputs:  DS:[SI] = Command Line Pointer
+;Outputs: ZF = Set if EOL
+;            = Clear if legitimate character
+;              [SI] = The Next non-Space Character
+;Changes:
+;------------------------------------------------------------------------------
+IsSpaceOrEOL:
+  PUSH AX          ;Save used registers
+L10:               ;Loop to here to skip over spaces
+  CALL GetNextChar ;Get the next character
+  CMP  AL,' '      ;Is it a space?
+  JE   L10         ;If so, get the next character
+  CMP  AL,Tab      ;Is it a Tab?
+  JE   L10         ;If so, get the next character
+  DEC  SI          ;If not, point back at the character
+  OR   AL,AL       ;Set EOL flag
+  POP  AX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP OVER A COLON OR EQUALS, IF THERE
+;Inputs:  DS:[SI] = Command Line Pointer
+;Outputs: CF = Clear if Colon or Equals was found (and skipped)
+;              [SI] = First non-Space Character after the Colon/Equals
+;            = Set if No Colon or Equals was found
+;              [SI] = First non-Space Character after where we were looking
+;Changes:
+;------------------------------------------------------------------------------
+SkipColonEquals:
+  PUSH AX           ;Save used registers
+  CALL IsSpaceOrEOX ;Skip over the Spaces
+  JZ  >Q75          ;If End-of-Line, nothing to get
+  CMP  AL,':'       ;Is it a Colon?
+  JE  >Q80          ;If so, we're done
+  CMP  AL,'='       ;Is it an equals?
+  JE  >Q80          ;If so, we're done
+Q70:                ;No Colon/Equals Found
+  DEC  SI           ;Point back at the character
+Q75:                ;[SI] correct
+  STC               ;Set return flag
+  JMP >Q90          ;Done
+Q80:                ;Colon/Equals Found
+  CALL IsSpaceOrEOL ;Go to the next character
+  CLC               ;Set return flag
+Q90:                ;Done
+  POP  AX           ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT A CODE WORD FROM THE COMMAND LINE TO A BYTE FROM THE LOOKUP TABLE
+;Inputs:  [SI] = Command Line Pointer
+;         [BX] = List to Test
+;Outputs: CF = Clear if a match was found
+;              AL = Entry from Table
+;              [SI] = Next character after the Code Match
+;         CF = Set if no match found (error)
+;              AL = Unchanged
+;              SI = Unchanged
+;Changes: SI if valid match found
+;------------------------------------------------------------------------------
+GetCode:
+  PUSH BX,DX         ;Save used registers
+  MOV  DX,AX         ;Save AX in case there's no match
+C10:                 ;Loop to here for each list of words
+  CMP  B [BX],0      ;Are we at the end of our table?
+  JE  >C80           ;If so, we couldn't find a match
+  XOR  AH,AH         ;Assume it's a match
+  PUSH SI            ;Save our command line pointer for a second
+C20:                 ;Loop to here for each character in a word
+  CALL GetNextChar   ;Get the next character
+  CALL Capitalize    ;Capitalize it
+  CALL CmpALBXNoCase ;Is it a match?
+  JZ  >C30           ;If so, handle it
+  INC  AH            ;If not, mark us as no match
+C30:                 ;The character is tested
+  INC  BX            ;Point at the next character in our test word
+  CMP  B [BX],0      ;Are we at the end of the word?
+  JNE  C20           ;If not, keep going until we're done
+  INC  BX            ;Point at the next word or code list
+  OR   AH,AH         ;Was it a match?
+  JZ  >C50           ;If so, jump to handle it
+  POP  SI            ;If not, restore our command line pointer
+  CMP  B [BX],0      ;Is this the end of our word list?
+  JNE  C10           ;If not, just test the next word
+  INC  BX,2          ;If so, skip over the codes
+  JMP  C10           ;Keep going until we're done with our list
+C50:                 ;We've found a match!
+  POP  AX            ;Lose our original command line pointer
+  DEC  BX            ;Point back at the end-of-word marker
+C60:                 ;Loop to here to find the end-of-list
+  MOV  AX,[BX]       ;Get the next two characters in our list
+  INC  BX            ;Point at the next character for next time
+  OR   AX,AX         ;Is this the start of our code list?
+  JNE  C60           ;If not, keep looking
+  INC  BX            ;If so, point at the character we're looking for
+  MOV  DL,[BX]       ;Get the character from the table
+  CLC                ;Mark our OK flag
+  JMP >C90           ;And we're done
+C80:                 ;No match found
+  STC                ;Mark us as no match
+C90:                 ;We're done
+  MOV  AX,DX         ;Set AX to the correct value
+  POP  DX,BX         ;Restore used registers
+  RET
+
+CmpALBXNoCase:
+  PUSH AX         ;Save used registers
+  CALL Capitalize ;Capitalize AL
+  MOV  AH,AL      ;Store it in AH
+  MOV  AL,[BX]    ;Get [BX]
+  CALL Capitalize ;Capitalize it
+  CMP  AL,AH      ;Compare AL & [BX]
+  POP  AX         ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE THE TELL THE USER WHERE THE COMMAND LINE ERROR OCCURRED
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;WRITE THE COMMAND LINE OR ENVIRONMENT ERROR INFORMATION TO THE SCREEN
+;Inputs:  [SI] = Command line Pointer (if Command Line)
+;              = StdIn Buffer Pointer (if StdIn String)
+;              = Environment Pointer (if Environment Variable)
+;         DoEnvir, DoStdIn
+;Outputs:
+;Changes: Writes information to screen
+;------------------------------------------------------------------------------
+WriteCmdErr:
+  PUSH AX,BX,CX,DX        ;Save used registers
+  PUSH DI,SI,BP           ;Save used registers
+  CALL FindBadChar        ;Find the actual bad character in the string (SI)
+  CALL SetupCmdErrStrings ;Set up the String Pointers and Sizes
+                          ;DI:[AX] = Command Line String
+                          ;DS:[BX] = Program name at beginning of String
+                          ;    CX  = Size of BX String
+                          ;DS:[DX] = Header String
+                          ;DS:[BP] = Footer String
+  CALL WriteZErr          ;Write the Header
+  CALL WriteCrLfErr       ;Move down
+;  CALL WriteCrLfErr       ;  down
+  SUB  SI,AX              ;Calculate the number
+  ADD  CX,SI              ;  of spaces
+  DEC  CX                 ;  to write
+  CALL WriteCmdString     ;Write the Command-line String (may modify CX)
+  CALL WriteCrLfErr       ;Move down
+  MOV  B SingleMsg[0],' ' ;Want to write spaces
+  MOV  DX,SingleMsg       ;Point at the string
+E60:                      ;Loop to here to write each space (number in CX)
+  CALL WriteZErr          ;Write the space
+  LOOP E60                ;Keep writing them until we're done
+  MOV  DX,ParseErrMsg     ;Write the Pointer Part
+  CALL WriteZErr          ;  of the Error Message
+  MOV  DX,BP              ;Write the last part
+  CALL WriteZErr          ;  of the message
+  POP  BP,SI,DI           ;Restore used registers
+  POP  DX,CX,BX,AX        ;Restore used registers
+
+  RET
+
+;------------------------------------------------------------------------------
+;GO BACKWARDS IN AN ERRORED OPTION STRING TO INDICATE TO USER WHERE ERROR WAS
+;Inputs:  SI = Option String Pointer (Environment, StdIn, or Command Line)
+;                where error was found
+;Outputs: SI = Options String Pointer, adjusted to point at a "Real" character
+;Changes:
+;------------------------------------------------------------------------------
+FindBadChar:
+  PUSH AX          ;Save used registers
+  DEC  SI          ;Go back 1 character to start
+B10:               ;Loop to here to find a legitimate character
+  CALL GetNextChar ;Get the character
+  JZ  >B40         ;If end-of-line, keep going back
+  CMP  AL,' '      ;Is it a space?
+  JNE >B90         ;If not, we're done
+B40:               ;Need to keep going back
+  SUB  SI,2        ;Go back to the previous character
+  JMP  B10         ;Keep looking
+B90:               ;Done
+  POP  AX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;SET UP THE STRING POINTERS AND SIZES TO BE ABLE TO WRITE THE COMMAND ERROR
+;Inputs:  DS = Local Data Area
+;Outputs: DI:[AX] = Command-line String to write
+;         DS:[DX] = First Error Message (Header) to write
+;         DS:[BX] = Second message to write (first part of Command string)
+;             CX  = Number of Bytes to add to String Size
+;         DS:[BP] = Third message to write (Footer)
+;Changes:
+;------------------------------------------------------------------------------
+SetupCmdErrStrings:
+  MOV  AX,81h               ;DI:[AX] =
+  MOV  DI,DS                ;  Command-line Tail
+  MOV  BX,RealName          ;DS:[BX] = Program Name
+  MOV  CX,RealNameSz        ;CX = Size of [BX] String
+  CMP  CmdLineVarPointer,-1 ;Real Command Line?
+  JE  >S30                  ;If so, continue
+S20:                        ;CMDLINE Environment Variable
+  MOV  DI,[PSPEnvirSeg]     ;DI:[AX] =
+  MOV  AX,CmdLineVarPointer ;  CMDLINE
+  SUB  AX,CmdLineVarSize    ;  Environment Variable
+S30:                        ;Have Command-line parameters set up
+  MOV  DX,ParseCmdMsg       ;DS:[DX] = Header String
+  MOV  BP,ParseErrMsg2      ;DS:[BP] = Footer String
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE CONTENTS OF THE COMMAND STRING, WITH MORE MESSAGES AS NEEDED
+;Inputs:  CS = DS = Local Data Area
+;         DS:[BX] = First String to write (may not be needed!)
+;         DI:[AX] = Second String (main part) to write
+;             CX  = Number of Spaces to write at beginning (if normal)
+;Outputs: CX = Adjusted number of spaces to write
+;Changes:
+;------------------------------------------------------------------------------
+WriteCmdString:
+  PUSH AX,BX,DX,DI,SI      ;Save used registers
+  PUSH BP,DS,ES            ;Save used registers
+  MOV  BP,CX               ;Save the original Space Counter in BP
+  MOV  ES,DI               ;Save the second string Pointer
+  MOV  SI,AX               ;  in ES:[SI]
+  MOV  DX,BX               ;Save the length
+  CALL CalcStrSizeDX       ;  of the first string
+  MOV  DI,CX               ;  in DI
+  MOV  DS,ES               ;Save the length
+  CALL CalcStrSizeSI       ;  of the second string
+  MOV  AX,CX               ;  in AX
+  CMP  BP,70               ;Are there too many spaces to fit on one line?
+  JBE >G20                 ;If not, continue
+G10:                       ;Need to lop off the beginning
+  SUB  BP,DI               ;We will not be
+  XOR  DI,DI               ;  writing the
+  MOV  BX,NoMsg            ;  first string
+  CMP  BP,70               ;Are there still too many spaces to fit?
+  JBE >G20                 ;If not, continue
+  MOV  BX,MoreLeftMsg      ;Point at the More Message
+  ADD  BP,MoreMsgSize      ;Compensate number of spaces for More Message
+  MOV  DI,60               ;We want the number of spaces to be 60
+  SUB  DI,BP               ;Calculate how far into the Second string
+  NEG  DI                  ;  we need to start to accomplish that
+  MOV  BP,59               ;BP = New Number of Spaces
+  ADD  SI,DI               ;  where we need to start writing
+  SUB  AX,DI               ;  of second string
+  MOV  DI,MoreMsgSize      ;DI = Size of new first string (More Message)
+G20:                       ;Beginning of line is accounted for
+  MOV  DS,CS               ;Write the
+  MOV  DX,BX               ;  first
+  CALL WriteZErr           ;  string
+  MOV  DS,ES               ;Point DS:[DX] at the
+  MOV  DX,SI               ;  second string
+  ADD  DI,AX               ;Calculate total length of both strings
+  CMP  DI,79               ;Will it fit on one line?
+  JBE >G40                 ;If so, continue
+  MOV  BX,(80-MoreMsgSize) ;Calculate how many characters
+  SUB  BX,DI               ;  of the second string
+  ADD  BX,AX               ;  we need to write
+  MOV  AL,[SI+BX]          ;Save the old character in the string
+  MOV  B [SI+BX],0         ;Convert it to an end-of-string character
+  CALL WriteZErr           ;Write the truncated string
+  MOV  [SI+BX],AL          ;Restore the original character of the string
+  MOV  DS,CS               ;Write the
+  MOV  DX,MoreRightMsg     ;  More Message
+G40:                       ;Write last message
+  CALL WriteZErr           ;Write it
+G90:                       ;Done
+  MOV  CX,BP               ;Return CX = number of spaces to write
+  POP  ES,DS,BP            ;Restore used registers
+  POP  SI,DI,DX,BX,AX      ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;MISCELLANEOUS COMMAND-LINE RELATED STUFF
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;GET OUR REAL PROGRAM NAME
+;Inputs:
+;Outputs: RealName, RealNameSz
+;Changes:
+;------------------------------------------------------------------------------
+GetRealName:
+  PUSH AX,CX,DI,SI      ;Save used registers
+  PUSH DS,ES            ;Save used registers
+  MOV  DS,[PSPEnvirSeg] ;Point DS and ES
+  MOV  ES,DS            ;  at the environment segment
+  XOR  DI,DI            ;Point at the beginning of Environment variable list
+  MOV  CX,-1            ;Max out the count limiter
+  XOR  AX,AX            ;Need to look for a double 0
+N10:                    ;Loop to here to skip over environment variables
+  REPNE SCASB           ;Look for the end of this environment variable
+  CMP  B [DI],0         ;Is it the end of the variable list (double zero)?
+  JNE  N10              ;If not, keep skipping over environment variables
+  CMP  W [DI+1],0       ;If so, is there at least one string after the env?
+  JE  >N90              ;If not, we're done
+  LEA  SI,[DI+3]        ;If so, point DS:[SI] at the True Name
+  MOV  ES,CS            ;Point ES (for ES:[DI]) at our local data
+N20:                    ;Loop to here to skip over drive/path info
+  MOV  DI,RealName      ;Point at the beginning of our data area
+  XOR  CX,CX            ;Start the length counter at 0
+N30:                    ;Loop to here for each character in the name
+  LODSB                 ;Get the next character of the name
+  CMP  AL,'.'           ;Is it a dot?
+  JE  >N40              ;If so, we may have the name
+  CMP  AL,BackSlash     ;Is it a path separator?
+  JE   N20              ;If so, start looking for the name again
+  CALL Capitalize       ;If part of a name, capitalize the character
+  STOSB                 ;Store it in our data area
+  INC  CX               ;Increment the size counter
+  JMP  N30              ;And keep looking for more characters
+N40:                    ;We may have the name
+  LODSB                 ;Get the next character of the name
+  OR   AL,AL            ;End of the name?
+  JZ  >N50              ;If so, it really was our program name
+  CMP  AL,BackSlash     ;Was it a Directory with a dotted name?
+  JE   N20              ;If so, keep looking for a file name
+  JMP  N40              ;If not, keep looking for the end of the name
+N50:                    ;Have the name
+  XOR  AL,AL            ;Store
+  STOSB                 ;  a 0
+  MOV  CS:RealNameSz,CX ;Store the Size
+N90:                    ;We're done
+  POP  ES,DS            ;Restore used registers
+  POP  SI,DI,CX,AX      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE POINTERS TO THE ENVIRONMENT VARIABLES WE NEED
+;Inputs:  CS = DS = Local Data Area (also PSP Data Area)
+;Outputs: Various Environment Pointers
+;Changes:
+;------------------------------------------------------------------------------
+GetEnvVars:
+  PUSH BX,CX,SI                    ;Save used registers
+  CMP  ParentIsShell,Yes           ;Were we called from the command line?
+  JNE >V90                         ;If not, CMDLINE is for our Parent, not us
+  CMP  B [80h],7Eh                 ;Is command line size maxed out?
+  JB  >V90                         ;If not, don't worry about CMDLINE Env Var
+  MOV  SI,CmdLineVarString         ;Get
+  MOV  BX,OFFSET CmdLineVarPointer ;  the
+  MOV  CX,CmdLineVarSize           ;  CMDLINE
+  CALL GetEnvVarPointer            ;  Pointer
+  CALL AdjustCmdLine               ;Compensate CMDLINE Pointer for Program Name
+V90:                               ;Done
+  POP  SI,CX,BX                    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE POINTER TO AN ENVIRONMENT VARIABLE
+;Inputs:   CS = DS = Local Data Area (also contains PSP)
+;         [BX] = Where to store the Pointer at
+;          CX  = Length of String
+;         [SI] = Environment Variable String to Look for (ends in =)
+;Outputs: ZF = Set if Error (Variable not found)
+;               [BX] = -1
+;             = Clear if OK (variable was found)
+;               [BX] = Pointer to String (in Environment Segment, NOT PSP!!)
+;Changes:
+;------------------------------------------------------------------------------
+GetEnvVarPointer:
+  PUSH AX,CX,SI,BP      ;Save used registers
+  PUSH DS,ES            ;Save used registers
+  MOV  W [BX],-1        ;Default = -1 (does not exist)
+  MOV  ES,[PSPEnvirSeg] ;ES:[DI] =
+  XOR  DI,DI            ;  Environment Variable List
+  MOV  DX,CX            ;Save the Size
+  MOV  BP,SI            ;Save the original Pointer
+  XOR  AL,AL            ;Need to look for 0's
+V10:                    ;Loop to here for each Environment variable
+  MOV  CX,DX            ;CX = Number of bytes to test
+  MOV  SI,BP            ;DS:[SI] = String to Test for
+  REPE CMPSB            ;Is it a match?
+  JZ   >V30             ;If so, continue
+  MOV  CX,-1            ;Max out the count limiter
+  REPNE SCASB           ;Look for the end of this environment variable
+  CMP  B ES:[DI],AL     ;End of Environment?
+  JNE  V10              ;If not, keep looking
+  JMP >V90              ;If so, no variable
+V30:                    ;Found it!
+  MOV  [BX],DI          ;Store the Pointer
+V90:                    ;Done
+  CMP  W [BX],-1        ;Set return flag
+  POP  ES,DS            ;Restore used registers
+  POP  BP,SI,CX,AX      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;ADJUST THE CMDLINE ENVIRONMENT VARIABLE POINT TO POINT AT THE COMMAND TAIL
+;Inputs:  DS = Local Data Area (and PSP Segment)
+;         CmdLineVarPtr (-1 if does not exist)
+;           Unadjusted for Program Path/Name
+;Outputs: CmdLineVarPtr
+;           Adjusted (Program Path/Name skipped over to leave Command Tail)
+;Changes:
+;NOTES: The CMDLINE environment variable, which is only set by SOME
+;         versions of DOS, contains the entire contents of the command
+;         line.  The "entire contents" includes our executable file name
+;         (including the path, if it was provided), but does not include
+;         the redirection and/or piping parameters.
+;       This routine skips over the executable file name part and simply
+;         points at the command tail (the "Options" part of the command line).
+;       The CMDLINE variable is used by some versions of DOS (such as 4DOS/NDOS
+;         and DOS 95) to allow the command-line to be longer than the 126
+;         characters normally allowed by DOS.
+;------------------------------------------------------------------------------
+AdjustCmdLine:
+  PUSH AX,DX,SI,DS             ;Save used registers
+  MOV  SI,CmdLineVarPointer    ;[SI] = CMDLINE environment variable contents
+  CMP  SI,-1                   ;Anything there?
+  JE  >J90                     ;If not, no need for changes
+  MOV  DL,"/"                  ;Assume Get SwitchChar function is unsupported
+  MOV  AX,3700h                ;Function 3700h (Get DOS SwitchChar)
+  INT  21h                     ;Do it (returns DL)
+  MOV  DS,[PSPEnvirSeg]        ;DS:[SI] = CMDLINE contents
+J10:                           ;Loop to here to skip initial spaces & tabs
+  LODSB                        ;Get the next character
+  CMP  AL,' '                  ;Space?
+  JE   J10                     ;If so, keep skipping
+  CMP  AL,Tab                  ;Tab?
+  JE   J10                     ;If so, keep skipping
+J20:                           ;Skipped initial Tabs & Spaces
+  DEC  SI                      ;Point back at the first character
+  XOR  AH,AH                   ;Assume no quotes
+  CMP  AL,Quote2               ;Double Quote (part of LFN Path & File Name)?
+  JNE >J30                     ;If not, continue
+  MOV  AH,AL                   ;If so, mark as a quote
+  INC  SI                      ;Update the Pointer
+J30:                           ;Loop to here for each character
+  LODSB                        ;Get next character
+  OR   AH,AH                   ;Are we looking for a Quoted Path/File Name?
+  JZ  >J40                     ;If not, continue
+J35:                           ;Looking for the Closing Quote
+  CMP  AL,AH                   ;Is it the Closing Quote?
+  JNE >J50                     ;If not, keep looking
+  JMP >J85                     ;If so, we're done
+J40:                           ;Not a Quoted Path/File Name
+  OR   AL,AL                   ;End of variable?
+  JE  >J80                     ;If so, handle it
+  CMP  AL,' '                  ;Space?
+  JE  >J80                     ;If so, we're done
+  CMP  AL,Tab                  ;Tab?
+  JE  >J80                     ;If so, we're done
+  CMP  AL,'/'                  ;Slash?
+  JE  >J80                     ;If so, we're done
+  CMP  AL,DL                   ;SwitchChar?
+  JE  >J80                     ;If so, we're done
+J50:                           ;Not end-of-name
+  JMP  J30                     ;Keep looking
+J80:                           ;[SI-1] = CMDLINE Pointer
+  DEC  SI                      ;Point at beginning of string
+J85:                           ;[SI] = New CMDLINE Pointer
+  MOV  CS:CmdLineVarPointer,SI ;Store it
+J90:                           ;Done
+  POP  DS,SI,DX,AX             ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO LOOK FOR A CALL BACK ADDRESS ON THE COMMAND-LINE
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;GET THE CALL BACK ADDRESS FROM THE COMMAND-LINE, IF THERE
+;Inputs:  [SI] = Command-Line Pointer
+;         CallBackAddr = -1
+;         ParentIsShell
+;Outputs: CF = Clear if OK (got a valid Address, or no address provided)
+;                CallBackAddr = Address (converted to a number) if
+;                                 ParentShell = No
+;            = Set if Error (invalid address format)
+;                CallBackAddr = -1 in Offset if none or invalid address,
+;                                 or ParentIsShell = Yes,
+;                                 or anything follows the address
+;Changes: SI
+;------------------------------------------------------------------------------
+GetCallBackAddr:
+  PUSH AX                   ;Save used registers
+  CALL IsSpaceOrEOL         ;Skip over the spaces
+  JZ  >C80                  ;If end-of-line, everything's OK
+  CMP  ParentIsShell,Yes    ;Are we being run from the command-line?
+  JE  >C70                  ;If so, the user needs help
+  CALL GetHex               ;Get the Segment (must be in Hex)
+  JC  >C70                  ;If invalid, error
+  MOV  W CallBackAddr[2],AX ;If OK, store the Segment
+  CALL IsSpaceOrEOX         ;Skip spaces
+  JZ  >C70                  ;If end-of-line, error
+  CMP  AL,':'               ;Is the next character a Colon?
+  JNE >C70                  ;If not, error
+  CALL IsSpaceOrEOL         ;Skip spaces
+  JZ  >C70                  ;If end-of-line, error
+  CALL GetHex               ;Get the Offset (must be in Hex)
+  JC  >C70                  ;If invalid, error
+  MOV  W CallBackAddr[0],AX ;If OK, store the Offset
+  CALL IsSpaceOrEOL         ;Skip spaces
+  JZ  >C80                  ;If end-of-line, it's OK
+C70:                        ;Error
+  MOV  W CallBackAddr[0],-1 ;Make sure address is invalid
+  STC                       ;Set error flag
+  JMP >C90                  ;Done
+C80:                        ;OK
+  CLC                       ;Set OK flag
+C90:                        ;Done
+  POP  AX                   ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO GET A NUMBER FROM A STRING (HEX OR DECIMAL)
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;GET A NUMBER FROM A STRING (CAN BE DECIMAL OR HEX)
+;Inputs:  [SI] = String Pointer
+;Outputs: CF = Clear if we got a valid number
+;              AX = Number
+;            = Set if Error (no number found)
+;              AX = 0
+;Changes: SI points at next byte after the number
+;NOTES: A Hex String must start with '0x' and/or end in 'H'!
+;------------------------------------------------------------------------------
+GetNumber:
+  CALL IsSpaceOrEOL ;Skip past spaces
+  JZ  >N70          ;If End-of-Line, Error
+  CALL TestForHex   ;Is it a Hex Number?
+  JC  >N20          ;If not, try a decimal
+  CALL Test0xPrefix ;Skip over the 0x (C-style) prefix, if there
+  CALL GetHex       ;If so, get it
+  JNC >N80          ;If OK, we're done
+  JMP >N70          ;If not, Error
+N20:                ;Not Hex
+  CALL GetDecimal   ;Try a Decimal
+  JNC >N80          ;If OK, we're done
+N70:                ;Error
+  DEC  SI           ;Point back at the first character
+  STC               ;Set Error Flag
+  JMP >N90          ;Done
+N80:                ;OK
+  CLC               ;Set OK Flag
+N90:                ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AN ASCII STRING TO SEE IF IT IS A HEX STRING (ENDS IN H)
+;Inputs:  [SI] = String to test
+;Outputs: CF = Clear if it is a Hex String
+;            = Set if Error (not a Hex String)
+;Changes:
+;NOTES: A valid Hex String will contain numerals 0-9, A-F, and Underscores,
+;         and will end in an H.  It cannot contain spaces.
+;------------------------------------------------------------------------------
+TestForHex:
+  PUSH AX,SI        ;Save used registers
+  CALL Test0xPrefix ;Test for the 0x (C-style) prefix (changes SI)
+  JNC >H80          ;If so, it's Hex
+  CALL GetNextChar  ;Get the
+  DEC  SI           ;  first character
+  CALL IsHexNumber  ;A valid Hex Number?
+  JC  >H70          ;If not, Error
+H40:                ;Loop to here for each character
+  CALL GetNextChar  ;Get the next character
+  CALL IsHexNumber  ;A valid Hex Number?
+  JNC  H40          ;If so, keep looking
+  CMP  AL,'_'       ;An Underscore?
+  JE   H40          ;If so, keep looking
+  CALL IsHexEnd     ;End of the Hex Number?
+  JZ  >H80          ;If so, we're done
+H70:                ;Not Hex
+  STC               ;Set error Flag
+  JMP >H90          ;Done
+H80:                ;Is Hex
+  CLC               ;Set OK Flag
+H90:                ;Done
+  POP  SI,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST FOR A 0x (C-STYLE) HEX PREFIX
+;Inputs:  [SI] = String to test
+;Outputs: CF = Set if not a 0x Prefix
+;              SI unchanged
+;            = Clear if not a 0x Prefix
+;              [SI] = Character after the 0x
+;Changes:
+;------------------------------------------------------------------------------
+Test0xPrefix:
+  PUSH AX,BX       ;Save used registers
+  MOV  BX,SI       ;Save original Pointer
+  CALL GetNextChar ;Get the next character
+  CMP  AL,'0'      ;Is it a 0?
+  JNE >X70         ;If not, it's not a Prefix
+X20:               ;Loop to here to skip over all zeroes
+  CALL GetNextChar ;Get the next charcter
+  CMP  AL,'0'      ;Is it another 0?
+  JE   X20         ;If so, keep skipping the zeroes
+  CALL Capitalize  ;If not, capitalize it
+  CMP  AL,'X'      ;Is it an X?
+  JNE >X70         ;If not, it's not a 0x Prefix
+  CALL GetNextChar ;Get the next charcter
+  CALL IsHexNumber ;Is it a Hex Number?
+  JNC >X80         ;If so, it's a 0x Prefix
+X70:               ;Not a 0x Prefix
+  MOV  SI,BX       ;Restore original pointer
+  STC              ;Set return flag
+  JMP >X90         ;Done
+X80:               ;Is a 0x Prefix
+  DEC  SI          ;Point back at the first hex number
+  CLC              ;Set return flag
+X90:               ;Done
+  POP  BX,AX       ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE NEXT SERIES OF HEX CHARACTERS, AND CONVERT THEM TO A NUMBER
+;Inputs:  [SI] = Command Line Pointer
+;Outputs: CF = Clear if OK
+;              AX = Character string converted to a number, ?? if not
+;            = Set if Error
+;              AX = Unchanged
+;Changes:
+;NOTES: The string can either have an H at the end or not, and this code
+;         will work.
+;------------------------------------------------------------------------------
+GetHex:
+  PUSH BX,CX,DX    ;Save used registers
+  MOV  DX,AX       ;Save original AX
+  XOR  BX,BX       ;Start with zero
+  MOV  CX,4        ;CL = bits to shift by, CH = Character Counter
+  XOR  AH,AH       ;Set High byte to 0
+D10:               ;Loop to here for each character
+  CALL GetNextChar ;Get the next character
+  CALL IsHexNumber ;A valid Hex Number?
+  JNC >D20         ;If so, continue
+  CMP  AL,'_'      ;If not, is it an Underscore?
+  JE  >D45         ;If so, keep looking
+  JMP >D50         ;If not, we're done
+D20:               ;Valid Hex Number
+  INC  CH          ;Increment the character counter
+  SHL  BX,CL       ;Make room for the New Nibble
+  JNC >D40         ;If we're not too big yet, keep going
+  DEC  SI          ;If too big, Point back at bad character
+  JMP >D70         ;Error
+D40:               ;OK to add in new Nibble
+  ADD  BX,AX       ;Add in the new Nibble
+D45:               ;Done with this character
+  JMP  D10         ;Jump to get next character
+D50:               ;Done getting string
+  DEC  SI          ;Point back at the bad character
+  OR   CH,CH       ;Any valid characters at all?
+  JZ  >D70         ;If not, error
+  CALL GetNextChar ;Is the next character
+  CALL IsHexEnd    ;  an H?
+  JZ  >D80         ;If so, we're done
+  DEC  SI          ;If not, point back at the non-H
+  JMP >D80         ;Done
+D70:               ;There was an error
+  MOV  AX,DX       ;Restore original AX
+  STC              ;Mark the error flag
+  JMP >D90         ;And quit
+D80:               ;We have a good number
+  MOV  AX,BX       ;Put the value where it belongs
+  CLC              ;Mark the OK flag
+D90:               ;We're done
+  POP  DX,CX,BX    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE NEXT SERIES OF NUMERIC CHARACTERS, AND CONVERT THEM TO A NUMBER
+;Inputs:  [SI] = Command Line Pointer
+;Outputs: AX = decimal character string converted to a number, ?? if not
+;         CF = Clear if AX is OK
+;            = Set if no decimal found
+;Changes: SI points at character after the number
+;------------------------------------------------------------------------------
+GetDecimal:
+  PUSH BX,CX,DX     ;Save used registers
+  XOR  AX,AX        ;Start with zero
+  XOR  BX,BX        ;  "    "    "   - accumulator
+  MOV  CX,10        ;CX = multiplier & digit limit comparer
+  CALL IsSpaceOrEOX ;Skip over the spaces
+  JZ  >D70          ;If EOL, Error
+  SUB  AL,'0'       ;If not, convert it to a number
+  CMP  AL,9         ;Is it really a number?
+  JA  >D70          ;If not, there's an error
+  DEC  SI           ;If so, step back to the number
+D10:                ;Loop to here for each character
+  CALL GetNextChar  ;Get the next character
+  SUB  AL,'0'       ;Change it to 0-9 range
+  XOR  AH,AH        ;Extend byte to word
+  CMP  AX,CX        ;Is it a digit?
+  JAE >D80          ;If not, we're done
+  CMP  BX,6553      ;Is our number getting too big?
+  JB  >D20          ;If not, jump to store it
+  CMP  AL,5         ;If so, will this number make it too big?
+  JA  >D70          ;If so, there's an error
+D20:                ;Add the digit to our number
+  XCHG AX,BX        ;Swap accumulation into AX, new digit into BX
+  MUL  CX           ;Multiply the previous accumulation by 10
+  ADD  BX,AX        ;Add in the new digit
+  JMP  D10          ;Jump to get next character
+D70:                ;There was an error
+  STC               ;Mark the error flag
+  JMP >D90          ;And quit
+D80:                ;We have a good number
+  DEC  SI           ;Point back at the non-number
+  MOV  AX,BX        ;Put the value where it belongs
+  CLC               ;Mark the OK flag
+D90:                ;We're done
+  POP  DX,CX,BX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AN ASCII CHARACTER TO SEE IF IT IS A HEX NUMERAL (BETWEEN 0 AND F)
+;Inputs:  AL = ASCII Character to Test
+;Outputs: CF = Clear if it is a Number
+;              AL = ASCII Code converted to a real Number
+;            = Set if Error (not a Number)
+;              AL = Unchanged
+;Changes:
+;------------------------------------------------------------------------------
+IsHexNumber:
+  PUSH BX          ;Save used registers
+  MOV  BL,AL       ;Save the character in case we need to restore it
+  CALL IsNumber    ;A Decimal Number?
+  JNC >H85         ;If so, we're done
+  CALL Capitalize  ;If not, Capitalize it
+  CMP  AL,'A'      ;A Hex Number?
+  JB  >H70         ;If not, Error
+  CMP  AL,'F'      ;A Hex Number?
+  JBE >H80         ;If so, handle it
+H70:               ;Not a Number
+  MOV  AL,BL       ;Restore original character
+  STC              ;Set Error Flag
+  JMP >H90         ;Done
+H80:               ;A Number > 9
+  SUB  AL,('A'-10) ;Convert it to a real number
+  JMP >H90         ;Done
+H85:               ;OK (is a Number)
+  CLC              ;Set OK Flag
+H90:               ;Done
+  POP  BX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AN ASCII CHARACTER TO SEE IF IT IS A NUMERAL (BETWEEN 0 AND 9)
+;Inputs:  AL = ASCII Character to Test
+;Outputs: CF = Clear if it is a Number
+;              AL = ASCII Code converted to a real Number
+;            = Set if Error (not a Number)
+;              AL = Unchanged
+;Changes:
+;------------------------------------------------------------------------------
+IsNumber:
+  CMP  AL,'0' ;A Number?
+  JB  >N70    ;If not, Error
+  CMP  AL,'9' ;A Number?
+  JBE >N80    ;If so, handle it
+N70:          ;Not a Number
+  STC         ;Set Error Flag
+  JMP >N90    ;Done
+N80:          ;A number
+  SUB  AL,'0' ;Convert it to a real number
+  CLC         ;Set OK Flag
+N90:          ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AN ASCII CHARACTER TO SEE IF IT IS A PARTICULAR CHARACTER
+;Inputs:  AL = ASCII Character to Test
+;Outputs: ZF = Set if it is the appropriate character
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+IsHexEnd:
+  PUSH AX         ;Save used registers
+  CALL Capitalize ;Capitalize the Character
+  CMP  AL,'H'     ;See if it matches
+  POP  AX         ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;BEEP THE SPEAKER
+;Inputs:
+;Outputs: Beeps the speaker
+;Changes:
+;------------------------------------------------------------------------------
+BeepErr:
+  PUSH AX,BX    ;Save used registers
+  XOR  BX,BX    ;BH = Video page = 0
+  MOV  AX,0E07h ;AH = 0Eh = Function = Write TTY
+                ;AL = 07h = Character to write = BEL
+  INT  10h      ;Do it
+  POP  BX,AX    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CAPITALIZE A CHARACTER (Byte)
+;Inputs:  AL = character to be capitalized
+;Outputs: AL = capitalized character
+;Changes:
+;------------------------------------------------------------------------------
+Capitalize:
+  CMP  AL,'a'     ;Is it less than 'a'?
+  JB  >C90        ;If so, quit
+  CMP  AL,'z'     ;Is it more than 'z'?
+  JA  >C90        ;If so, quit
+  SUB  AL,'a'-'A' ;If between 'a' and 'z', capitalize it
+C90:
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO SEARCH THROUGH/WRITE THE VENDOR TABLE
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;SEARCH A BYTE-TO-STRING LOOKUP TABLE FOR A MATCHING ENTRY
+;Inputs:  DS:[BX] = Table to search
+;         AL      = Byte to search for
+;         CLD already issued
+;Outputs: CF = Clear if a byte match as found in table
+;              BX = Pointer to the String
+;            = Set if no match found in table
+;              BX = unchanged
+;Changes:
+;NOTES: Last Entry in Table (end-of-table marker) = DW -1
+;------------------------------------------------------------------------------
+SearchByte2StringTbl:
+  PUSH AX,SI            ;Save used registers
+  CLD                   ;Go forward with string functions
+  MOV  SI,BX            ;Put pointer in SI
+  MOV  AH,AL            ;Put byte to check in AH
+S10:                    ;Loop to here for each table entry
+  LODSB                 ;Get the next table entry
+  CMP  AL,-1            ;Is it possibly the end of the table?
+  JNE >S20              ;If not, continue
+  CMP  B [SI],-1        ;Is it actually the end of the table?
+  JE  >S70              ;If so, there's no match
+S20:                    ;Not end of table
+  CMP  AL,AH            ;Is it a match?
+  JE  >S80              ;If so, handle it!
+  CALL SkipOverStringSI ;If not, skip over the string
+  JMP  S10              ;And keep looking
+S70:                    ;No entry found
+  STC                   ;Set the not found flag
+  JMP >S90              ;Quit
+S80:                    ;Entry found [SI]
+  MOV  BX,SI            ;Point BX at the String
+  CLC                   ;Set the found flag
+S90:                    ;Done
+  POP  SI,AX            ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP TO THE END OF AN ASCIIZ STRING
+;Inputs:  DS:[SI] = ASCIIZ String to Skip Over
+;Outputs: [SI]    = Next Byte After String
+;Changes:
+;------------------------------------------------------------------------------
+SkipOverStringSI:
+  PUSH CX,DX         ;Save used registers
+  MOV  DX,SI         ;Calculate the size
+  CALL CalcStrSizeDX ;  of the string (CX, does not include the Zero)
+  INC  CX            ;Compensate for the Zero
+  ADD  SI,CX         ;Add it to the Pointer
+  POP  DX,CX         ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE LENGTH OF AN ASCIIZ STRING
+;Inputs:  DS:[SI] = ASCIIZ String to wrok with
+;Outputs: CX = Length of String
+;         ZF = Set if string is 0 length
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+CalcStrSizeSI:
+  PUSH DX            ;Save used registers
+  MOV  DX,SI         ;Calculate the
+  CALL CalcStrSizeDX ;  length of the string
+  POP  DX            ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE AN ASCIIZ STRING, POINTED AT BY SI, TO PAUSE
+;Inputs:  DS:[SI] = ASCIIZ String to Write
+;Outputs: To Screen (CON)
+;Changes:
+;------------------------------------------------------------------------------
+WriteZPauseSI:
+  PUSH DX          ;Save used registers
+  MOV  DX,SI       ;Write the
+  CALL WriteZPause ;  string
+  POP  DX          ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO WRITE OUR OUTPUT, EITHER TO PAUSE OR TO THE USER-PROVIDED ADDRESS
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;WRITE OUR OUTPUT TO PAUSE, OR TO THE PROVIDED CALL-BACK ADDRESS
+;Inputs:  DS:[DX] = ASCIIZ String to Write
+;         CallBackAddr (-1 in Offset if invalid)
+;Outputs: Either to Pause, or to the Call-Back address
+;Changes:
+;------------------------------------------------------------------------------
+WriteItDX:
+  CMP  W CallBackAddr[0],-1 ;Is there a valid call-back address?
+  JE  >W50                  ;If not, write to Pause
+  CMP  ParentIsShell,Yes    ;Double-check whether we are at a command-line
+                            ;  (we shouldn't need to do this, but will anyway)
+  JE  >W50                  ;If so, write to Pause
+  PUSH AX,BX,CX,DX,DI,SI    ;Save
+  PUSH BP,DS,ES             ;  all registers
+  CALL D CallBackAddr       ;If not, call the provided code address
+  POP  ES,DS,BP             ;Restore
+  POP  SI,DI,DX,CX,BX,AX    ;  all registers
+  JMP >W90                  ;Done
+W50:                        ;Write to Pause
+  CALL WriteZPause          ;Write to Pause
+W90:                        ;Done
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE NEEDED TO SET UP AND DO SCREEN PAUSES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;SETUP PARAMETERS FOR DOING A SCREEN PAUSE (FOR PRINTING A LARGE TABLE)
+;Inputs:  DS = Local Data Area
+;         DS:[DX] = ASCIIZ Header to Print at top of each screen
+;                   Last character of the Header MUST be an LF
+;                   If SetupPauseNoHdr, we "inject" NoMsg as the Header
+;Outputs: Pauses the screen with a MORE message every time it gets full
+;NOTES:   If a Screen Header is really large (almost taking up the whole
+;           screen itself, with little room for data), this procedure
+;           may not work correctly.  This procedure does not validate
+;           the size of the Header -- it simply assumes that it is a
+;           "reasonable" size compared to the size of the screen.  Most
+;           anything that needs a Screen Header (a long data table) will
+;           only have a few lines of Header, so this should be OK as a
+;           general purpose procedure.
+;         After this Setup is complete (which should be near the beginning
+;           of MAIN, before anything is sent to the screen), WriteZPause
+;           must be called for ALL screen writing to CON:, not WriteZCon!
+;         The Pausing occurs in "real time", meaning we can send things
+;           to the Pause routine a byte, line, or several screens at a
+;           time for processing.  Because we do it in "real time",
+;           we can end up with extra MORE's and screen Headers appearing
+;           on screen than are actually needed.  During a screen
+;           transition (or a transition to a new Header) whether we
+;           actually need to write anything or not depends on if there
+;           is actually any real data coming afterward (in time), which
+;           of course we don't know (since it hasn't happened yet).
+;           So, we must assume there is more data to come and process the
+;           MORE's and Screen Headers accordingly.  This only causes problems
+;           (in the form of extraneous MORE's and Screen Headers)
+;           when things happen near the bottom of the screen.
+;           DOS's MORE utiltiy (and other programs of similar ilk) do not
+;           process in "real time", but rather store things in a Temporary
+;           File and then process the file.
+;------------------------------------------------------------------------------
+SetupPauseNoHdr:
+  PUSH DX         ;Save used registers
+  MOV  DX,NoMsg   ;Point at 0-length Message
+  CALL SetupPause ;Setup the Pause
+  POP  DX         ;Restore used registers
+  RET
+
+SetupPause:
+  PUSH AX,BX,CX,DI,SI     ;Save used registers
+  MOV  SI,OFFSET PauseHeaderPtr ;Point [SI] at PauseHeaderPtr
+  CMP  W [SI],-1          ;Has the user already cancelled us?
+  JE  >S90                ;If so, just quit
+  CMP  W [SI],0           ;Has the user stopped pausing already?
+  JE  >S85                ;If so, just write the header
+  CALL TestRedir          ;Is our output redirected?
+  JNC >S10                ;If not, setup our Headers
+  MOV  W [SI],0           ;Mark as Redirected or Pausing Stopped/Disabled
+  JMP >S85                ;Jump to write the Header and Quit
+S10:                      ;Output not redirected
+  CALL GetScreenRows      ;Store the number of rows
+  MOV  PauseRows,AX       ;  on the screen
+  CALL CountZLinesCX      ;Calculate the number of lines
+  INC  CX,2               ;  in the new Header
+  MOV  DI,PauseRowCount   ;Get the Current Row count
+  ADD  DI,CX              ;Add the size of the new header
+  SUB  DI,3               ;Adjust for Headers
+  DEC  AX                 ;Will writing the new Header
+  CMP  DI,AX              ;  cause a Pause event?
+  JB  >S50                ;If not, handle it
+S20:                      ;New Header is too big to fit on screen
+  MOV  W [SI],NoMsg       ;Point Header for second page at nothing
+  MOV  PauseHeaderSize,2  ;Set Pause Header Size
+  PUSH CX                 ;Save New Header Size
+  SUB  AX,PauseRowCount   ;Calculate how many rows to fill up the screen
+  MOV  CX,AX              ;Put number of rows in CX
+  INC  CX                 ;Adjust it
+S30:                      ;Loop to here to fill up the screen
+  CALL WriteCrLf          ;Write a new line
+  LOOP S30                ;Keep going until we're done
+  POP  CX                 ;Restore New Header Size
+  CMP  W [SI],-1          ;Did the user cancel during the header transition?
+  JE  >S90                ;If so, we're done
+  CMP  W [SI],0           ;Did the user stop Pausing during the transition?
+  JE  >S85                ;If so, just write the Header
+S50:                      ;Need to adjust current Row Count
+  SUB  PauseRowCount,2    ;Adjust things for the previous Header
+S80:                      ;Store new Header Info
+  MOV  [SI],DX            ;Store the Header Address
+  MOV  PauseHeaderSize,CX ;Store the Header Size
+  ADD  PauseRowCount,CX   ;Add the Header Size to the Row Count
+  MOV  AX,PauseRows       ;Compensate if
+  CMP  AX,PauseRowCount   ;  the new header
+  JAE >S85                ;  put us past
+  DEC  AX                 ;  the end
+  MOV  PauseRowCount,AX   ;  of hte screen
+S85:                      ;Write Header
+  CALL WriteZCon          ;Write the Header
+S90:                      ;We're done
+  POP  SI,DI,CX,BX,AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CHECK TO SEE IF STDOUT HAS BEEN REDIRECTED
+;Inputs:
+;Outputs: CF = Clear if STDOUT is normal (usually the screen)
+;            = Set if STDOUT been redirected
+;Changes:
+;------------------------------------------------------------------------------
+TestRedir:
+  PUSH AX,BX,DX        ;Save used registers
+  MOV  AX,4400h        ;Function 4400h (Get Device Info)
+  MOV  BX,StdOutHandle ;Device = STDOUT
+  INT  21h             ;Do it (returns DX, changes AX)
+  JC  >R80             ;If error, assume not Redirected
+  AND  DL,(DvcInfoIsDevice+DvcInfoIsStdOut) ;Mask out unwanted bits
+  CMP  DL,(DvcInfoIsDevice+DvcInfoIsStdOut) ;Is it still the STDOUT Device?
+  JE  >R80             ;If so, it's not Redirected
+R70:                   ;STDOUT has been Redirected
+  STC                  ;Set the Redirected flag
+  JMP >R90             ;Done
+R80:                   ;STDOUT is not Redirected
+  CLC                  ;Set the Not-Redirected flag
+R90:                   ;Done
+  POP  DX,BX,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE NUMBER OF VIDEO ROWS ON THE SCREEN
+;Inputs:
+;Outputs: AX = Number of text rows on the screen
+;                (usually 25, 43, or 50)
+;Changes:
+;------------------------------------------------------------------------------
+GetScreenRows:
+  PUSH BX,CX,DS  ;Save used registers
+  MOV  AX,40h    ;Point ES to
+  MOV  DS,AX     ;  BIOS data area
+  MOV  AH,12h    ;Function 12h (EGA Alternate Select)
+  MOV  BX,0FF10h ;Subfunction (BL) 10h (Return EGA information)
+                 ;  Preset unrealistic return value (BH)
+  INT  10h       ;Do it (returns AX, BX, CX)
+  CMP  BL,10h    ;Is the function supported (EGA or better)?
+  JE  >R50       ;If not, jump to handle MDA/CGA
+  CMP  BH,0FFh   ;Is the return value valid?
+  JE  >R50       ;If not, jump to handle MDA/CGA
+  TEST B [87h],8 ;If so, is bit 3 of the EGA information byte set?
+  JNZ >R50       ;If so, EGA is not the active display
+  XOR  AX,AX     ;Get # of
+  MOV  AL,[84h]  ;  rows - 1
+  JMP >R90       ;We're done
+R50:             ;Video card is less than EGA (MDA or CGA)
+  MOV  AX,24     ;Number of rows must be 25
+R90:             ;We're done
+  INC  AX        ;Bump the number of rows by 1
+  POP  DS,CX,BX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING(s) TO THE SCREEN, PAUSING WHEN IF NECESSARY
+;Inputs:  DS:[DX] = String to write
+;         PauseRows, PauseHeaderPtr, PauseHeaderSize, PauseRowCount
+;         CS = Local Data Area
+;Outputs: PauseRowCount
+;Changes: Pauses the screen and waits for user input, if necessary
+;NOTES: This should be called instead of WriteZCon every time something
+;         is written during the Pausing.
+;       A string can be written by WriteZCon during the pausing, as long
+;         as the string does not contain a Line Feed.  Any line containing
+;         a Line Feed must come through here or the Line Count will get
+;         screwed up!
+;------------------------------------------------------------------------------
+WriteZPause:
+  PUSH AX,BX,CX,DX          ;Save used registers
+  MOV  AX,CS:PauseHeaderPtr ;Put Header Pointer in AX
+  CMP  AX,-1                ;Has the Output been cancelled by the user?
+  JE  >P90                  ;If so, don't write anything at all
+  OR   AX,AX                ;Is STDOUT Redirected?
+  JZ  >P80                  ;If so, just write it with no Pausing
+  CALL CountZLinesCX        ;Count how many Lines are in the string
+  MOV  AX,CS:PauseRowCount  ;Add the new lines
+  ADD  AX,CX                ;  to the current lines
+  CMP  AX,CS:PauseRows      ;Will we be at or past the end of the screen?
+  JB  >P70                  ;If not, just write it
+  JE  >P20                  ;If at the end of the screen, handle it
+  SUB  AX,CS:PauseRows      ;If not, find
+  SUB  CX,AX                ;  the end of the String
+  CALL FindEndOfLines       ;  we need to write ([BX])
+  MOV  AL,[BX]              ;Save the character that's there now
+  MOV  B [BX],0             ;Replace it with a 0
+  CALL WriteZPause          ;Write it (will Pause correctly)
+  MOV  [BX],AL              ;Restore original character
+  MOV  DX,BX                ;Use the new string pointer
+  CALL WriteZPause          ;Write it (Pausing if necessary)
+  JMP >P90                  ;Done
+P20:                        ;At end of screen
+  CALL WriteZCon            ;Write the String
+  CALL HandlePause          ;Handle the Pause (may change Pointers/Counters)
+  JMP >P90                  ;We're done for now
+P70:                        ;Store new Row Count
+  MOV  CS:PauseRowCount,AX  ;Save the new Row Count
+P80:                        ;Write the String
+  CALL WriteZCon            ;Write the string
+P90:                        ;Done
+  POP  DX,CX,BX,AX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE PAUSE LINE, AND WAIT FOR A KEYSTROKE
+;Inputs:  CS = Local Data Area
+;         PauseRows, PauseHeaderPtr, PauseHeaderSize, PauseRowCount
+;Outputs: PauseRowCount, PauseHeaderPtr
+;Changes: Pauses the screen and waits for user input, if necessary
+;------------------------------------------------------------------------------
+HandlePause:
+  PUSH AX,BX,DX,DS        ;Save String Segment
+  MOV  DS,CS              ;Point DS at our Data Segment
+  MOV  BX,OFFSET PauseHeaderPtr ;Point [BX] at the Pause Header
+  MOV  DX,PauseMsg        ;Write the
+  CALL WriteZCon          ;  Enter a Keystroke message
+  CALL FlushKbdBuff       ;Clear the keyboard buffer
+L10:                      ;Loop to here to wait for a keystroke
+  CALL GetKey             ;Is there a key in the keystroke buffer?
+  JZ   L10                ;If not, keep waiting until there is
+  MOV  DX,PauseDMsg       ;Delete the
+  CALL WriteZCon          ;  MORE Message
+  CMP  AL,CtrlC           ;Was the keystroke a Control-C?
+  JE  >L40                ;If so, jump to handle it
+  CMP  AL,Escape          ;Was the keystroke an Escape?
+  JNE >L20                ;If not, just keep going
+  MOV  W [BX],0           ;If so, mark us as redirected (stop Pausing)
+  JMP >L90                ;And quit
+L20:                      ;Continue with the Pause
+  MOV  DX,PauseNMsg       ;Write the
+  CALL WriteZCon          ;  MORE Replacement Line
+  MOV  DX,[BX]            ;Point DX at the Header
+  CALL WriteZCon          ;Write it
+  MOV  AX,PauseHeaderSize ;Reset the Row Count
+  MOV  PauseRowCount,AX   ;Store the new Row Count
+  JMP >L90                ;We're done for now
+L40:                      ;Ctrl-C (stop altogether)
+  MOV  W [BX],-1          ;Mark as stopped
+L90:                      ;Done
+  POP  DS,DX,BX,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE NUMBER OF LINES IN AN ASCIIZ STRING (COUNT CR/LF COMBINATIONS)
+;Inputs:  DS:[DX] = Pointer to String to measure
+;         CLD already issued
+;Outputs: CX = Number of LF's in the String (may be 0)
+;         ZF = Set if CX = 0
+;            = Clear if CX > 0
+;Changes:
+;------------------------------------------------------------------------------
+CountZLinesCX:
+  PUSH AX,SI ;Save used registers
+  MOV  SI,DX ;Put the pointer in DI
+  XOR  CX,CX ;Initialize Lines Counter
+Z10:         ;Loop to here for each character
+  LODSB      ;Get the next character
+  OR   AL,AL ;Is it the end of the string?
+  JZ  >Z90   ;If so, we're done
+  CMP  AL,LF ;Is it a Line Feed?
+  JNE  Z10   ;If not, it's not a new line
+  INC  CX    ;If so, Increment the Line Counter
+  JMP  Z10   ;Keep looking
+Z90:         ;We're done
+  OR   CX,CX ;Set return flag
+  POP  SI,AX ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;FIND THE POINTER AFTER THE FIRST SEVERAL LINES OF A STRING
+;Inputs:  DS:[DX] = String to use
+;         CX = Number of lines to "skip"
+;         CLD already issued
+;Outputs: DS:[BX] = "New" String Pointer (after the last line written)
+;Changes:
+;NOTES: This assumes that the string actually has MORE than the number of
+;         lines in AX (it does not look for the end of an ASCIIZ string).
+;------------------------------------------------------------------------------
+FindEndOfLines:
+  PUSH AX,CX  ;Save used registers
+  PUSH DI,ES  ;Save used registers
+  MOV  BX,CX  ;BX = Line Counter
+  MOV  ES,DS  ;Point ES:[DI] at
+  MOV  DI,DX  ;  the string
+  MOV  AL,LF  ;Look for Line Feeds
+  MOV  CX,-1  ;Maximize counter
+L10:          ;Loop to here for each new line
+  REPNE SCASB ;Look for the end-of-line character
+  DEC  BX     ;Decrement the Line Counter
+  JNZ  L10    ;If not 0 yet, keep looking
+  MOV  BX,DI  ;Store the new string beginning
+L90:          ;Done
+  POP  ES,DI  ;Restore used registers
+  POP  CX,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;FLUSH KEYBOARD BUFFER
+;Inputs:
+;Outputs:
+;Changes: Flushes the Keyboard Buffer
+;------------------------------------------------------------------------------
+FlushKbdBuff:
+  PUSH AX     ;Save used registers
+F10:          ;Loop to here for each key
+  CALL GetKey ;Get a key from the keyboard buffer
+  JNZ  F10    ;If there was one, get another
+  POP  AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;READ CHARACTER FROM THE KEYBOARD BUFFER
+;Inputs:
+;Outputs: AH = Keyboard scan code
+;         AL = ASCII value of keypress (0 if extended ASCII)
+;         AX = 0 if no key is waiting
+;Changes: ZF = Set if no key in buffer (AX = 0)
+;            = Clear if a key was found (AX = key)
+;------------------------------------------------------------------------------
+GetKey:
+  MOV  AH,1  ;Service 1 (Keystroke waiting?)
+  INT  16h   ;Do It
+  JZ  >K10   ;If no key waiting, we're done
+  XOR  AH,AH ;If a key is waiting, service 0 (Get keystroke)
+  INT  16h   ;Do It
+  JMP >K90   ;We're done
+K10:         ;No keystroke waiting
+  XOR  AX,AX ;Make sure AX=0
+K90:         ;We're done
+  OR   AX,AX ;Set the found/not found flag
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE A CR/LF TO THE CONSOLE WITH A PAUSE
+;Inputs:
+;Outputs: To Screen, Updates Pause Counters
+;Changes:
+;------------------------------------------------------------------------------
+WriteCrLf:
+  PUSH DX         ;Save used registers
+  MOV  DX,CrLfMsg ;Write a Cr/Lf to
+  CALL WriteItDX  ;  the Pause Device
+  POP  DX         ;Restore used registers
+  RET
+
+WriteCrLf2:
+  CALL WriteCrLf ;Move down
+  CALL WriteCrLf ;  2 lines
+  RET
+
+WriteCrLfErr:
+  PUSH DX         ;Save used registers
+  MOV  DX,CrLfMsg ;Write a Cr/Lf to
+  CALL WriteZErr  ;  the ERR Device
+  POP  DX         ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO WRITE THINGS TO THE SCREEN
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;CONVERT BYTE, WORD, OR DWORD TO HEX CHARACTER STRING, AND WRITE IT
+;Inputs:  AL/AX = Nibble/Byte/Word to be written
+;         CLD must be set already!
+;Outputs: Writes to the Screen
+;Changes: HexString
+;------------------------------------------------------------------------------
+;WriteNibbleHex:
+;  PUSH BX             ;Save used registers
+;  MOV  BX,3           ;Need to start of offset 3 in string
+;  JMP >H00            ;Jump to do it
+;WriteByteHex:
+;  PUSH BX             ;Save used registers
+;  MOV  BX,2           ;Need to start of offset 2 in string
+;  JMP >H00            ;Jump to do it
+WriteWordHex:
+  PUSH BX             ;Save used registers
+  XOR  BX,BX          ;Need to start of offset 0 in string
+;  JMP >H00            ;Jump to do it
+H00:                  ;Start converting the strings
+  PUSH DX,DI          ;Save used registers
+  MOV  DI,HexString   ;Point DS:[DI] at HexString
+  MOV  DX,DI          ;Point DS:[DX] at HexString
+  CALL Word2HexString ;Convert the entire Word to a String
+  ADD  DX,BX          ;Point DX at the beginning of where we write
+  CALL WriteItDX      ;Write it
+  POP  DI,DX          ;Restore used registers
+  POP  BX             ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT A BYTE OR WORD TO A HEXADECIMAL STRING (2 OR 4 CHARACTERS)
+;Inputs:  AX = Word to Convert to a Hex String
+;         DS = Local Data Area
+;         DS;[DI] = Where to store the result
+;         CLD already issued
+;Outputs: DS:[DI]
+;Changes: DI
+;------------------------------------------------------------------------------
+Word2HexString:
+  PUSH AX,BX,ES         ;Save used registers
+  MOV  BX,AX            ;Save original Word
+  MOV  ES,DS            ;Point ES:[DI] at
+  CALL Word2HexString00 ;Convert it
+  POP  ES,BX,AX         ;Restore used registers
+  RET
+
+Word2HexString00:
+  MOV  AL,BH            ;Convert High Byte
+  CALL Word2HexString10 ;  to ASCII
+  MOV  AL,BL            ;Work with Low Byte
+Word2HexString10:       ;Convert Byte to ASCII
+  AAM  10h              ;Separate Low & High Nibbles
+  XCHG AH,AL            ;Put High Nibble in AL
+  CALL Word2HexString20 ;Convert High Nibble to ASCII
+  XCHG AH,AL            ;Work with Low Nibble
+Word2HexString20:       ;Convert Nibble to ASCII
+  ADD  AL,90h           ;Convert BCD
+  DAA                   ;  to Decimal
+  ADC  AL,40h           ;Convert Decimal
+  DAA                   ;  to ASCII
+  STOSB                 ;Store the Nibble
+  RET
+
+;Byte2HexString:
+;  PUSH AX,ES            ;Save used registers
+;  MOV  ES,DS            ;Point ES:[DI] at the String
+;  CALL Word2HexString10 ;Convert it
+;  POP  ES,AX            ;Restore used registers
+;  RET
+
+;------------------------------------------------------------------------------
+;WRITE A BYTE OR WORD TO THE SCREEN AS A DECIMAL (EXTRA SPACES INCLUDED)
+;Inputs:  AL/AX = Byte/Word to Write
+;Outputs:
+;Changes:
+;------------------------------------------------------------------------------
+;WriteByteMin:
+;  PUSH AX,BX        ;Save used registers
+;  XOR  AH,AH        ;Make sure high byte is 0
+;  MOV  BH,1         ;Mark as doing minimum
+;  JMP >W00          ;Do it
+;WriteWordMin:
+;  PUSH AX,BX        ;Save used registers
+;  MOV  BH,1         ;Mark as doing minimum
+;  JMP >W00          ;Do it
+ByteToString:
+  PUSH AX,BX        ;Save the original word & BP
+  XOR  AH,AH        ;Make sure high byte is 0
+  XOR  BH,BH        ;BH = No Minimum, Byte
+  JMP >W00          ;Jump to start the loop
+WordToString:
+  PUSH AX,BX        ;Save the original word
+  MOV  BH,2         ;BP = No Minimum, Word
+W00:                ;Do a word or a byte
+  PUSH CX,DX,SI     ;Save used registers
+  MOV  SI,SingleMsg ;Point at the single character message
+  XOR  BL,BL        ;Test for first non-zero character is false
+  MOV  CX,10000     ;First divisor is 10,000
+W20:                ;Loop to here for each character
+  XOR  DX,DX        ;High word of Dividend = 0
+  DIV  CX           ;Divide DX:AX by current divisor
+  OR   AX,AX        ;Is this a non-zero character?
+  JNZ >W30          ;If so, we need to write it
+  OR   BL,BL        ;Has there already been a non-zero character?
+  JNZ >W30          ;If so, we need to write it
+  CMP  CX,1         ;Is this the last character?
+  JE  >W30          ;If so, we need to write it
+  TEST BH,1         ;Are we doing a minimum?
+  JNZ >W40          ;If not, don't write anything
+  MOV  AL,' '       ;Assume a space
+  TEST BH,2         ;Doing a word?
+  JNZ >W35          ;If so, write the space
+  CMP  CX,100       ;If not, doing the hundreds character?
+  JBE >W35          ;If so, write the space
+  JMP >W40          ;If not, don't write anything
+W30:                ;We need to write this character
+  INC  BL           ;Test for first non-zero character is true
+  ADD  AL,'0'       ;Convert the Number to ASCII
+W35:                ;Write the character
+  MOV  [SI],AL      ;Write the
+  CALL WriteItSI    ;  character
+W40:                ;Skip this character - just make it a space
+  CMP  CX,1         ;Was this the last division to do?
+  JE  >W90          ;If so, we're done
+  MOV  AX,DX        ;If not, start next loop with remainder of division
+  PUSH AX           ;Save register for a second
+  XOR  DX,DX        ;So dividend won't be messed up
+  MOV  AX,CX        ;Want to divide divisor in CX
+  MOV  CX,10        ;Want to divide by 10
+  DIV  CX           ;Divide it
+  MOV  CX,AX        ;Store it back in CX
+  POP  AX           ;Restore register
+  JMP  W20          ;And do it again
+W90:                ;We're done
+  POP  SI,DX,CX     ;Restore used registers
+  POP  BX,AX        ;Restore original word & BP
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE AN ASCIIZ STRING, POINTED AT BY SI, TO CON
+;Inputs:  DS:[SI] = ASCIIZ String to Write
+;Outputs: To Screen (CON)
+;Changes:
+;------------------------------------------------------------------------------
+WriteItSI:
+  PUSH DX        ;Save used registers
+  MOV  DX,SI     ;Write the
+  CALL WriteItDX ;  string
+  POP  DX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING TO CON OR TO ERR
+;Inputs:  DS:[DX] = Pointer to string
+;         CS = Local Data Area
+;Outputs: Writes the string to CON or ERR
+;Changes:
+;------------------------------------------------------------------------------
+WriteZCon:                  ;Write to CON
+  CMP  CS:PauseHeaderPtr,-1 ;Should we write anything?
+  JE  >Z90                  ;If not, just quit
+  PUSH BX                   ;Save used register
+  MOV  BX,StdOutHandle      ;Write to STDOUT
+  JMP >Z00                  ;Jump to do it
+WriteZErr:                  ;Write to ERR
+  PUSH BX                   ;Save used register
+  MOV  BX,StdErrHandle      ;Write to STDERR
+Z00:
+  PUSH AX,CX                ;Save used registers
+  CALL CalcStrSizeDX        ;Calculate the size of the string (returns CX)
+  JZ  >Z80                  ;If nothing to write, just quit
+  MOV  AH,40h               ;Function 40h (Write to Device)
+  INT  21h                  ;Do it
+Z80:                        ;We're done
+  POP  CX,AX                ;Restore used registers
+  POP  BX                   ;Restore used register
+Z90:                        ;We're done
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE LENGTH OF AN ASCIIZ STRING
+;Inputs:  DS:[DX] = Pointer to the string
+;Outputs: CX = Length of the string
+;         ZF = Set if string is 0 length
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+CalcStrSizeDX:
+  PUSH AX,DI  ;Save used registers
+  PUSH ES     ;Save used registers
+  MOV  ES,DS  ;Point ES:[DI]
+  MOV  DI,DX  ; at the string
+  XOR  AL,AL  ;Look for a 0
+  MOV  CX,-1  ;Start with max count for REPNE
+  REPNE SCASB ;Find the end of the string
+  NOT  CX     ;Calculate the size
+  DEC  CX     ;  of the string (sets ZF)
+  POP  ES     ;Restore used registers
+  POP  DI,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE A SPECIFIC CHARACTER OR SET OF CHARACTERS TO THE SCREEN
+;Inputs:
+;Outputs: To screen
+;Changes:
+;------------------------------------------------------------------------------
+WriteAL:
+  PUSH DX              ;Save used registers
+  MOV  DL,AL           ;Write what's in AL
+  JMP >C00             ;Do it
+WriteBlock:
+  PUSH DX              ;Save used registers
+  MOV  DL,'±'          ;Write a Block Character
+  JMP >C00             ;Do it
+WriteEquals:
+  PUSH DX              ;Save used registers
+  MOV  DL,'='          ;Write an Equals
+  JMP >C00             ;Do it
+WriteSpace:
+  PUSH DX              ;Save used registers
+  MOV  DX,SpaceMsg     ;Point at Message
+  JMP >C10             ;Do it
+Write2Spaces:
+  PUSH DX              ;Save used registers
+  MOV  DX,Space2Msg    ;Point at Message
+  JMP >C10             ;Do it
+Write4Spaces:
+  PUSH DX              ;Save used registers
+  MOV  DX,Space4Msg    ;Point at Message
+  JMP >C10             ;Do it
+C00:
+  MOV  SingleMsg[0],DL ;Put the character in the Single Character String
+  MOV  DX,SingleMsg    ;Point at Single Character String
+C10:                   ;DX is pointed at String
+  CALL WriteZPause     ;Write the String
+  POP  DX              ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE SOME SPACES TO THE SCREEN
+;Inputs:  CL = Number of spaces to write
+;         SpaceMsg
+;Outputs: To the screen
+;Changes:
+;------------------------------------------------------------------------------
+;WriteSpacesErr:
+;  PUSH AX          ;Save used registers
+;  MOV  AL,-1       ;Mark as ERR
+;  JMP >S00         ;Do it
+WriteSpaces:
+  PUSH AX          ;Save used registers
+  XOR  AL,AL       ;Mark as CON
+;  JMP >S00         ;Do it
+;S00:
+  PUSH CX,DX       ;Save used registers
+  OR   CL,CL       ;Should we write 0 spaces?
+  JZ  >S90         ;If so, we're done
+  XOR  CH,CH       ;If OK, change it to a word
+  MOV  DX,SpaceMsg ;Point at the message
+  OR   AL,AL       ;Write to CON?
+  JNZ >S30         ;If not, Handle ERR
+S10:               ;Loop to here for each space
+  CALL WriteZPause ;Write the space
+  LOOP S10         ;Keep going until we're done
+  JMP >S90         ;Done
+S30:               ;Write to Err
+  CALL WriteZErr   ;Write the space
+  LOOP S10         ;Keep going until we're done
+S90:               ;We're done
+  POP  DX,CX       ;Restore used registers
+  POP  AX          ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;SPACE AND CODE TO PROCESS OUR PROGRAM STACK
+;  This code and must be physically at the END of the Program,
+;    but must be one of the FIRST procedures called by the Program.
+;  In addition, the Stack Pointer (SP) must be set properly
+;    (to LastProgByte - 2) BEFORE this code is called.
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;RESIZE OUR MEMORY ALLOCATION TO THE MINIMUM SIZE NEEDED
+;Inputs:  SP = LastProgByte - 2
+;         ES = Local Segment
+;Outputs: Rellocates Memory to the minimum size required to run the program
+;Changes:
+;------------------------------------------------------------------------------
+ResizeMemory:
+  PUSH AX,BX  ;Save used registers
+  MOV  AH,4Ah ;Function 4Ah (Resize Memory Block pointed at by ES)
+  MOV  BX,(65535 SHR 4)+1 ;BX = Number of Paragraphs to Resize to
+  INT  21h    ;Do it
+  POP  BX,AX  ;Restore used registers
+  RET
+
+  EVEN 16
+  DB (ProgStackSize/8) DUP ('PrgStack')
+
+
+FileBuffer:
+
+;We'll use the area between here and the end of the 64k Segment to store
+;  the data as we read it from the data files.

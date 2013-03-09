@@ -1,0 +1,66 @@
+          title     INITERRS - 4DOS loader transient portion error messages
+          ;
+          page      ,132                ;make wide listing
+          ;
+          comment   }
+
+          Copyright 1989, 1990, J.P. Software, All Rights Reserved
+
+          Author:  Tom Rawson  04/14/89
+
+          This module includes only an error message table.  Routines for
+          accessing this table are in ERRORMSG.ASM.
+
+          ******************************************************************
+          NOTE:  This text has been compressed and copied from 4DLTERRS.TXT.
+          Any changes should be made there, not here!
+          ******************************************************************
+
+          } end description
+
+          ;
+          ; Includes
+          ;
+          include   product.asm         ;product / platform definitions
+          include   trmac.asm           ;general macros
+          .cseg     LOAD                ;set loader segment if not defined
+                                        ;  externally
+          include   model.inc           ;Spontaneous Assembly memory models
+          include   4dlparms.asm        ;loader parameters
+          ;
+          ;
+          .defcode  ,1                  ;set up code segment, no DGROUP
+          ;
+          assume    cs:@curseg, ds:nothing, es:nothing, ss:nothing
+          ;
+          ;
+          ; Fatal errors detected by transient part of loader
+          ;
+          public    InitErrs
+          ;
+InitErrs  label     byte
+          dw        offset InitBad      ;store offset of bad error number msg
+          ;
+          ; Translation table
+          ;
+##
+          ;
+#E_SWSEEK Swap file seek failed
+#E_SWWRIT Swap file write failed
+          ;
+#E_DSIZE Cannot reduce data segment size
+#E_MEMDA Memory deallocation error
+#E_NOMEM Out of memory
+#E_MODFIT Insufficient load space
+#E_RELOC Address table missing
+#E_RLSIZE Address table too large
+        ;
+          db        0FFh, 0             ;end of table
+          ;
+InitBad   db        BErrLen, "Illegal initialization error"
+BErrLen   equ       $ - InitBad - 1
+          ;
+@curseg   ends
+          ;
+          end
+

@@ -1,0 +1,42 @@
+#
+# Makefile for the cats library by Jim Hall (jhall@freedos.org).
+#
+
+# compiler = wcc
+# lib      = wlib
+
+CC=tcc
+LIB=tlib
+FLAGS=-c -w -Z -O -N
+# options = -wx -oas -d0
+
+OBJ=kitten.obj
+
+libs: all
+
+all: catsdb.lib
+
+catsdb.lib: $(OBJ)
+    @if exist catsdb.lib del catsdb.lib
+#    @$(LIB) catsdb.lib +get_line.obj
+#    @$(LIB) catsdb.lib +db.obj
+#    @$(LIB) catsdb.lin +catgets.obj
+   @$(LIB) catsdb.lib + kitten.obj
+
+get_line.obj: get_line.c
+    @$(CC) $(FLAGS) get_line.c
+
+db.obj: db.c
+    @$(CC) $(FLAGS) db.c
+
+catgets.obj: catgets.c
+    @$(CC) $(FLAGS) catgets.c
+
+kitten.obj: kitten.c
+   @$(compiler) $(options) kitten.c
+
+clean:
+    @if exist get_line.obj del get_line.obj
+    @if exist db.obj del db.obj
+#   @..\delete kitten.obj
+    @if exist catsdb.lib del catsdb.lib

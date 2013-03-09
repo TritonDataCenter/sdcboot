@@ -1,0 +1,17 @@
+#
+# Configuration file, change this file to reflect your system
+#
+# (watcom version)
+#
+
+# defines:
+caching  = -dUSE_SECTOR_CACHE -dWRITE_BACK_CACHE
+media    = -dALLOW_REALDISK
+image    = #-dDEBUG_IMAGEFILE
+release  = -dNDEBUG       # uncomment when doing a release
+
+# tools used:
+compiler = wcl -c
+options  = -3 -ecc -ml -ot -d0  $(release)   # compiler options
+libman   = tlib
+linker   = wcl -lr 

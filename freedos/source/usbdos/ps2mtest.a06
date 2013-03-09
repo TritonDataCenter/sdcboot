@@ -1,0 +1,1036 @@
+  JMP Main0 ;Skip over Data to Main Program
+
+
+;==============================================================================
+;NOTE: This program is written for and compiled with Eric Isaacson's A86
+;      assembly language compiler, using Options +P0 -F (8086/8088 CPU and
+;      no FPU).
+;==============================================================================
+
+
+;Laptop has cow when trying to test USB Keyboard/Mouse "Splitter"
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;EQUATE/STRUCTURE/MACRO DEFINITIONS
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;EQUATES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;==============================================================================
+;Miscellaneous
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special Codes
+  ;----------------------------------------------------------------------------
+  No  EQU  0 ;Miscellaneous Yes/No tests
+  Yes EQU -1 ;      "        "  "    "
+
+
+;==============================================================================
+;CONsole/Screen Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special ASCII Characters
+  ;----------------------------------------------------------------------------
+  Tab       EQU  9 ;Tab
+  LF        EQU 10 ;Line Feed
+  FormFeed  EQU 12 ;FormFeed
+  CR        EQU 13 ;Carriage Return
+  EOF       EQU 26 ;End-of-File
+  Quote2    EQU 34 ;Double quote
+  Quote1    EQU 39 ;Single quote
+  BackSlash EQU 92 ;BackSlash (\)
+
+
+;==============================================================================
+;DOS Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special "hard-coded" DOS Device Handles.
+  ;These Handles are permanently hard-coded in DOS, and are always open.
+  ;There is no need to issue Find, Open, or Close calls to these
+  ;  devices - you can just use them at will.
+  ;----------------------------------------------------------------------------
+  StdInHandle  EQU 0 ;Standard Input Device Handle
+  StdOutHandle EQU 1 ;Standard Output Device Handle
+  StdErrHandle EQU 2 ;Standard Error Device Handle
+  StdAuxHandle EQU 3 ;Standard Auxiliary Device Handle (COM1 by default)
+  StdPrnHandle EQU 4 ;Standard Printer Device Handle (LPT1 by default)
+
+
+;==============================================================================
+;PS2 Mouse Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;The standard PS2 Mouse BIOS stores the Mouse Handler (DOS Device Driver)
+  ;  Address in the Extended BIOS Data Area (XBDA).  All references I've seen
+  ;  show the Handler Address being stored at XBDA:22h.  However, I'm not sure
+  ;  that is absolutely always the case (though it might be).  Though I will
+  ;  not assume it's always at Offset 22h, I will assume it's always in the
+  ;  first several hundred bytes of the XBDA.
+  ;To find the correct offset, we will save the first several hundred bytes of
+  ;  the XBDA (hoping the Address is stored there somewhere) before we change
+  ;  anything.  Then, we will reset the mouse and tell the BIOS that we are
+  ;  the Mouse Handler.  Then, we will compare the original XBDA to the new
+  ;  XBDA to see if the new XBDA has changed and now contains our Handler
+  ;  Address.  If it does, we are able to obtain the original Handler Address
+  ;  from the buffer where we stored the original XBDA data.
+  ;The number here is the number of bytes of XBDA data we will store.  If this
+  ;  is too small, we may not be able to find the correct offset.  If it's
+  ;  too big, we'll use way more memory than is necessary and the program will
+  ;  run more slowly.  This MUST be at least 25h (37).
+  ;----------------------------------------------------------------------------
+  XBDASize EQU 256 ;Number of XBDA Bytes to get
+
+  ;----------------------------------------------------------------------------
+  ;Int 15h Call SubFunctions (in AL)
+  ;----------------------------------------------------------------------------
+  I15ALEnableDisable EQU  0 ;Enable/Disable
+  I15ALReset         EQU  1 ;Reset
+  I15ALSetSampling   EQU  2 ;Set Sampling Rate
+  I15ALSetResolution EQU  3 ;Set Resolution
+  I15ALGetDeviceID   EQU  4 ;Get Device ID
+  I15ALInitialize    EQU  5 ;Initialize
+  I15ALStatusScaling EQU  6 ;Get Status/Set Scaling
+  I15ALSetHandler    EQU  7 ;Set Handler Address
+  I15ALWriteData     EQU  8 ;Write (1 byte) of Data to Pointing Device Port
+  I15ALReadData      EQU  9 ;Read (3 bytes) of Data from Pointing Device Port
+  I15ALGetHandler    EQU 10 ;Get Handler Address
+
+  ;----------------------------------------------------------------------------
+  ;Sampling Rate Codes used by the PS2 Mouse BIOS
+  ;----------------------------------------------------------------------------
+  SampleRate010 EQU 0 ; 10 Samples/Second
+  SampleRate020 EQU 1 ; 20 Samples/Second
+  SampleRate040 EQU 2 ; 40 Samples/Second
+  SampleRate060 EQU 3 ; 60 Samples/Second
+  SampleRate080 EQU 4 ; 80 Samples/Second
+  SampleRate100 EQU 5 ;100 Samples/Second
+  SampleRate200 EQU 6 ;200 Samples/Second
+
+  ;----------------------------------------------------------------------------
+  ;Bit masks for Int 15 Set Resolution Function
+  ;----------------------------------------------------------------------------
+  Resolution1 EQU 0 ;1 Count/mm
+  Resolution2 EQU 1 ;2 Counts/mm
+  Resolution4 EQU 2 ;4 Counts/mm (default)
+  Resolution8 EQU 3 ;8 Counts/mm
+
+  ;----------------------------------------------------------------------------
+  ;Device ID's as returnd by the PS2 Mouse BIOS
+  ;----------------------------------------------------------------------------
+  DvcIDWheelNo   EQU 0 ;Device ID returned if Mouse has no Wheels
+  DvcIDWheel1Yes EQU 3 ;Device ID returned if Mouse has 1 Wheel
+  DvcIDWheel2Yes EQU 4 ;Device ID returned if Mouse has 2 Wheels
+
+  ;----------------------------------------------------------------------------
+  ;Flags returned in the BL register from a "Get Pointing Device Status"
+  ;  function (INT 15h, Function C206h, Subfunction 0)
+  ;----------------------------------------------------------------------------
+  MStsRPress   EQU 01h ;Right button pressed
+  ;Bit 1 = Reserved
+  MStsLPress   EQU 04h ;Left button pressed
+  ;Bit 3 = Reserved
+  MStsScaling2 EQU 10h ;Scaling = 2:1 (0 = 1:1 Scaling)
+  MStsEnabled  EQU 20h ;Enabled (0 = Disabled)
+  MStsRemote   EQU 40h ;Remote Mode (0 = Stream Mode)
+  ;Bit 7 = Reserved
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;MACROS
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+  SwapDSES MACRO ;Swap DS and ES with each other
+    PUSH DS
+    PUSH ES
+    POP  DS
+    POP  ES
+   #EM
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;DATA
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+
+  ;----------------------------------------------------------------------------
+  ;Help Message - MUST be at top of File!!
+  ;This allows user to get help simply by doing a "TYPE PS2MTEST.COM"
+  ;----------------------------------------------------------------------------
+  CopyrightMsg:
+    DB CR
+    DB 'PS2MTEST 1.00, (C) 2007, Bret E. Johnson.',CR,LF,LF,0
+  HelpMsg:
+    DB 'SYNTAX: PS2MTEST #',CR,LF
+    DB '  where # is either 0, 1, or 2, and is the maximum number of wheels',CR,LF
+    DB '  that you want this program to look for.',CR,LF
+    DB LF
+    DB '  0 = Enable the Mouse as a "Regular" Mouse (No Wheels, Max 3 Buttons),',CR,LF
+    DB '        even if the Mouse has Wheel(s).',CR,LF
+    DB '  1 = Enable the IntelliMouse Protocol (Max 1 Wheel, 3 Buttons),',CR,LF
+    DB '        if the Mouse is capable.  Do not enable the IntelliMouse2',CR,LF
+    DB '        Protocol, even if the Mouse supports it.',CR,LF
+    DB '  2 = Enable the IntelliMouse2 Protocol (Max 2 Wheels, 5 Buttons),',CR,LF
+    DB '        if the Mouse is capable.  If the IntelliMouse2 Protocol is',CR,LF
+    DB '        not supported, enable the IntelliMouse Protocol.  If neither',CR,LF
+    DB '        IntelliMouse Protocol is supported, enable the Mouse as a',CR,LF
+    DB '        "Regular" Mouse.  This is the Default.',CR,LF
+    DB LF
+    DB 'This program will simply display the "raw" data as it comes from the',CR,LF
+    DB '  PS2 Mouse BIOS.  It is designed as a testing program, so may not be',CR,LF
+    DB "  very useful if you're not writing a program related to the PS2 Mouse.",CR,LF
+    DB '  Then again, you may find it interesting to see what the Mouse BIOS',CR,LF
+    DB '  is actually doing behind the scenes.',CR,LF
+    DB 0,EOF
+
+  ;----------------------------------------------------------------------------
+  ;This is simply a label that avoids the computer beeping if the user
+  ;  does a "TYPE PS2MTEST.COM" at the command line.  The Beep is caused
+  ;  by the Offset of the JMP command at the beginning of the File.
+  ;  IF the amount of data between the JMP at the beginning and the Main:
+  ;  subroutine changes, this may no longer be needed to avoid the Beep.
+  ;----------------------------------------------------------------------------
+  Main0: JMP Main ;To avoid the Beep while doing a "TYPE PS2MTEST.COM"
+
+  ;----------------------------------------------------------------------------
+  ;Variables needed to store things we care about
+  ;----------------------------------------------------------------------------
+  UserMax  DB  2 ;Maximum Number of wheels to look for (User-defined)
+  DeviceID DB  ? ;Device ID returned by the Mouse
+  GoAhead  DB No ;OK to start writing things with our Handler
+
+  ;----------------------------------------------------------------------------
+  ;Data needed to save and restore original Mouse Driver State
+  ;----------------------------------------------------------------------------
+  OldMFlags        DB  ?  ;Old Mouse status flags
+    MFlagGotAddr  EQU 01h ;Got Handler Address
+    MFlagScaling2 EQU 02h ;Scaling = 2:1
+
+  OldXBDAData: DB XBDASize DUP (?) ;Original Data in Extended BIOS Data Area
+  XBDAMousePtr DD ? ;Pointer to Mouse Handler (in XBDA)
+  OldMHandler  DD ? ;Original Mouse Handler Address
+  OldSampling  DB ? ;Original Sampling Rate
+  OldResCode   DB ? ;Original Resolution Code
+  OldDeviceID  DB ? ;Original Device ID
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to write Messages/Error Codes to the Screen
+  ;----------------------------------------------------------------------------
+  HexString: DB '0000',0
+  CrMsg:     DB CR,0
+  CrLfMsg:   DB CR,LF,0
+  Space3Msg: DB ' '
+  Space2Msg: DB ' '
+  SpaceMsg:  DB ' ',0
+  SingleMsg: DB ' '
+  NoMsg:     DB 0
+
+  ResetMsg:
+    DB 'Locating and Resetting the PS2 Mouse (this may take several seconds)....',0
+    DB CR,0
+  ErrorMsg:
+    DB 'Could not find a PS2-compatible mouse to test.',CR,LF
+    DB LF,0
+  HasWheelMsg:
+    DB 'The PS2 Mouse is IntelliMouse-compatible.',CR,LF
+     DB 'It can have at most one wheel, and as many as three buttons.',CR,LF
+    DB LF,0
+  HasWheel2Msg:
+    DB 'The PS2 Mouse is IntelliMouse2-compatible.',CR,LF
+    DB 'It can have as many as two wheels, and as many as five buttons.',CR,LF
+    DB LF,0
+  NoWheelMsg:
+    DB 'The PS2 Mouse is NOT IntelliMouse-compatible.',CR,LF
+    DB 'It cannot have a wheel, and can have at most three buttons.',CR,LF
+    DB LF,0
+ HeaderMsg:
+    DB 'Press any key on the keyboard when you want to stop this program.',CR,LF
+    DB LF
+    DB '                       ÚÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄ¿                           ',CR,LF
+    DB '                       ³ Buttons ³Motion ³Wheels ³',CR,LF
+    DB '                       ÃÄÂÄÂÄÂÄÂÄÅÄÄÄÂÄÄÄÅÄÄÄÂÄÄÄ´',CR,LF
+    DB ' RAW PS2 MOUSE DATA    ³L³R³M³4³5³ X ³ Y ³ 1 ³ 2 ³',CR,LF
+    DB 'ÚÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄ¿  ÃÄÅÄÅÄÅÄÅÄÅÄÄÄÅÄÄÄÅÄÄÄÅÄÄÄ´',CR,LF,0
+
+  BtnsMsg:  DB 'LRM45'
+  LeftMsg:  DB '',0
+  RightMsg: DB '',0
+  DownMsg:  DB '',0
+  UpMsg:    DB '',0
+
+  RestoringMsg:
+    DB CR,LF
+    DB LF
+    DB 'Restoring Original Mouse Driver State (this may take several seconds)....',0
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;CODE
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+
+;------------------------------------------------------------------------------
+;THE MAIN PROGRAM CODE
+;Inputs:
+;Outputs: If PS2 Mouse is installed, writes raw data until user presses a key
+;Changes:
+;------------------------------------------------------------------------------
+Main:
+  MOV  DX,CopyrightMsg              ;Write the
+  CALL WriteZCon                    ;  Copyright Message
+  CALL ParseCmdLine                 ;Parse Command Line (quits if Help wanted)
+  CALL GetOldMouse                  ;Get the current Mouse Driver information
+  MOV  DX,ResetMsg                  ;Write the
+  CALL WriteZErr                    ;  Resetting Message
+  MOV  AX,0C200h+I15ALReset         ;Reset the
+  INT  15h                          ;  Mouse hardware
+  MOV  DX,CrLfMsg                   ;Move
+  CALL WriteZErr                    ;  down
+  CALL WriteZErr                    ;  3
+  CALL WriteZErr                    ;  lines
+  MOV  DX,ErrorMsg                  ;Assume no PS2 mouse installed
+  JC  >M90                          ;If error while resetting, quit
+  CALL InitializeWheel              ;Try to Initialize IntelliMouse(2) Protocol
+  MOV  AL,DeviceID                  ;Put the Device ID in AL
+  MOV  BH,3                         ;Assume a
+  MOV  DX,NoWheelMsg                ;  Regular Mouse
+  CMP  AL,DvcIDWheelNo              ;Is it a Regular Mouse?
+  JE  >M20                          ;If so, continue
+  INC  BH                           ;Assume an
+  MOV  DX,HasWheelMsg               ;  IntelliMouse
+  CMP  AL,DvcIDWheel1Yes            ;IntelliMouse?
+  JE  >M20                          ;If so, continue
+  MOV  DX,HasWheel2Msg              ;Assume IntelliMouse2
+  CMP  AL,DvcIDWheel2Yes            ;IntelliMouse2?
+  JE  >M20                          ;If so, continue
+  MOV  DX,ErrorMsg                  ;If not, Error
+  JMP >M90                          ;Done
+M20:                                ;No Wheel
+  CALL WriteZErr                    ;Write the Wheel/No Wheel Message
+  MOV  DX,ErrorMsg                  ;Point at error message again
+  MOV  AX,0C200h+I15ALInitialize    ;Initialize
+  INT  15h                          ;  the Mouse (BH = # of Data Bytes)
+  JC  >M90                          ;If error, quit
+  CALL InitializeWheel              ;Enable the Wheel(s)
+M40:                                ;Wheel(s) enabled
+  MOV  AX,0C200h+I15ALSetHandler    ;Set Handler Address
+  MOV  BX,Handler                   ;ES:BX = Us
+  INT  15h                          ;Do it
+  JC  >M90                          ;If error, quit
+  MOV  AX,0C200h+I15ALEnableDisable ;Enable
+  MOV  BH,1                         ;  Mouse
+  INT  15h                          ;  Handler
+  JC  >M90                          ;If error, quit
+  CALL GetXBDAPointer               ;If OK, get original Handler Address
+  MOV  DX,HeaderMsg                 ;If OK,
+  CALL WriteZErr                    ;  write the Header
+  MOV  GoAhead,Yes                  ;Tell the Handler it's OK
+M60:                                ;Loop to here to wait for Exit Key
+  CALL GetKey                       ;Wait for Key
+  JZ   M60                          ;If no key, keep waiting
+  MOV  DX,CrLfMsg                   ;Move down
+M90:                                ;Done
+  CALL RestoreOldMouse              ;Restore Mouse Driver Status
+  CALL WriteZErr                    ;Write message
+  MOV  AX,4C00h                     ;Quit, ErrorLevel = 0
+  INT  21h
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO PARSE THE COMMAND LINE FOR OPTIONS
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;PARSE THE COMMAND LINE FOR USER INSTRUCTIONS
+;Inputs:
+;Outputs: UserMax
+;Changes: Quits Program if User enters anything other than 0, 1 ,or 2
+;           for a command-line switch
+;------------------------------------------------------------------------------
+ParseCmdLine:
+  PUSH AX,SI      ;Save used registers
+  MOV  SI,81h     ;Point SI at Command-line tail
+P10:              ;Loop to here for command-line characters
+  LODSB           ;Get the next character
+  CMP  AL,CR      ;End of Command-line?
+  JE  >P90        ;If so, we're done
+  CMP  AL,' '     ;Is it a space?
+  JE   P10        ;If so, keep looking
+  CMP  AL,'0'     ;Valid number?
+  JB  >P70        ;If not, do Help
+  CMP  AL,'2'     ;Valid Number?
+  JA  >P70        ;If not, do Help
+  SUB  AL,'0'     ;If OK, convert it from a numeral to a number
+  MOV  UserMax,AL ;Store it
+  JMP >P90        ;Done
+P70:              ;User needs Help
+  MOV  DX,HelpMsg ;Write the
+  CALL WriteZCon  ;  Help Message
+  MOV  AX,4C00h   ;Function = Terminate Program with ErrorLevel 0
+  INT  21h        ;Do it
+P90:              ;Done
+  POP  SI,AX      ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE NEEDED TO MANIPULATE THE EXTENDED BIOS DATA AREA (PS2 MOUSE BIOS)
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;GET AND SAVE THE OLD MOUSE DRIVER DATA
+;Inputs:  DS = ES = Local Data Area
+;         OldMHandler = 0
+;         XBDAMousePtr = 0
+;         CLD already issued
+;Outputs: XBDAMousePtr Segment, if appropriate
+;         OldMHandler, if appropriate
+;         OldMFlags.MFlagGotAddr, if appropriate
+;Changes:
+;NOTES: If the BIOS supports the Get Mouse Handler Address function (e.g.,
+;         if our USBMOUSE is installed in memory), we get the address directly
+;         and store it.  XBDAMousePtr will remain 0.
+;       If the BIOS does not support the function, we attempt to find the
+;         XBDA segment and copy the first several hundred bytes of it.  We
+;         aren't able to actually determine the Mouse Handler Address yet, but
+;         need to store the current contents of the XBDA so we can determine
+;         the handler address later on.
+;------------------------------------------------------------------------------
+GetOldMouse:
+  PUSH AX,BX,CX,DX                  ;Save used registers
+  PUSH DI,SI,ES                     ;Save used registers
+  MOV  AX,0C200h+I15ALGetHandler    ;Get Mouse Handler Address
+  STC                               ;Preset error flag
+  INT  15h                          ;Do it (returns CX:DX)
+  JC  >O20                          ;If error, get info from XBDA
+O10:                                ;BIOS supports Get Mouse Handler Addr
+  MOV  W OldMHandler[2],CX          ;Store the Address of the
+  MOV  W OldMHandler[0],DX          ;  old Mouse Handler
+  OR   OldMFlags,MFlagGotAddr       ;Mark as having the Address
+  JMP >O30                          ;Continue
+O20:                                ;BIOS does not support Get Handler Addr
+  CALL GetXBDASeg                   ;Get the Extended BIOS Data Segment (ES)
+  JC  >O90                          ;If none found, quit
+  MOV  W XBDAMousePtr[2],ES         ;If OK, store it
+  SwapDSES                          ;DS:[SI] =
+  XOR  SI,SI                        ;  XBDA
+  MOV  DI,OldXBDAData               ;ES:[DI] = Our Local Buffer
+  MOV  CX,(XBDASize/2)              ;CX = Number of Words to Copy
+  REP  MOVSW                        ;Copy the XBDA
+  MOV  DS,ES                        ;DS = ES = Local Data Area
+O30:                                ;Got Handler Pointer information
+  MOV  AX,0C200h+I15ALStatusScaling ;Extended Functions
+  XOR  BH,BH                        ;Subfunction 0 (Get Status)
+  STC                               ;Preset error flag
+  INT  15h                          ;Do it (returns BL, CL, DL)
+  JC  >O70                          ;If error, quit
+  TEST BL,MStsEnabled               ;If OK, is it Enabled?
+  JZ  >O70                          ;If not, quit
+  TEST BL,MStsRemote                ;Is it in Remote Mode?
+  JNZ >O70                          ;If so, quit
+  MOV  OldResCode,CL                ;Store Resolution Code
+  MOV  OldSampling,DL               ;Store Sampling Rate
+  TEST BL,MStsScaling2              ;Scaling = 2:1?
+  JZ  >O40                          ;If not, it's 1:1
+  OR   OldMFlags,MFlagScaling2      ;If so, mark it as 2:1
+O40:                                ;Done with Scaling
+  MOV  AX,0C200h+I15ALGetDeviceID   ;Get Device ID
+  STC                               ;Preset error flag
+  INT  15h                          ;Do it
+  JC  >O70                          ;If error, quit
+  MOV  OldDeviceID,BH               ;If OK, store the Device ID
+  JMP >O90                          ;Done
+O70:                                ;No old Mouse Driver to save
+  MOV  W XBDAMousePtr[2],0          ;Mark as no
+  AND  OldMFlags,(NOT MFlagGotAddr) ;  no Old Mouse Driver
+O90:                                ;Done
+  POP  ES,SI,DI                     ;Restore used registers
+  POP  DX,CX,BX,AX                  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE POINTER IN THE XBDA TO THE MOUSE INTERRUPT HANDLER
+;Inputs:  DS = ES = Local Data Area
+;         OldMHandler filled in, if BIOS supports Get Mouse Handler Addr
+;         OldXBDAData filled in
+;         XBDAMousePtr[2] (Segment) Filled in
+;Outputs: XBDAMousePtr[0] if Pointer is found
+;         XBDAMousePtr[2] = 0 if not found
+;Changes:
+;NOTES: For most (if not all) BIOS's, the Pointer we're looking for is at
+;         offset 22h in the XBDA.  We'll pretend we don't know that, though,
+;         and check the first several hundred bytes of the XBDA.
+;------------------------------------------------------------------------------
+GetXBDAPointer:
+  PUSH AX,BX,CX,DX,DI,ES      ;Save used registers
+  TEST OldMFlags,MFlagGotAddr ;Do we already have the address?
+  JNZ >X90                    ;If so, we're done
+  MOV  BX,OFFSET XBDAMousePtr ;[BX] = XBDA Pointer
+  CMP  W [BX+2],0             ;Valid XBDA segment?
+  JE  >X90                    ;If not, just quit
+  MOV  DX,DS                  ;DX = Our segment
+  MOV  ES,[BX+2]              ;ES:[DI] =
+  MOV  DI,1                   ;  Current XBDA Data, skipping over size
+  MOV  CX,(XBDASize-4)        ;CX = Number of times to do the test
+X30:                          ;Loop to here for each possible offset
+  MOV  AX,ES:[DI+2]           ;Did this data change
+  CMP  AX,[DI+2+OldXBDAData]  ;  in the XBDA?
+  JE  >X50                    ;If not, it can't be our pointer
+  CMP  ES:[DI+2],DX           ;Does the segment match?
+  JNE >X50                    ;If not, it can't be our pointer
+  CMP  W ES:[DI],Handler      ;Does the offset match?
+  JE  >X80                    ;If so, we're done
+X50:                          ;Not at this pointer
+  INC  DI                     ;Increment Pointer
+  LOOP X30                    ;Keep looking
+X70:                          ;Error
+  MOV  W [BX+2],0             ;Mark as an error
+  JMP >X90                    ;Quit
+X80:                          ;OK: [DI] = Offset
+  MOV  [BX],DI                ;Store the Pointer Offset
+  MOV  AX,[DI+2+OldXBDAData]  ;Store
+  MOV  W OldMHandler[2],AX    ;  the
+  MOV  AX,[DI+OldXBDAData]    ;  Handler
+  MOV  W OldMHandler[0],AX    ;  Address
+  OR   OldMFlags,MFlagGotAddr ;Mark as having the address
+X90:                          ;Done
+  POP  ES,DI,DX,CX,BX,AX      ;Save used registers
+  RET
+
+;------------------------------------------------------------------------------
+;RESTORE THE ORIGINAL MOUSE DRIVER TO IT'S ORIGINAL STATE
+;Inputs:  DS = ES = Local Data Area
+;         OldMFlags, OldMHandler, OldSampling, OldResCode, OldDeviceID
+;Outputs: Restores PS2 BIOS to state it was in before we started
+;Changes:
+;------------------------------------------------------------------------------
+RestoreOldMouse:
+  PUSH AX,BX,CX,DX,ES               ;Save used registers
+  MOV  DX,RestoringMsg              ;Write
+  CALL WriteZErr                    ;  "Restoring" message
+  MOV  AX,0C200h+I15ALReset         ;Reset
+  INT  15h                          ;  mouse
+  TEST OldMFlags,MFlagGotAddr       ;Did we save the original Handler info?
+  JZ  >R90                          ;If not, just quit
+  MOV  BH,3                         ;Assume 3 Data Bytes
+  MOV  UserMax,0                    ;  (no IntelliMouse)
+  CMP  OldDeviceID,DvcIDWheel1Yes   ;Should we Enable IntelliMouse?
+  JB  >R10                          ;If not, continue
+  MOV  BH,4                         ;If so, Data Bytes = 4
+  MOV  UserMax,1                    ;Assume IntelliMouse
+  JE  >R10                          ;If IntelliMouse, continue
+  INC  UserMax                      ;If not, IntelliMOuse2
+R10:                                ;BH & UserMax set
+  MOV  AX,0C200h+I15ALInitialize    ;Initialize
+  INT  15h                          ;  Hardware
+  CALL InitializeWheel              ;Initialize Wheels, if needed (uses UserMax)
+  MOV  ES,W OldMHandler[2]          ;ES:[BX] =
+  MOV  BX,W OldMHandler[0]          ;  Original Mouse Handler Address
+  MOV  AX,0C200h+I15ALSetHandler    ;Set
+  INT  15h                          ;  Handler Address
+  MOV  ES,DS                        ;ES = Local Data Area
+  MOV  BH,OldSampling               ;Set
+  CALL CvtRate2Code                 ;  Sampling
+  MOV  AX,0C200h+I15ALSetSampling   ;  Rate
+  INT  15h
+  MOV  BH,OldResCode                ;Set
+  MOV  AX,0C200h+I15ALSetResolution ;  Resolution
+  INT  15h
+  MOV  BH,1                         ;Assume 1:1 Scaling
+  TEST OldMFlags,MFlagScaling2      ;Is it 1:1 Scaling?
+  JZ  >R20                          ;If so, continue
+  INC  BH                           ;If not, set 2:1 Scaling
+R20:                                ;BH = Scaling Code
+  MOV  AX,0C200h+I15ALStatusScaling ;Set
+  INT  15h                          ;  Scaling Factor
+  MOV  AX,0C200h+I15ALEnableDisable ;Enable
+  MOV  BH,1                         ;  Mouse
+  INT  15h                          ;  Handler
+R90:                                ;Done
+  MOV  DX,CrLfMsg                   ;Move
+  CALL WriteZErr                    ;  down
+  POP  ES,DX,CX,BX,AX               ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE EXTENDED BIOS DATA AREA (XBDA) SEGMENT
+;Inputs:   DS  = Local Data Area
+;Outputs: CF = Clear if OK (Valid Segment Found)
+;              ES = XBDA Segment
+;            = Set if Error (Segment Not Found/Invalid Segment)
+;              ES unchanged
+;Changes:
+;------------------------------------------------------------------------------
+GetXBDASeg:
+  PUSH AX,BX       ;Save used registers
+  MOV  BX,ES       ;Save original ES
+X10:               ;Use BIOS Call to Get it
+  MOV  AH,0C1h     ;Function C1h (Get XBDA Segment)
+  STC              ;Preset error flag
+  INT  15h         ;Do it (returns ES)
+  JNC >X80         ;If OK, we're done
+X20:               ;Get it directly from BIOS Data Area
+  MOV  AX,40h      ;Point ES at the
+  MOV  ES,AX       ;  BIOS Data Area
+  MOV  AX,ES:[0Eh] ;Get the (supposed to be) XBDA Segment
+  MOV  ES,AX       ;Put it in ES
+  CMP  AX,0050h    ;Is it too small to be legitimate?
+  JBE >X70         ;If so, quit
+  MOV  AL,ES:[0]   ;Get the size of the XBDA (kBytes)
+  OR   AL,AL       ;Too small to be legitimate?
+  JZ  >X70         ;If so, error
+  CMP  AL,10       ;Too big to be legitimate?
+  JBE >X80         ;If not, it's OK
+X70:               ;Error
+  MOV  ES,BX       ;Restore original ES
+  STC              ;Set return flag
+  JMP >X90         ;Done
+X80:               ;OK
+  CLC              ;Set return flag
+X90:               ;Done
+  POP  BX,AX       ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT A SAMPLE RATE TO A SAMPLE RATE CODE
+;Inputs:  BH = Sample Rate (10, 20, 40, 60, 80, 100, 200)
+;Outputs: AL = Sample Rate Code (0-6)
+;Changes:
+;------------------------------------------------------------------------------
+CvtRate2Code:
+  PUSH AX    ;Save used registers
+  XOR  AH,AH ;AX =
+  MOV  AL,BH ;  Sample Rate
+  MOV  BH,20 ;Divide
+  DIV  BH    ;  by 20 (10->0,20->1,40->2,60->3,80->4,100->5,200->10)
+  CMP  AL,5  ;Is the Sample Rate < 100?
+  JBE >V90   ;If so, we're done
+  MOV  AL,6  ;If not, it's 200
+V90:         ;Done
+  MOV  BH,AL ;Put return value in BH
+  POP  AX    ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO INITIALIZE THE INTELLIMOUSE(2) PROTOCOL ON THE MOUSE
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;TRY TO INITIALIZE THE INTELLIMOUSE AND/OR INTELLIMOUSE2 PROTOCOL
+;Inputs:  UserMax
+;Outputs: Initializes IntelliMouse(2) protocol, if the mouse supports it
+;           and the User wants it
+;Changes:
+;------------------------------------------------------------------------------
+InitializeWheel:
+  PUSH AX,BX                      ;Save used registers
+  MOV  DeviceID,DvcIDWheelNo      ;Start with Device ID 0
+  CMP  UserMax,0                  ;Should we Enable IntelliMouse?
+  JE  >I90                        ;If not, we're done
+  MOV  BH,SampleRate200           ;Set Sample rate 200
+  MOV  AX,0C200h+I15ALSetSampling
+  INT  15h
+  MOV  BH,SampleRate100           ;Set Sample Rate 100
+  MOV  AX,0C200h+I15ALSetSampling
+  INT  15h
+  MOV  BH,SampleRate080           ;Set Sample Rate 80
+  MOV  AX,0C200h+I15ALSetSampling
+  INT  15h
+  MOV  BH,SampleRate100           ;Set Sample Rate 100
+  MOV  AX,0C200h+I15ALSetSampling
+  INT  15h
+  MOV  AX,0C200h+I15ALGetDeviceID ;Get the
+  INT  15h                        ;  Device ID
+  CMP  BH,DvcIDWheel1Yes          ;IntelliMouse?
+  JNE >I90                        ;If not, we're done
+  MOV  DeviceID,BH                ;If so, store the Device ID
+  CMP  UserMax,2                  ;Should we Enable IntelliMouse2?
+  JB  >I90                        ;If not, we're done
+  MOV  BH,SampleRate200           ;Set Sample rate 200
+  MOV  AX,0C200h+I15ALSetSampling
+  INT  15h
+  MOV  BH,SampleRate200           ;Set Sample Rate 200
+  MOV  AX,0C200h+I15ALSetSampling
+  INT  15h
+  MOV  BH,SampleRate080           ;Set Sample Rate 80
+  MOV  AX,0C200h+I15ALSetSampling
+  INT  15h
+  MOV  BH,SampleRate100           ;Set Sample Rate 100
+  MOV  AX,0C200h+I15ALSetSampling
+  INT  15h
+  MOV  AX,0C200h+I15ALGetDeviceID ;Get the
+  INT  15h                        ;  Device ID
+  CMP  BH,DvcIDWheel2Yes          ;IntelliMouse2?
+  JNE >I90                        ;If not, we're done
+  MOV  DeviceID,BH                ;If so, store the Device ID
+I90:                              ;Done
+  POP  BX,AX                      ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO PROCESS INTERRUPTS FROM THE MOUSE.
+;This is where we actually write the Raw Data to the screen.
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;HANDLE THE CALL FROM THE PS2 BIOS HANDLER WHEN THERE IS A CHANGE TO THE MOUSE
+;Inputs:  4 Words from PS2 Mouse BIOS on the stack
+;Outputs: Writes the words to the screen
+;Changes:
+;------------------------------------------------------------------------------
+Handler:
+  PUSH BP            ;Save used used registers
+  MOV  BP,SP         ;Point BP at the stack
+  PUSH AX,CX,DX      ;Save used registers
+  PUSH DI,DS,ES      ;Save used registers
+  PUSHF              ;Save flags
+  CLD                ;Go forward with string functions
+  STI                ;Enable interrupts
+  MOV  DS,CS         ;Point DS and ES
+  MOV  ES,CS         ;  at our data area
+  CMP  GoAhead,No    ;Should we do anything yet?
+  JE  >H90           ;If not, quit
+  MOV  DI,12         ;DI = Stack Offset to start with
+  MOV  CX,4          ;Need to write 4 stack words
+  CALL WriteSpace    ;Move over one space
+  PUSH DI            ;Save Stack Pointer
+H10:                 ;Loop to here to write each stack word
+  MOV  AX,SS:[BP+DI] ;Get the next word from the stack
+  CALL WriteWordHex  ;Write it
+  CALL WriteSpace    ;Move over one space
+  DEC  DI,2          ;Point at the next word
+  LOOP H10           ;Keep going until we're done
+  POP  DI            ;Restore stack pointer
+  CALL Write3Spaces  ;Move over
+  CALL WriteButtons  ;Write the Button Translations
+  CALL WriteMotions  ;Write the Motion Translations
+  CALL WriteWheels   ;Write the Wheel Translations
+  MOV  DX,CrMsg      ;Move the cursor
+  CALL WriteZErr     ;  to the beginning of the line
+H90:                 ;Done
+  POPF               ;Restore flags
+  POP  ES,DS,DI      ;Restore used registers
+  POP  DX,CX,AX      ;Restore used registers
+  POP  BP            ;Restore used registers
+  RETF
+
+;------------------------------------------------------------------------------
+;WRITE TRANSLATION OF MOUSE BUTTON DATA TO THE SCREEN
+;Inputs:  DS = ES = TSR Data Area
+;         SS:[BP+DI] = First Word of Stack from Handler
+;Outputs: To Screen
+;Changes:
+;------------------------------------------------------------------------------
+WriteButtons:
+  PUSH AX,CX,SI        ;Save used registers
+  MOV  AH,SS:[BP+DI+0] ;Get Buttons 1-3 Status
+  AND  AH,07h          ;Mask out everything but the buttons
+  CMP  DeviceID,DvcIDWheel2Yes ;Does the Mouse have 5 buttons?
+  JNE >B10             ;If not, skip down
+  MOV  AL,SS:[BP+DI-4] ;If so, get buttons 4-5 status
+  AND  AL,30h          ;Mask out everything except the buttons
+  SHR  AL,1            ;Move it over so we can use it
+  OR   AH,AL           ;Add it to the buttons 1-3 status
+B10:                   ;AH contains Buttons status
+  MOV  SI,BtnsMsg      ;Point at the Button labels
+  MOV  CX,5            ;Do 5 buttons
+B20:                   ;Loop to here for each button
+  LODSB                ;Get the next Button label
+  ROR  AH,1            ;Is this button pressed?
+  JC  >B30             ;If so, the Label is OK
+  MOV  AL,' '          ;If not, write a Space
+B30:                   ;AL contains Label to write
+  CALL WriteAL         ;Write the Label
+  CALL WriteSpace      ;Move over
+  LOOP B20             ;Keep going until we're done
+  POP  SI,CX,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE TRANSLATION OF MOUSE MOTION DATA TO THE SCREEN
+;Inputs:  DS = ES = TSR Data Area
+;         SS:[BP+DI] = First Word of Stack from Handler
+;Outputs: To Screen
+;Changes:
+;------------------------------------------------------------------------------
+WriteMotions:
+  PUSH AX              ;Save used registers
+  CMP  DeviceID,DvcIDWheelNo ;Are there any wheels?
+  JNE >M20             ;If so, jump to handle it
+  MOV  AL,SS:[BP+DI-2] ;Put X Data in AL
+  MOV  AH,SS:[BP+DI-4] ;Put Y Data in AH
+  JMP >M30             ;Continue
+M20:                   ;Has Wheels
+  MOV  AL,SS:[BP+DI+1] ;Put X Data in AL
+  MOV  AH,SS:[BP+DI-2] ;Put Y Data in AH
+M30:                   ;AL = X Data, AH = Y Data
+  CALL WriteLeftRight  ;Write X Data
+  MOV  AL,AH           ;Write
+  CALL WriteUpDown     ;  Y Data
+  POP  AX              ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE TRANSLATION OF MOUSE WHEEL DATA TO THE SCREEN
+;Inputs:  DS = ES = TSR Data Area
+;         SS:[BP+DI] = First Word of Stack from Handler
+;Outputs: To Screen
+;Changes:
+;------------------------------------------------------------------------------
+WriteWheels:
+  PUSH AX              ;Save used registers
+  XOR  AX,AX           ;Assume no Wheels
+  CMP  DeviceID,DvcIDWheel1Yes ;How many Wheels?
+  JB  >W40             ;If 0, jump to write it
+  MOV  AL,SS:[BP+DI-4] ;Put Wheel 1 Data in AL
+  JE  >W40             ;If 1 Wheel, jump to write it
+W10:                   ;2 Wheels
+  AND  AL,0Fh          ;Get rid of everything but Wheels
+  TEST AL,08h          ;Is it Negative?
+  JZ  >W15             ;If not, continue
+  OR   AL,0F0h         ;If so, sign-extend the Nibble
+W15:                   ;AL contains extended data
+  CMP  AL,0            ;Which wheel/direction?
+  JE  >W40             ;If no motion, jump to write it
+  JG  >W30             ;If positive, jump to handle it
+W20:                   ;Negative
+  CMP  AL,-1           ;Is it -1?
+  JE  >W40             ;If so, jump to write it
+  MOV  AX,0FF00h       ;Mark Wheel 1 as 0, Wheel 2 as -1
+  JMP >W40             ;Continue
+W30:                   ;Positive
+  CMP  AL,1            ;Is it 1?
+  JE  >W40             ;If so, continue
+  MOV  AX,0100h        ;Mark Wheel 1 as 0, Wheel 2 as 1
+W40:                   ;AL = Wheel 1 Data, AH = Wheel 2 Data
+  CALL WriteUpDownRvs  ;Write Wheel 1 Data
+  MOV  AL,AH           ;Write
+  CALL WriteLeftRight  ;  Wheel 2 Data
+  POP  AX              ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE LEFT/RIGHT OR UP/DOWN STATUS OF MOUSE MOTION OR WHEEL MOVEMENT
+;Inputs:  DS = ES = TSR Data Area
+;         AL = Value to write
+;Outputs: To Screen
+;Changes:
+;------------------------------------------------------------------------------
+WriteUpDownRvs:
+  PUSH AX           ;Save used registers
+  NEG  AL           ;Swap directions
+  CALL WriteUpDown  ;Write things
+  POP  AX           ;Restore used registers
+  RET
+
+WriteLeftRight:
+  PUSH DI,SI        ;Save used registers
+  MOV  DI,LeftMsg   ;[DI] = What to write if negative
+  MOV  SI,RightMsg  ;[SI] = What to write if positive
+  JMP >W00          ;Do it
+WriteUpDown:
+  PUSH DI,SI        ;Save used registers
+  MOV  DI,DownMsg   ;[DI] = What to write if negative
+  MOV  SI,UpMsg     ;[SI] = What to write if positive
+;  JMP >W00          ;Do it
+W00:
+  PUSH DX           ;Save used registers
+  MOV  DX,Space3Msg ;Assume no Movement
+  CMP  AL,0         ;What kind of movement was it?
+  JE  >L80          ;If none, we're done
+  JG  >L20          ;If Right, jump to handle it
+L10:                ;Negative
+  MOV  DX,DI        ;Point at Negative Message
+  JMP >L80          ;Jump to write it
+L20:                ;Positive
+  MOV  DX,SI        ;Point at Positive Message
+L80:                ;DX points at message to write
+  CALL WriteZErr    ;Write it
+  CALL WriteSpace   ;Move over
+  POP  DX           ;Restore used registers
+  POP  SI,DI        ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO GET A KEYSTROKE FROM THE KEYBOARD BUFFER
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;READ CHARACTER FROM THE KEYBOARD BUFFER
+;Inputs:
+;Outputs: AH = Keyboard scan code
+;         AL = ASCII value of keypress (or 0 if extended ASCII)
+;         AX = 0 if no key is waiting
+;Changes: ZF = Set if no key in buffer (and AX=0)
+;            = Clear if a key was found (AX = key)
+;------------------------------------------------------------------------------
+GetKey:
+  MOV  AH,1  ;Service 1 (Keystroke waiting?)
+  INT  16h   ;Do It
+  JZ  >K10   ;If no key waiting, we're done
+  XOR  AH,AH ;If a key is waiting, service 0 (Get keystroke)
+  INT  16h   ;Do It
+  JMP >K90   ;We're done
+K10:         ;No keystrokewaiting
+  XOR  AX,AX ;Make sure AX=0
+K90:         ;We're done
+  OR   AX,AX ;Set the found/not found flag
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;Code to Write things to the screen
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;CONVERT BYTE, WORD, OR DWORD TO HEX CHARACTER STRING, AND WRITE IT
+;Inputs:  AL/AX = Nibble/Byte/Word to be written
+;         CLD must be set already!
+;Outputs: Writes to the Screen
+;Changes: HexString
+;------------------------------------------------------------------------------
+;WriteNibbleHex:
+;  PUSH BX             ;Save used registers
+;  MOV  BX,3           ;Need to start of offset 3 in string
+;  JMP >H00            ;Jump to do it
+;WriteByteHex:
+;  PUSH BX             ;Save used registers
+;  MOV  BX,2           ;Need to start of offset 2 in string
+;  JMP >H00            ;Jump to do it
+WriteWordHex:
+  PUSH BX             ;Save used registers
+  XOR  BX,BX          ;Need to start of offset 0 in string
+;  JMP >H00            ;Jump to do it
+H00:                  ;Start converting the strings
+  PUSH DX,DI          ;Save used registers
+  MOV  DI,HexString   ;Point DS:[DI] at HexString
+  MOV  DX,DI          ;Point DS:[DX] at HexString
+  CALL Word2HexString ;Convert the entire Word to a String
+  ADD  DX,BX          ;Point DX at the beginning of where we write
+  CALL WriteZCon      ;Write it
+  POP  DI,DX          ;Restore used registers
+  POP  BX             ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT A BYTE OR WORD TO A HEXADECIMAL STRING (2 OR 4 CHARACTERS)
+;Inputs:  AX = Word to Convert to a Hex String
+;         DS = Local Data Area
+;         CLD already issued
+;Outputs: DS:[DI]
+;Changes: DI
+;------------------------------------------------------------------------------
+Word2HexString:
+  PUSH AX,BX,ES         ;Save used registers
+  MOV  BX,AX            ;Save original Word
+  MOV  ES,DS            ;Point ES:[DI] at
+  CALL Word2HexString00 ;Convert it
+  POP  ES,BX,AX         ;Restore used registers
+  RET
+
+Word2HexString00:
+  MOV  AL,BH            ;Convert High Byte
+  CALL Word2HexString10 ;  to ASCII
+  MOV  AL,BL            ;Work with Low Byte
+Word2HexString10:       ;Convert Byte to ASCII
+  AAM  10h              ;Separate Low & High Nibbles
+  XCHG AH,AL            ;Put High Nibble in AL
+  CALL Word2HexString20 ;Convert High Nibble to ASCII
+  XCHG AH,AL            ;Work with Low Nibble
+Word2HexString20:       ;Convert Nibble to ASCII
+  ADD  AL,90h           ;Convert BCD
+  DAA                   ;  to Decimal
+  ADC  AL,40h           ;Convert Decimal
+  DAA                   ;  to ASCII
+  STOSB                 ;Store the Nibble
+  RET
+
+;Byte2HexString:
+;  PUSH AX,ES            ;Save used registers
+;  MOV  ES,DS            ;Point ES:[DI] at the String
+;  CALL Word2HexString10 ;Convert it
+;  POP  ES,AX            ;Restore used registers
+;  RET
+
+;------------------------------------------------------------------------------
+;WRITE A SPECIFIC CHARACTER OR SET OF CHARACTERS TO THE SCREEN
+;Inputs:
+;Outputs: To screen
+;Changes:
+;------------------------------------------------------------------------------
+WriteAL:
+  PUSH DX              ;Save used registers
+  MOV  DL,AL           ;Write what's in AL
+  JMP >C00             ;Do it
+WriteSpace:
+  PUSH DX              ;Save used registers
+  MOV  DX,SpaceMsg     ;Point at Message
+  JMP >C10             ;Do it
+Write3Spaces:
+  PUSH DX              ;Save used registers
+  MOV  DX,Space3Msg    ;Point at Message
+  JMP >C10             ;Do it
+C00:
+  MOV  SingleMsg[0],DL ;Put the character in the Single Character String
+  MOV  DX,SingleMsg    ;Point at Single Character String
+C10:                   ;DX is pointed at String
+  CALL WriteZErr       ;Write the String
+  POP  DX              ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING TO CON OR TO ERR
+;Inputs:  DS:[DX] = Pointer to string
+;         CS = Local Data Area
+;Outputs: Writes the string to CON or ERR
+;Changes:
+;------------------------------------------------------------------------------
+WriteZCon:             ;Write to CON
+  PUSH BX              ;Save used register
+  MOV  BX,StdOutHandle ;Write to STDOUT
+  JMP >Z00             ;Jump to do it
+WriteZErr:             ;Write to ERR
+  PUSH BX              ;Save used register
+  MOV  BX,StdErrHandle ;Write to STDERR
+Z00:
+  PUSH AX,CX           ;Save used registers
+  CALL CalcStrSizeDX   ;Calculate the size of the string (returns CX)
+  JZ  >Z80             ;If nothing to write, just quit
+  MOV  AH,40h          ;Function 40h (Write to Device)
+  INT  21h             ;Do it
+Z80:                   ;We're done
+  POP  CX,AX           ;Restore used registers
+  POP  BX              ;Restore used register
+Z90:                   ;We're done
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE LENGTH OF AN ASCIIZ STRING
+;Inputs:  DS:[DX] = Pointer to the string
+;Outputs: CX = Length of the string
+;         ZF = Set if string is 0 length
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+CalcStrSizeDX:
+  PUSH AX,DI  ;Save used registers
+  PUSH ES     ;Save used registers
+  MOV  ES,DS  ;Point ES:[DI]
+  MOV  DI,DX  ; at the string
+  XOR  AL,AL  ;Look for a 0
+  MOV  CX,-1  ;Start with max count for REPNE
+  REPNE SCASB ;Find the end of the string
+  NOT  CX     ;Calculate the size
+  DEC  CX     ;  of the string (sets ZF)
+  POP  ES     ;Restore used registers
+  POP  DI,AX  ;Restore used registers
+  RET

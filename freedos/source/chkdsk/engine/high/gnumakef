@@ -1,0 +1,120 @@
+#
+# Makefile for files in this directory.
+#
+
+include ../../configlinux.mak
+
+incdir = -I../header -I../../misc
+
+.PHONY: high.a
+
+all: high.a
+	@echo high FTE routines compiled.
+     
+high.a: walktree.o cpysct.o dircnt.o fndcidir.o \
+        fndcifat.o fndffspc.o fndlstct.o gtnthcst.o \
+        nthentry.o nthflclt.o relocclt.o swpclst.o  \
+        adcpdirs.o filechn.o fexist.o locpath.o \
+        walkwpth.o tracepth.o clcfsize.o freespac.o
+	@$(libman) ../lib/fte.a walktree.o
+	@$(libman) ../lib/fte.a cpysct.o
+	@$(libman) ../lib/fte.a dircnt.o
+	@$(libman) ../lib/fte.a fndcidir.o
+	@$(libman) ../lib/fte.a fndcifat.o
+	@$(libman) ../lib/fte.a fndffspc.o
+	@$(libman) ../lib/fte.a fndlstct.o
+	@$(libman) ../lib/fte.a gtnthcst.o
+	@$(libman) ../lib/fte.a nthentry.o
+	@$(libman) ../lib/fte.a nthflclt.o
+	@$(libman) ../lib/fte.a relocclt.o
+	@$(libman) ../lib/fte.a swpclst.o
+	@$(libman) ../lib/fte.a adcpdirs.o
+	@$(libman) ../lib/fte.a filechn.o
+	@$(libman) ../lib/fte.a fexist.o
+	@$(libman) ../lib/fte.a locpath.o
+	@$(libman) ../lib/fte.a walkwpth.o
+	@$(libman) ../lib/fte.a tracepth.o
+	@$(libman) ../lib/fte.a clcfsize.o
+	@$(libman) ../lib/fte.a freespac.o
+                
+walktree.o: walktree.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) walktree.c
+
+cpysct.o: cpysct.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) cpysct.c
+        
+dircnt.o: dircnt.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) dircnt.c
+
+fndcidir.o: fndcidir.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) fndcidir.c
+        
+fndcifat.o: walktree.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) fndcifat.c
+        
+fndffspc.o: fndffspc.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) fndffspc.c
+        
+fndlstct.o: walktree.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) fndlstct.c
+        
+gtnthcst.o: gtnthcst.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) gtnthcst.c
+        
+nthentry.o: nthentry.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) nthentry.c
+        
+nthflclt.o: nthflclt.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) nthflclt.c
+        
+relocclt.o: relocclt.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) relocclt.c
+        
+swpclst.o: swpclst.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) swpclst.c
+
+adcpdirs.o: adcpdirs.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) adcpdirs.c
+
+filechn.o: filechn.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) filechn.c
+
+fexist.o: fexist.c ../header/fte.h ../../misc/bool.h
+	@$(compiler) $(options) $(incdir) fexist.c
+
+locpath.o: locpath.c ../header/fte.h ../../misc/bool.h 
+	@$(compiler) $(options) $(incdir) locpath.c
+
+walkwpth.o: walkwpth.c ../header/fte.h ../../misc/bool.h 
+	@$(compiler) $(options) $(incdir) walkwpth.c
+        
+tracepth.o: tracepth.c ../header/fte.h ../../misc/bool.h 
+	@$(compiler) $(options) $(incdir) tracepth.c
+        
+clcfsize.o: clcfsize.c ../header/fte.h ../../misc/bool.h 
+	@$(compiler) $(options) $(incdir) clcfsize.c
+
+freespac.o: freespac.c ../header/fte.h ../../misc/bool.h 
+	@$(compiler) $(options) $(incdir) freespac.c
+                
+clean:
+	@-rm -f walktree.o
+	@-rm -f cpysct.o
+	@-rm -f dircnt.o
+	@-rm -f fndcidir.o
+	@-rm -f fndcifat.o
+	@-rm -f fndffspc.o
+	@-rm -f fndlstct.o
+	@-rm -f gtnthcst.o
+	@-rm -f nthentry.o
+	@-rm -f nthflClt.o
+	@-rm -f relocclt.o
+	@-rm -f swpclst.o
+	@-rm -f adcpdirs.o
+	@-rm -f filechn.o
+	@-rm -f fexist.o
+	@-rm -f locpath.o
+	@-rm -f tracepth.o
+	@-rm -f clcfsize.o
+	@-rm -f freespac.o
+	@-rm -f walkwpth.o

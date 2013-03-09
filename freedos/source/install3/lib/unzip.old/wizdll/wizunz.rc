@@ -1,0 +1,71 @@
+#include <windows.h>
+#ifdef WIN32
+#include <winver.h>
+#endif
+#include "wingui\wizunzip.h"
+#include "wingui\password.h"
+#include "wingui\replace.h"
+#include "wingui\rename.h"
+
+rcinclude wingui\rename.dlg
+rcinclude wingui\replace.dlg
+rcinclude wingui\password.dlg
+
+#ifndef WIN32
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 3,0,0,0
+FILEFLAGSMASK 0x3L
+//FILEFLAGS 0x2L
+FILEOS VOS__WINDOWS16
+FILETYPE VFT_DLL
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "Info-Zip\0"
+            VALUE "FileDescription", "Info-Zip's UnZip dll\0"
+            VALUE "FileVersion", "3.00\0"
+            VALUE "InternalName", "WizUnZ16\0"
+            VALUE "LegalCopyright", "Info-Zip 1996\0"
+            VALUE "OriginalFilename", "WIZUNZ16.DLL\0"
+            VALUE "ProductName", "Info-Zip's WizUnZip\0"
+            VALUE "ProductVersion", "3.0.0.0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252 
+    END
+END
+#else
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 3,0,0,0
+FILEFLAGSMASK 0x3L
+//FILEFLAGS 0x2L
+FILEOS VOS__WINDOWS32
+FILETYPE VFT_DLL
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "Info-Zip\0"
+            VALUE "FileDescription", "Info-Zip's UnZip dll\0"
+            VALUE "FileVersion", "3.00\0"
+            VALUE "InternalName", "WIZUNZ32\0"
+            VALUE "LegalCopyright", "Info-Zip 1996\0"
+            VALUE "OriginalFilename", "WIZUNZ32.DLL\0"
+            VALUE "ProductName", "Info-Zip's WizUnZip\0"
+            VALUE "ProductVersion", "3.0.0.0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252 
+    END
+END
+#endif
+

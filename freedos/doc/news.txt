@@ -1,0 +1,12 @@
+Changes to the FreeDOS Install program:
+
+For FreeDOS "1.1" distribution, version 4.0 - 4.01
+ - Copyright (C) 2010-2011 Jim Hall <jhall@freedos.org>
+
+Updated, versions 3.7.6 - 3.7.7
+ - Maintained by Jeremy Davis <jeremyd@computer.org>
+ - see ONEWS.TXT
+
+Original program, versions 1.0 - 3.7.5
+ - Copyright (C) 1998-2002 Jim Hall <jhall@freedos.org>
+ - see ONEWS.TXT

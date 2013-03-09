@@ -1,0 +1,46 @@
+This project was started in 2001. No changelog for initial changes...
+This is both a changelog and a place to put notes about undelete.
+
+Compilation: Turbo C with the included .tc and .prj files (adjust the
+             paths as needed), plus to reassemble the low level disk
+             part NASM. Use nasm with the -fobj option to create
+             bigdisk.obj. For Linux: gcc -Wall *.c -s -o undelete.elf
+             Now with makefile for Turbo C to produce small .COM file
+
+Nov 14 2003: MS-style interface, includes switches /ALL and /LIST.
+             Rebuilds the FAT chain directly after prompting for recovery
+             by directory/filename etc.
+
+Oct 20 2002: Added "extract" mode and made autodetection of the size
+             the default for all modes. Fixed a bug that would cause
+             failure to read partitions of size 16..32 MB. New help
+             screen, GNU GPL License disclaimer spread over all files.
+             Howto is part of the package but already deprecated with
+             respect to size autodetection :-(. More verbose error
+             messages. Help screen made with help of Emanuele Cipolla.
+             Full GPL disclaimers on request of JHall of the FreeDOS
+             project ( http://www.freedos.org/ ). Special undelete
+             release for my birthday today ;-). Both DOS and Linux
+             binaries (Linux version reads test.img, wants a dummy
+             prefix "x:" for target files) and .obj included.
+
+Nov 07 2002: Added better LFN display and removed the need to have NASM
+             for the "DOS disks > 32 MB" driver part. All C now. Also
+             allows drivespec in dirsave dir selection now, which is
+             IGNORED. This is only there to ease the use of UNDELETE in
+             combination with the new cool %_CWD% feature of FreeCOM 0.83
+             beta 50.
+             Added some batch files that use the new FreeCOM to mirror
+             the normal mirror stuff and optionally the whole directory
+             data dump. Added a nifty COUNT tool for counting in batch
+             files (by me) and the public domain GLOBAL recursion
+             helper tool.
+
+If you find any errors or if you want to add FAT32 support or
+other fancy features, please contact me: eric@coli.uni-sb.de
+
+Fancy features can include: Relative directory names for dirsave
+and wildcard search for follow and extract. Please do not break
+old functions by adding new features.
+
+Eric Auer, current maintainer of this UNDELETE (and mirror) tool.

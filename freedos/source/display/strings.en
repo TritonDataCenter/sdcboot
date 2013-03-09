@@ -1,0 +1,29 @@
+; Miscellaneous DISPLAY loading error messages
+errAlready       DB     "DISPLAY is already loaded", 0dH, 0aH, "$"
+errNoDRDOS       DB     "FD-DISPLAY is incompatible with this version of DR-KEYB", 0dH, 0aH, "$"
+sMemAllocatedBuffers
+                 DB     "Buffers allocated: $"
+sInTPA           DB     " in TPA, $"
+sInXMS           DB     " in XMS$"
+
+; Hardware-driver specific messages
+errAcient        DB     "DISPLAY: at least EGA adapter is required for this type of hardware", 0dH, 0aH, "$"
+errNoCGA         DB     "DISPLAY: CGA adapter was not found", 0dH, 0aH, "$"
+errDrvSpecific   DB     "DISPLAY: Driver-specific critical error", 0dH, 0aH, "$"
+
+; Commandline parsing error messages
+SyntaxErrorStr:         DB      "Syntax error ($"
+SES_ParamRequired       DB      ") Missing required parameter", 0dH, 0aH, "$"
+SES_UnexpectedEOL       DB      ") Unexpected end of line", 0dH, 0aH, "$"
+SES_IllegalChar         DB      ") Illegal character", 0dH, 0aH, "$"
+SES_NameTooLong         DB      ") Device driver name too long", 0dH, 0aH, "$"
+SES_OpenBrExpected      DB      ") ( expected", 0dH, 0aH, "$"
+SES_WrongHwName         DB      ") Unknown hardware device name", 0dH, 0aH, "$"
+SES_CommaExpected       DB      ") , expected", 0dH, 0aH, "$"
+SES_CloseBrExpected     DB      ") ) expected", 0dH, 0aH, "$"
+SES_WrongNumberPars     DB      ") Wrong number of parameters", 0dH, 0aH, "$"
+SES_TooManyPools        DB      ") Too many software codepages (MAX=5)", 0dH, 0aH, "$"
+SES_ListTooLong         DB      ") The list is too long", 0dH, 0aH, "$"
+SES_TooManyHWPools      DB      ") Too many hardware codepages", 0dh, 0ah, "$"
+SES_NoAllocatedBufs     DB      ") Not enough memory to allocate any buffer", 0dH, 0aH, "$"
+SES_InvalidParameter    DB      ") Invalid parameter", 0dh, 0ah, "$"

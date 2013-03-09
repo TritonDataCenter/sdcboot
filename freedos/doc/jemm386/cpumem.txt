@@ -1,0 +1,61 @@
+Feature/requirements comparison of FreeDOS memory drivers:
+
+
+Name               FDXMS286.SYS - XMGR.SYS - HIMEMX.EXE - JEMM386.EXE - JEMMEX.EXE   Remark:
+Feature ========================================================================================
+Minimal CPU:         80286         80386       80386        80386        80386        
+x86-safe abort:       ?              ?           ?             ?          ?          
+XMS version          2.0 (16MB)   3.0 (2.0?)  3.0/2.0      3.0/2.0      3.0/2.0       
+XMS range            0-63MB       0-4095MB    0-4095MB     0-4095MB     0-4095MB      
+HMA                  yes           yes          yes         yes           yes
+CONFIG.SYS           yes           yes          yes         yes           yes         
+commandline loading  no            no           no          yes           yes         
+devload loading      yes           yes          yes         no            no          
+EMS                  no            no           no          yes           yes
+UMB                  no            no           no          yes           yes        
+Device (CFG/NOEMS)  XMSXXXX0      XMGR2$       XMSXXXX0    EMMXXXX0       EMMXXXX0
+Device (CFG/EMS)     -             -            -          EMMQXXX0       EMMQXXX0
+Device (Cmdline)     -             -            -            -             -
+DEVLOAD              -            XMGR2$        -            -             -
+Unloadable           no            no           no           yes          yes
+Memory usage:        ?             ?             ?           ?             ?
+File size (normal):  ?             ?             ?           ?             ?
+File size (upx'd) :  ?             ?             ?           ?             ?
+Type:                SYS          SYS         SYS/EXE      SYS/EXE        SYS/EXE
+                                   
+Remarks:            ancient                                fastboot       fastboot
+
+* FDXMS286 is old, but only way for XMS to be available on 286
+* XMS drivers best loaded in CONFIG.SYS with DOS=HIGH
+* XMS driver on 286 can only use XMS v2.0 and provide up to 16MB
+* XMS identical driver, using XMS v2.0, can provide up to 64MB on 386+
+* XMS driver can't provide HMA access if loaded from commandline
+* XMS driver can provide XMS if loaded from commandline
+* EMM386 drivers provide EMS transparently out of XMS memory pool
+* EMM386 driver best used in CONFIG.SYS due to DOS=UMB, DEVICEHIGH, DOSDATA=UMB
+* EMM386 driver best used in CONFIG.SYS due to LOADHIGH and DEVLOAD /H
+* EMM386 driver can't provide UMBs if loaded from commandline
+* EMM386 driver usually requires a XMS driver first, except JEMMEX and QEMM386
+* EMM386 driver can provide EMS if loaded from commandline (even JEMM386 with NOEMS)
+* EMS on pre386 was usually done with ISA memory cards with their own drivers
+* Drivers only unloadable 
+
+The perfect XMS/HMA and EMS/UMB memory driver:
+* single driver
+* aborts on 8086/80186
+* aborts if no XMS/EMS
+* provides XMS v2.0 on 80286
+* can load as XMS/HMA driver (/XMS2, /XMS3 or /XMS (identical to "/XMS2 /XMS3"))
+* can load as EMS/UMB additional (JEMM386 currently)
+* can fail to load if no XMS driver present (JEMM386 currently)
+* can load as both XMS/UMB at the same time (JEMMEX currently)
+* provides memory limitations (for testing or compatibility reasons)
+* can be commandline loaded (JEMM386/JEMMEX)
+* can be devload loaded from commandline (XMGR, FDXMS286, HIMEMX)
+* can be unloaded (JEMM386/JEMMEX)
+
+Ofcourse all the other stuff as well present in EMM386 drivers:
+* VCPI
+* DPMI (or was this using own dedicated DPMI servers?)
+* VDS  (silly DMA stuff..)
+* other

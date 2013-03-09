@@ -1,0 +1,84 @@
+#
+# makefile for files in fte\low
+#
+
+include ../../configlinux.mak
+
+.PHONY: low.a
+
+all: low.a
+	@echo Low FTE routines compiled.
+
+low.a: rdwrsect_linux.o boot.o direct.o fat.o fteerr.o io.o \
+	   subdir.o fsinfo.o backup.o volume.o lfn.o
+	@$(libman) ../lib/fte.a rdwrsect_linux.o
+	@$(libman) ../lib/fte.a boot.o
+	@$(libman) ../lib/fte.a direct.o
+	@$(libman) ../lib/fte.a fat.o
+	@$(libman) ../lib/fte.a fteerr.o
+	@$(libman) ../lib/fte.a subdir.o
+	@$(libman) ../lib/fte.a fsinfo.o
+	@$(libman) ../lib/fte.a backup.o
+	@$(libman) ../lib/fte.a volume.o
+	@$(libman) ../lib/fte.a lfn.o
+	@$(libman) ../lib/fte.a io.o
+
+rdwrsect_linux.o: rdwrsect_linux.c ../../misc/bool.h ../header/drive.h \
+              ../header/fteerr.h
+	@$(compiler) $(options) $(caching) $(media) -I../../misc rdwrsect_linux.c
+
+boot.o: boot.c ../header/rdwrsect.h ../../misc/bool.h
+	@$(compiler) $(options) boot.c
+
+direct.o: direct.c ../header/rdwrsect.h ../header/boot.h \
+            ../../misc/bool.h ../header/direct.h
+	@$(compiler) $(options) direct.c
+
+fat.o: fat.c ../../misc/bool.h ../header/rdwrsect.h ../header/fat.h \
+         ../header/boot.h ../header/fatconst.h
+	@$(compiler) $(options) fat.c
+
+fteerr.o: fteerr.c ../header/fteerr.h
+	@$(compiler) $(options) fteerr.c
+
+subdir.o: subdir.c ../header/rdwrsect.h ../header/direct.h    \
+            ../../misc/bool.h ../header/fat.h ../header/subdir.h \
+            ../header/fatconst.h ../header/boot.h
+	@$(compiler) $(options) subdir.c
+
+fsinfo.o: fsinfo.c ../../misc/bool.h ../header/rdwrsect.h \
+       ../header/fat.h ../header/fatconst.h ../header/boot.h \
+       ../header/fsinfo.h
+	@$(compiler) $(options) fsinfo.c
+
+lowfat32.o: lowfat32.c
+	@$(compiler) $(options) lowfat32.c
+        
+backup.o: backup.c ../../misc/bool.h ../header/rdwrsect.h ../header/boot.h \
+            ../header/fat.h ../header/fatconst.h ../header/backup.h 
+	@$(compiler) $(options) -I../header -I../../misc backup.c
+
+volume.o: volume.c ../../misc/bool.h ../header/rdwrsect.h ../header/boot.h \
+            ../header/fat.h ../header/fatconst.h ../header/volume.h 
+	@$(compiler) $(options) -I../header -I../../misc volume.c        
+
+lfn.o: lfn.c ../header/direct.h
+	@$(compiler) $(options) -I../header -I../../misc lfn.c       
+	
+io.o: io.c 	../../misc/bool.h 
+	@$(compiler) $(options) -I../header -I../../misc io.c   	
+
+clean:
+	@-rm -f rdwrsect_linux.o
+	@-rm -f boot.o
+	@-rm -f direct.o
+	@-rm -f drive.o
+	@-rm -f fat.o
+	@-rm -f fteerr.o
+	@-rm -f subdir.o
+	@-rm -f fsinfo.o
+	@-rm -f lowfat32.o
+	@-rm -f backup.o
+	@-rm -f lfn.o
+	@-rm -f volume.o	
+	@-rm -f io.o

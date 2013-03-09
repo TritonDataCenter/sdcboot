@@ -1,0 +1,28 @@
+YOU WILL NEED:
+
+- OpenWatcom C compiler
+http://www.openwatcom.org/
+http://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/devel/c/openwatcom/
+
+- Info-Unzip source code (version 6.0)
+http://www.info-zip.org/
+http://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/util/file/info-zip/
+
+
+TO COMPILE THE INSTALL PROGRAM:
+
+1. Extract the Unzip sources into the Install source tree:
+
+   C:\INSTALL> unzip \unzip60.zip
+   (note: creates its own unzip60 subdirectory)
+
+2. Copy the custom Makefile & Unzip.lst into the Unzip directory:
+
+   C:\INSTALL> cd unzip60
+   C:\INSTALL\UNZIP60> copy ..\lib\unzip60\makefile .
+   C:\INSTALL\UNZIP60> copy ..\lib\unzip60\unzip.lst .
+
+3. Compile the Install program:
+
+   C:\INSTALL\UNZIP60> cd ..
+   C:\INSTALL> wmake

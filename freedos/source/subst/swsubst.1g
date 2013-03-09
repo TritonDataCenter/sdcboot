@@ -1,0 +1,604 @@
+.TH SWSUBST 1G "22 May 1995"
+.\"
+.\"    This is the documentation for the SWSUBST package, a SUBST/JOIN & more
+.\"    Copyright (C) 1995  Steffen Kaiser
+.\"
+.\"    This program is free software; you can redistribute it and/or modify
+.\"    it under the terms of the GNU General Public License as published by
+.\"    the Free Software Foundation; either version 2 of the License, or
+.\"    (at your option) any later version.
+.\"
+.\"    This program is distributed in the hope that it will be useful,
+.\"    but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"    GNU General Public License for more details.
+.\"
+.\"    You should have received a copy of the GNU General Public License
+.\"    along with this program; if not, write to the Free Software
+.\"    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"  $Id: swsubst.1g 1.3 1995/06/30 04:12:38 ska Exp ska $
+.SH NAME
+swsubst \- CDS Manipulator
+.SH SYNOPSIS
+\fBswsubst\fP { \fBoption\fP | \fBkommando\fP } [ \fBargumente\fP ]
+
+Erlaubte \fIoptionen\fP sind: \fB/h\fP, \fB/?\fP, \fB/#\fP, \fB/!\fP,
+\fB/a\fP, \fB/f\fP, \fB/k\fP, \fB/t\fP, \fB/_\fP, \fB/d\fP, \fB/x\fP=??,
+\fB/n\fP und \fB/o\fP=#.
+
+Erlaubte \fIkommandos\fP sind: \fB/m\fP, \fB/c\fP, \fB/j\fP, \fB/u\fP,
+\fB/q\fP, \fB/s\fP, \fB/r\fP, \fB/l\fP und \fB/w\fP.
+
+Einer der folgenden Namen \("andert die Standardeinstellungen von
+\fIswsubst\fP: \fIjoin\fP, \fIsubst\fP, \fImkdir\fP, \fIchdir\fP,
+\fIquery\fP, \fIswap\fP, \fIwhich\fP, \fI-join\fP, \fI-mkdir\fP,
+\fI-chdir\fP, \fI-query\fP, \fI-swap\fP, \fIdrvlist\fP, \fImcblist\fP
+und \fI-which\fP.
+.SH DESCRIPTION
+\fIswsubst\fP manipuliert die CDS (\fBC\fPurrent \fBD\fPirectory
+\fBS\fPtructure), nahezu jede Information innerhalb der CDS ist
+verf\("ugbar. Durch Umbennen oder Kopieren des Programms
+\fBswsubst.exe\fP nach einem der oben genannten Dateinamen wird
+automatisch ein Kommando als erste Option eingef\("ugt, z.B. ist "query
+/a c:+net" gleich "swsubst /q /a c:+net". Lediglich \fIjoin\fP und
+\fIsubst\fP haben eine zus\("atzliche Bedeutung, indem \fIswsubst\fP die
+Restriktionen f\("ur Konformit\("at mit den gleichnamigen DOS
+Standardprogrammen auferlegt werden.
+
+Unn\("otige Optionen oder Optionen ohne Bedeutung f\("ur das jeweilige
+Kommando werden ignoriert.
+
+Ein Pfad kann logisch und physisch spezifiert werden. Physische
+Laufwerksbuchstaben bezeichnen das Laufwerk, welches DOS w\("ahrend des
+Bootvorgangs dem Buchstaben zuordnete. Logische Laufwerksbuchstaben
+bezeichnen die Laufwerke so, wie sie normalerweise auf der Kommandozeile
+verf\("ugbar sind, z.B. nach dem Kommando "SUBST C: E:\FREEDOS" verweist
+der logische Laufwerksbuchstabe C: auf das physische Laufwerk E:, d.h.
+wenn der DOS Prompt "C:\>" sagt, ist tats\("achlich der originale Pfad
+"E:\FREEDOS" gemeint. Das originale Laufwerk C: ist nicht l\("anger
+verf\("ugbar.
+
+Um diese Grenze zu durchbrechen, kennzeichnet ein f\("uhrender
+Bindestrich einen physischen Pfad. Nach "SUBST D: C:\SOURCE" ziegt das
+logisch Laufwerk D: nach dem physischen Pfad "E:\FREEDOS\SOURCE",
+w\("ahrend nach "SWSUBST D: -C:\SOURCE" das Laufwerk D: nach "C:\SOURCE"
+zeigt. \fIAchtung:\fP Ist ein physischer Pfad nicht vollst\("andig
+angegeben, wird er bzgl. des aktuellen logischen Pfads
+vervollst\("andigt.
+
+Die Laufwerksspezifikation ist ebenfalls erweitert:
+.br
+An Stellen, die lediglich eine Laufwerksspezifikation erwarten,
+kann ebenso ein einzelner Buchstabe, wie ein relativer oder
+vollst\("andiger Pfad stehen.
+.br
+Desweiteren ist es m\("oglich ein Laufwerk zu spezifizieren, indem nach
+dem Namen des Treibers oder der Volumenkennzeichnung gesucht wird.
+Treibernamen sind mittels ":*:" verf\("ugbar, wobei "*" f\("ur den maximal
+8-stelligen Namen steht. Da ein und derselbe Treiber mehrere Laufwerke
+verwalten kann, darf mittels ":#:*:" dem Namen eine Zahl vorangestellt
+werden. Die Nummerierung beginnt bei Null.  \fIAchtung:\fP Nicht alle
+Treiber haben einen Namen!
+.br
+Die Suche \("uber Volumenkennzeichen wird mittels "::*:" bzw. ":-:*:"
+aktiviert, wobei "*" f\("ur das gesuchte Kennzeichen steht. Der optionale
+Bindestrich weist \fIswsubst\fP an, w\("ahrend der Suche bestehende
+SUBST- und JOIN-Beziehungen zu l\("osen.
+.br
+Die Suche beginnt mit Laufwerk A:. Nicht reagierende
+Laufwerke werden ignoriert.
+.br
+Die Namen werden ohne Beachtung der Gro\("s- und Kleinschreibung
+verglichen. Desweiteren mu\("s der tats\("achliche Name lediglich mit
+der angegebenden Zeichenkette beginnen. Bspw.: ":1:stac:\dos" entspricht
+dem Pfad "\DOS" auf auf dem \fIzweiten\fP Laufwerk, dessen Treibername
+mit "STAC" beginnt.
+.br
+"-:-:hd_c:\\foo\bar" entspricht dem physischen Pfad
+"\FOO\BAR" auf dem Laufwerk, dessen Kennzeichen mit "HD_C" beginnt.
+\fIMerke:\fP Der Bindestrich innerhalb der Doppelpunkte
+":-:" steht f\("ur: "ermittele den physischen Laufwerksbuchstaben", 
+w\("ahrend der Bindestrich vor dem ersten Doppelpunkt f\("ur 
+"interpretiere die folgende Laufwerksbezeichnung als physisch" steht.
+
+
+.SH OPTIONS
+.IP "spezielle Namen"
+\fIjoin\fP: Beschr\("ankt \fIswsubst\fP auf die M\("oglichkeiten des
+Standardprogramms JOIN. Siehe die Hilfeseite f\("ur \fIJOIN\fP.
+.br
+\fIsubst\fP: Beschr\("ankt \fIswsubst\fP auf die M\("oglichkeiten des
+Standardprogramms SUBST. Siehe die Hilfeseite f\("ur \fISUBST\fP.
+.br
+\fImkdir\fP und \fI-mkdir\fP f\("ugt das \fB/m\fP Kommando ein.
+.br
+\fIchdir\fP und \fI-chdir\fP f\("ugt das \fB/c\fP Kommando ein.
+.br
+\fIquery\fP and \fI-query\fP f\("ugt das \fB/q\fP Kommando ein.
+.br
+\fIswap\fP und \fI-swap\fP f\("ugt das \fB/s\fP Kommando ein.
+.br
+\fIwhich\fP und \fI-which\fP f\("ugt das \fB/w\fP Kommando ein.
+.br
+\fIdrvlist\fP f\("ugt das \fB/r\fP Kommando ein.
+.br
+\fImcblist\fP f\("ugt das \fB/l\fP Kommando ein.
+.br
+\fI-join\fP f\("ugt das \fB/j\fP Kommando ein.
+.br
+Jeder andere Name verwendet das \fB/u\fP Kommando.
+
+.IP "\fB/?\fP und \fB/h\fP"
+Zeigt einen kleinen Hilfebildschirm an.
+.IP \fB/#\fP
+Nach der CDS Tabelle wird die Statistik der geJOINten Laufwerke
+ausgegeben. Es werden zwei Zahlen ausgegeben, die eine wird aus der CDS
+Tabelle berechnet, die andere wird aus einem internen DOS Datenbereich
+gelesen. Sollten sich beide voneinander unterscheiden, kann es sein,
+da\("s das System nicht korrekt arbeitet.
+.br
+Wird diese Option ein zweites Mal angegeben, wird der Effekt der
+vorherigen und von \fB/!\fP aufgehoben.
+.IP \fB/!\fP
+Diese Option wirkt wie \fB/#\fP. Zus\("atzlich wird der interne
+Datenbereich abgeglichen, falls sich beide Zahlen voneinander
+unterscheiden.
+.br
+Wird diese Option ein zweites Mal angegeben, wird die zweite ignoriert.
+.IP \fB/a\fP
+Nachdem das Kommando fehlerfrei abgearbeitet wurde, wird die CDS Tabelle
+ausgegeben. Falls das Kommando selbst die Ausgabe der CDS aktiviert,
+wird der Stand dieser Option ignoriert.
+.br
+Ist diese Option aktiv, werden auch unbenutzte Eintr\("age ausgegeben.
+.br
+Eine zweite Angabe der Option hebt den Effekt der vorherigen wieder auf.
+.IP \fB/f\fP
+Innerhalb der Treiber existiert ein ungenutzter Bereich, worin der
+Treibername gespeichert werden kann. Normalerweise nutzt \fIswsubst\fP
+den Anfang dieses Bereichs, bis ein nicht druckbares Zeichen gefunden
+wird. Ist diese Option angegeben, wird der gesamte Bereich benutzt und
+nicht druckbare Zeichen hexadezimal angegeben. Hierf\("ur werden diese
+Zeichen durch \x?? dargestellt, wobei ?? f\("ur zwei hexadezimale
+Ziffern steht.
+.br
+Eine zweite Angabe der Option hebt den Effekt der vorherigen wieder auf.
+.IP \fB/_\fP
+Normalerweiser wird lediglich eine Untermenge der 16 verf\("ugbaren
+Flags ausgegeben. Mit dieser Option wird innerhalb der CDS Tabelle eine
+kleine \("Ubersicht verf\("ugbar gemacht, welche alle Flags anzeigt. Die
+Flags mit Namen: Netzwerk, Physisch, geJOINt, geSUBSTet und Hidden werden
+mit ihrem Anfangsbuchstaben gekennzeichnet, wenn sie gesetzt sind; alle
+anderen mit einem Plus. Ist das jeweilige Flag nicht gesetzt, wird es
+mit einem Bindestrich gekennzeichnet. 
+.br
+Eine zweite Angabe der Option hebt den Effekt der vorherigen wieder auf.
+.IP \fB/k\fP
+Die Angabe dieser Option weist \fIswsubst\fP an, Pfade falls n\("otig
+anzulegen, z.B. "swsubst /k f: c:\\foo\bar" legt den Pfad "\FOO\BAR" auf
+dem Laufwerk C: an. Hierbei ist es unerheblich, ob "C:\FOO" oder
+"C:\FOO\BAR" bereits existiert. \fIAchtung:\fP Dies ist
+standardm\("a\("sig NICHT eingestellt!
+.br
+Eine zweite Angabe der Option hebt den Effekt der vorherigen sowie von
+\fB/t\fP wieder auf.
+.IP \fB/t\fP
+Diese Option weist \fIswsubst\fP an, nachzusehen, ob die ben\("otigten
+Pfade existieren. Falls nicht, wird das Kommando abgebrochen.
+.br
+Eine zweite Angabe der Option hebt den Effekt der vorherigen sowie von
+\fB/k\fP wieder auf.
+.IP \fB/d\fP
+Das ist keine wirkliche Option, sondern entspricht bei den Kommandos
+\fB/j\fP und \fB/u\fP dem \fB/d\fP als zweites Argument. 
+.br
+Eine zweite Angabe der Option hebt den Effekt der vorherigen wieder auf.
+.IP \fB/o\fP=#
+Diese Option dient ebenfalls nur den Kommandos \fB/u\fP und \fB/j\fP und
+\("uberschreibt den standardm\("a\("sig aus dem Pfad gewonnenen
+Backslashoffset. \fBAchtung! Mit Vorsicht zu verwenden!\fP
+.br
+Eine zweite Angabe der Option \("uberschreibt eine vorherige.
+.br
+Die Zahl \fB#\fP mu\("s sich im Bereich von 0..66 bewegen und darf in
+C-Notation angegeben werden, d.h.: beginnt die Zahl entweder mit "0x"
+oder "0X", wird der Rest als hexadezimal angesehen, mit "0" als oktal,
+ansonsten als dezimal.  Ist \fB#\fP Null, wird der Effekt aufgehoben und
+der Backslashoffset aus dem Pfad hergeleitet.
+.br
+Diese Option wird bei Netzwerkpfaden ben\("otigt, welche nicht mit
+DOS-Pfaden konform sind.
+.br
+.IP \fB/x\fP=??
+Diese Option schlie\("st die angegebenen Laufwerke w\("ahrend der Suche
+nach einem Volumekennzeichen \("uber die erweiterte "::*:"
+Laufwerksspezifikation aus.
+.br
+Jede Option \fB/x\fP=?? \("uberschreibt eine
+vorherige, \fB/x=\fP nimmt alle Laufwerke in den Suchproze\("s auf.
+.IP \fB/m\fP
+Dieses Kommando akzeptiert eine beliebige Zahl von Argumenten, welche
+alle als Pfadspezifikationen angesehen werden. Sie werden einschlie\("slich
+des vollst\("andigen Pfades angelegt.
+.IP \fB/c\fP
+Diese Kommando akzeptiert genau ein Argument, welches mit Kommando
+\fB/m\fP angelegt wird. Anschlie\("send wird in dieses Verzeichnis
+gewechselt, dabei gegebenenfalls auch das aktuelle Laufwerk gewechselt.
+.IP \fB/j\fP
+Dieses Kommando entspricht \fIJOIN\fP ohne Restriktionen.
+.br
+Es gibt zwei Formate:
+.br
+1) \fBlw\fP ( \fB/d\fP | \fB-\fP )
+.br
+welches jede SUBST- bzw. JOIN-Beziehung des logischen Laufwerks
+\fBlw\fP l\("ost.
+.br
+2) \fBlw1\fP [\fB\-\fP]\fBlw2\fP:\fBpfad\fP
+.br
+welches ebenfalls eine SUBST- bzw. JOIN-Beziehung des logischen
+Laufwerks \fBlw1\fP l\("ost und anschlie\("send das Laufwerk \fBlw1\fP
+in den Pfad \fBpfad\fP auf Laufwerk \fBlw2\fP einf\("ugt. Logische Pfade
+werden \("uber den DOS Ruf \fItruename\fP in physische transformiert.
+Physische Pfade werden in Gro\("sbuchstaben umgewandelt und
+vervollst\("andigt. Um dies zu verhindern, mu\("s ein zweiter
+Bindestrich vorangestellt werden. \fIMerke:\fP Pfade, welche mit zwei
+Backslashes "\\\\" beginnen, gelten als Netzwerkpfade. Ihnen wird
+automatisch ein Bindestrich vorangestellt.
+.br
+Wenn DOS einen Pfad anzeigt, k\("onnen am Beginn einige Zeichen
+ausgelassen werden. Dieses Verhalten wird \("uber den Backslashoffset
+geregelt.  Da z.B. f\("ur Netzwerkpfade dieser Offset nicht aus der
+Pfadangabe ersichtlich ist, kann er mittels der Option \fB/o\fP manuell
+gesetzt werden.
+.IP \fB/u\fP
+Entspricht dem \fB/j\fP Kommando, au\("ser da\("s das Laufwerk nicht geJOINt,
+sondern substituiert wird.
+.IP \fB/q\fP
+Dieses Kommando testet die Laufwerksflags. Die Syntax ist analog dem
+Kommando \fBsetze Laufwerksflags\fP, lediglich der Modus '=' und die
+Flags "ON" und "OFF" werden nicht unterst\("utzt. Das Ergebnis wird
+\("uber den ERRORLEVEL von \fIswsubst\fP dem rufenden Programm
+mitgeteilt.
+.br
+Ein ERRORLEVEL von Null besagt, da\("s die Flags entsprechend des
+Kommandos gesetzt sind. Ein Wert gr\("o\("ser als Null kennzeichnen
+einen Fehler.
+.IP \fB/r\fP
+Dieses Kommando erlaubt die Ger\("atetreiberliste auszugeben und zu durchsuchen.
+Es erlaubt maximal ein Argument. Falls das Argument fehlt oder entweder '+'
+oder '-' ist, wird die Kette wie folgt ausgegeben:
+.br
+NUL     
+.br
+CON      <<D>> ANSI    
+.br
+MSCD001  <<D>> SGCDU   
+.br
+EMMXXXX0 <<D>> EMM386  
+.br
+CON     
+.br
+AUX     
+.br
+PRN     
+.br
+CLOCK$  
+.br
+COM1    
+.br
+LPT1    
+.br
+LPT2    
+
+.br
+Die Namen links vom "<< >>" sind die Treibernamen, das Zeichen innerhalb
+der "<< >>" ist der MCB-Typ (welcher ab DOS Version 4 verf\("ugbar ist)
+und der Name rechts vom "<< >>" sind die Dateinamen des jeweiligen Treibers.
+Letztere sind ein Zugest\("andnis der Routine, welche den Treiber lud,
+deshalb k\("onnen sie fehlen.
+.br
+
+Das Suchen wird aktiviert, wenn das zus\("atzliche Argument weder '+'
+noch '-' ist. Falls das erste Zeichen ein '+' ist, werden auch die Namen
+rechts vom "<< >>" zur Suche mit herangezogen. In den Namensvergleich
+flie\("st ein f\("uhrendes '+' bzw. '-' nicht mit ein.
+.br
+Falls ein passender Eintrag gefunden wurde, wird der ERRORLEVEL auf
+Null gesetzt, ansonsten auf einen Wert gr\("o\("ser als Null.
+
+.IP \fB/l\fP
+Dieses Kommando erlaubt die Liste der MCBs (Speicherkontrollbl\("ocke) auszugeben und zu durchsuchen.
+Es erlaubt maximal ein Argument. Falls das Argument fehlt oder entweder '+'
+oder '-' ist, wird die Kette wie folgt ausgegeben:
+.br
+0x0264 M 0x01e4 nam=SD sys:data
+.br
+    0x0265 D 0x0048 nam=HIMEM drv=XMSXXXX0 sys:device_driver
+.br
+    0x02ae D 0x00c3 nam=EMM386 drv=EMMXXXX0 sys:device_driver
+.br
+    0x0372 F 0x0082 nam=ilegiert sys:FILES
+.br
+    0x03f5 X 0x0005 sys:FCBS
+.br
+    0x03fb B 0x0020 sys:BUFFERS
+.br
+    0x041c L 0x002c sys:LASTDRIVE
+.br
+        0x041d A 0x0000 own#0x5c3a
+.br
+0x0449 M 0x0004 nam=SC sys:code
+.br
+0x044e M 0x0003 own=COMMAND
+.br
+0x0452 M 0x00bc nam=COMMAND
+.br
+0x050f M 0x0040 nam=arameter env=COMMAND
+.br
+0x0550 M 0x001d env=SWSUBST
+.br
+0x056e M 0x020f nam=sgcdu
+.br
+0x077e M 0x03de nam=MSCDEX
+.br
+0x0b5d M 0x1aa3 nam=SWSUBST
+.br
+0x2601 Z 0x79fd sys:free sys:end_of_chain
+.br
+0x9fff M 0x1159 nam=SC sys:code
+.br
+0xb159 M 0x0107 nam=SD sys:data
+.br
+    0xb15a D 0x0106 nam=ANSI drv=CON sys:device_driver
+.br
+0xb261 M 0x0003 sys:free
+.br
+0xb265 M 0x0598 sys:free
+.br
+0xb7fe M 0x2002 nam=SC sys:code
+.br
+    0xb7ff M 0x2000 nam=SM sys:memory
+.br
+0xd801 M 0x07d5 nam=SMARTDRV
+.br
+0xdfd7 Z 0x1028 sys:free sys:end_of_chain
+.br
+
+Die Elemente haben folgende Bedeutung, von links nach rechts:
+.br
++ Die Adresse des MCB, hexadezimal und immer mit den f\("uhrenden "0x".
+.br
++ Der Typ des MCB. Er kann ein Leerzeichen sein.
+.br
++ Die Gr\("o\("se des verwalteten Speichers in Paragraphen, ebenfalls
+hexadezimal und mit den f\("uhrenden "0x". Diese Zahl wird nur
+ausgegeben, wenn das Argument "+" angegeben wurde.
+.br
++ Der Versuch, die Verwendung des MCB zu erraten. Er kann eine beliebige
+Kombination folgender Informationen sein:
+.br
+++ nam=???. Der Name des in den Speicherbereich geladenen Programms.
+.br
+++ env=???. Der Name des Programms, zu welchem dieser MCB als
+Umgebungsbereich geh\("ort.
+.br
+++ drv=???. Der Name des Treiber, welcher den MCB belegt.
+.br
+++ own=???. Der Name des Programms, zu welchem der MCB geh\("ort.
+.br
+++ sys:???. Kennzeichnet einen vom System verwalteten Speicherbereich.
+Die "???" stehen f\("ur den Datentyp, welcher darin abgelegt ist.
+Eine besondere Bedeutung hat "sys:end_of_chain" bzw. "sys:Kettenende",
+welches das Ende einer MCB Kette markiert.
+.br
+Die oben genannten Namen m\("ussen nicht in den MCB abgelegt sein.
+Deshalb kann an Stellen, an denen ein Name stehen mu\("s, das
+Ausweichformat "*#0x????" verwendet werden, wobei "*" f\("ur den
+Informationstyp (die ersten drei Buchstaben) und "????" f\("ur die stets
+vierstellige Adresse des MCB des Eigent\("umers stehen.
+.br
+Die Ausgabe ist f\("ur die Weiterverarbeitung durch ein anderes Programm
+gedacht, deshalb wird pro Zeile die Informationen eines MCB und die 
+Elemente ohne zus\("atzliche Lerrzeichen ausgegeben. Da \fIswsubst\fP
+versucht, innerhalb eines MCB wiederum eine MCB-Kette zu identifizieren,
+k\("onnen nutzlose Eintr\("age entstehen (s. 0x041d).
+.br
+Im obigen Beispiel sind zwei MCB mit "sys:end_of_chain" markiert.
+Dieses Verhalten basiert auf der Art und Weise, wie moderne DOS Versionen
+den Speicher verwalten, indem jeweils eine Kette im konventionellen und
+eine im hohen Speicherbereich liegen.
+.br
+
+Das Suchen wird aktiviert, wenn das zus\("atzliche Argument weder '+'
+noch '-' ist. F\("ur den Vergleich wird die Gro\("s- und Kleinschreibung
+ignoriert, und, au\("ser wenn das erste Zeichen des Arguments ein '+'
+ist, mu\("s der aus dem MCB gelesene Name (in obiger Liste die Namen
+hinter dem "nam=" Element) lediglich mit dem Argument beginnen. In den
+Namensvergleich flie\("st ein f\("uhrendes '+' bzw. '-' nicht mit ein.
+.br
+Falls ein passender Eintrag gefunden wurde, wird der ERRORLEVEL auf
+Null gesetzt, ansonsten auf einen Wert gr\("o\("ser als Null.
+
+.IP \fB/s\fP
+Dieses Kommando ben\("otigt genau zwei Argumente, welche als
+Laufwerksspezifikationen interpretiert werden. Beide werden einfach
+gegeneinander ausgetauscht.
+
+.IP \fB/n\fP
+Dieses Kommando ist eng mit \fB/s\fP verwandt. Anstatt jedoch die
+Eintr\("age in der CDS-Tabelle auszutauschen, werden die Unitnummern des
+Ger\("atetreibers ausgetauscht. Deshalb m\("ussen beide Laufwerke vom
+selben Ger\("atetreiber verwaltet werden. Das ist aus unbekanntem Grund
+der einzige Weg, die Diskettenlaufwerke miteinander zu vertauschen.
+.br
+Wird das Kommando ohne weitere Argumente aufgerufen, werden beide
+Diskettenlaufwerke vertauscht; ansonsten die angegebenen.
+\fIAchtung:\fP Sie sollten dieses Kommando nur auf Diskettenlaufwerke
+anwenden.
+.br
+Dieser Austausch wird weder durch die Kommandos: \fB-\fP, \fB-\-\fP und
+\fB/d\fP noch durch direkte Manipulation der Laufwerksflags, z.B. mit
+"X:=OFF" oder "X:=ON", zur\("uckgesetzt. Sie m\("ussen stattdessen
+erneut getauscht, oder der Rechner neu gestartet werden.
+.IP \fB/w\fP
+Dieses Kommando ben\("otigt genau ein Argument, welches eine
+Laufwerksspezifikation darstellt. Der Buchstabe dieses Laufwerks wird
+als ERRORLEVEL zur\("uckgegeben.  Dabei kennzeichnet ein ERRORLEVEL
+zwischen 65 (ASCII 'A') und 90 (ASCII 'Z') den Laufwerksbuchstaben, eine
+Null, da\("s das Laufwerk nicht existiert, und jeder andere Wert einen
+Fehler.
+.IP "\fBohne Kommando\fP"
+In diesem Fall entscheiden die folgenden Argumente, welches Kommando zur
+Ausf\("uhrung gebracht wird:
+.IP "\fBohne ein weiteres Argument\fP"
+Wird die CDS Tabelle ausgegeben:
+.br
+H 0000:0000 NET .... PHYS ..... HIDDEN \\H.\A."\BC4
+.br
+        ==>.MSCD001 .<==        _NP------H-------_
+.br
+Nummer geJOINter Laufwerke per CDS 0 per Flag: 0 => scheint OK
+
+.br
+Zeile 1 von links nach rechts:
+.br
++ Logischer Laufwerksbuchstabe
+.br
++ Adresse des DPB
+.br
++ NETWORKED (Netzwerk) Flag gesetzt
+.br
++ JOINED Flag nicht gesetzt
+.br
++ PHYSICAL (lokal) Flag gesetzt
+.br
++ SUBST Flag nicht gesetzt
+.br
++ HIDDEN (versteckt) Flag gesetzt
+.br
++ Der physische Pfad. Das Anf\("uhrungszeichen markiert den
+\fIBackslashoffset\fP.  Alle Zeichen links davon sind nicht sichtbar.
+Falls das Laufwerk aussieht, als sei die Unitnummer ver\("andert,
+z.B. mithilfe des \fB/n\fP Kommandos, wird " => X:" angehangen,
+wobei 'X' f\("ur das wahrscheinlichste Laufwerk steht, worauf
+zugegriffen wird.
+.br
+Zeile 2:
+.br
++ Treibername. Die "==>..<==" sind NICHT Bestandteil des Namens.
+.br
++ \("Ubersicht aller Flags. Erzeugt durch die \fB/_\fP Option.
+Die umgebenden Unterstriche haben keine Bedeutung.
+
+.br
+Zeile 3:
+.br
+Die Statistik geJOINter Laufwerke: Beide Zahlen sind gleich, so da\("s
+kein Fehler vorliegen sollte.
+.br
+Falls die \fB/a\fP Option nicht aktiv ist, werden nur benutzte Eintr\("age
+und der letzte verf\("ugbare angezeigt.
+.IP "entweder \fB-\fP oder \fB--\fP"
+\fB-\fP l\("ost alle SUBST- und JOIN-Verbindungen. Das wird \("uber das
+Kommando "/u lw: /d" f\("ur jedes in Frage kommende Laufwerk erreicht. 
+.br
+\fB-\-\fP f\("uhrt dieses Kommando f\("ur alle Nicht-Netzlaufwerke aus.
+.IP "\fBsetze Laufwerksflags\fP"
+Dieses Kommando ben\("otigt genau ein Argument in folgendem Format:
+\fBlw\fP:{(\fB\-+=\fP)\fBflag\fP}, wobei der Modus
+\fB-\fP bedeutet: zur\("ucksetzen bzw. nicht gesetzt;
+\fB+\fP: setzen bzw. gesetzt;
+und \fB=\fP: das Flag setzen und alle anderen zur\("ucksetzen.
+.br
+Folgende Flags sind verf\("ugbar: \fBOFF\fP schaltet das Laufwerk aus,
+d.h. es ist nicht mehr ansprechbar; \fBON\fP macht es wieder
+verf\("ugbar (Das ist \fINICHT\fP die Umkehrung von \fBOFF\fP, sondern
+der Versuch die urspr\("ungliche Bedeutung dieses Eintrags zu erraten.
+Das ist gleichbedeutend mit dem Kommando "/u lw: /d".); \fBPHYSICAL\fP,
+\fBJOIN\fP, \fBNETWORK\fP, \fBSUBST\fP und \fBHIDDEN\fP referenzieren
+das gleichnamige Flag; eine Zahl zwischen 0 und 15 referenzieren das
+n-te Flag.
+.br
+Alle Flags au\("ser ON k\("onnen bis auf ein Zeichen abgek\("urzt werden.
+.IP "\fBansonsten\fP"
+wird das Kommando \fB/u\fP angenommen.
+.SH "SEE ALSO"
+subst, join.
+.SH "KNOWN BUGS"
+.IP \(bu
+Ein relativer physischer Pfad wird mit logischen Pfadkomponenten
+vervollst\("andigt.
+.IP \(bu
+Manchmal schlagen Nicht-Standardmanipulationen fehl. Das kann bedeuten,
+da\("s das System abst\("urzt oder lediglich eine harmlose Fehlermeldung,
+wie 'Kann *.* nicht finden', erscheint.
+.IP \(bu
+Ein Laufwerk ON (ein-) zuschalten scheint die Umkehrung f\("ur OFF zu
+sein.  Das klappt f\("ur lokale Festplatten, manchmal f\("ur Laufwerke
+mit Softwaretreiber, jedoch selten f\("ur Netzwerke oder CD-ROMs.
+.IP \(bu
+Wirkt nur auf MS-DOS kompatiblen Betriebssystemen, jedoch wird nicht
+\("uberpr\("uft, ob tats\("achlich eines vorliegt.
+.IP \(bu
+\fBswsubst\fP pr\("uft einige Fehlerquellen ab, jedoch k\("onnen auch in
+einigen F\("allen korrekte Einstellungen in anderen F\("allen das System
+abst\("urzen lassen.
+.IP \(bu
+Viele Kommandos, z.B. \fB/s\fP, \fB/u\fP und \fB/j\fP, machen es Microsoft
+Windows 3+ unm\("oglich auf den betroffenen Laufwerken den 32-Bit-Zugriff
+anzuwenden bzw. dort eine permanente Auslagerungsdatei anzulegen.
+.SH EXAMPLES
+.IP "\fIswsubst /w ::HD_e:\fP"
+Sucht nach einem Laufwerk, dessen Kennzeichn mit "HD_E" beginnt und
+gerade \("uber logische Laufwerksbuchstaben ansprechbar ist. Das 
+Ergebnis kann wie folgt getestet werden:
+
+.br
+swsubst /w ::hd_e:
+.br
+if errorlevel 91 goto Fehler
+.br
+if errorlevel 90 echo Laufwerk Z:
+.br
+if errorlevel 89 echo Laufwerk Y:
+.br
+ ...
+.br
+if errorlevel 65 echo Laufwerk A:
+.br
+if errorlevel 1 goto Fehler
+.br
+if not errorlevel 1 echo Kein Laufwerk HD_E gefunden!
+
+.br
+Unter 4DOS auch mit:
+
+.br
+iff %? .LE. 90 .AND. %? .GE. 65 then
+.br
+	echo Laufwerk %@char[%?]
+.br
+elseiff errorlevel 1 then
+.br
+	echo Fehler
+.br
+else
+.br
+	echo Es gibt kein Laufwerk mit Kennzeichnug HD_E
+.br
+endiff
+.IP "\fIswsubst /s e ::HD_e:\fP"
+Tauscht das logische Laufwerk E: mit dem Laufwerk aus, welches das
+Kennzeichen "HD_E" besitzt. Damit kann sichergestellt werden, da\("s das
+Laufwerk mit dem Kennzeichen "HD_E" stets \("uber E: verf\("ugbar ist.
+\fIBeachten\fP Sie auch den Paragraph \fBKnown Bugs\fP.
+.SH CONTRIBUTERS
+    Steffen Kaiser
+.br
+Ernst-Th\("almann-Stra\("se 2
+.br
+     D-09126 Iden
+.br
+ Deutschland - Germany

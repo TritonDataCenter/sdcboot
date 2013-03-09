@@ -1,0 +1,23 @@
+INSTALLING WHATIS and APROPOS
+=============================
+
+Unzip the whatis zip file to your freedos directory
+(usually c:\freedos or c:\fdos). Whatever program
+you use to unzip the whatis zip file, make sure that
+it is set to preserve directory names.
+
+COMPILING WHATIS FROM SOURCE
+============================
+
+NB: Apropos is just a batch file that calls WHATIS with
+an option: "/A".
+
+The WHATIS source is located in \source\whatis.
+
+WHATIS.C was compiled with Borland Turbo C++ for DOS 3.0.
+(Note that whatis.c is C code, not C++). A makefile is
+provided to compile whatis.c into the most efficient code
+possible.
+
+In the makefile, check that the /I and /L parameters of the
+compiler are set correctly for your setup. Then run "MAKE".

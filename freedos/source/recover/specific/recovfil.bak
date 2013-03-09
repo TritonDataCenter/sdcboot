@@ -1,0 +1,243 @@
+/*
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU Library General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ *  If you have any questions, comments, suggestions, or fixes please
+ *  email me at:  imre.leber@worldonline.be   
+ */
+
+#include <stdio.h>
+#include <string.h>
+#include <dir.h>
+
+#include "fte.h"
+#include "path.h"
+#include "truname.h"
+#include "recover.h"
+
+static BOOL FileRecoverer(RDWRHandle handle, struct DirectoryPosition* pos, void** structure);
+static BOOL ReadWriteCheckCluster(RDWRHandle handle, CLUSTER cluster);
+static BOOL ClusterChecker(RDWRHandle handle, CLUSTER label, SECTOR datasector,
+                           void** structure);
+
+
+void RecoverFile(char* file)
+{
+    char drive[3];
+    RDWRHandle handle;
+    char temppath[MAXPATH], fullpath[MAXPATH];
+    char* pos;
+    
+    strcpy(temppath, file);
+    if (!GetPreviousDir(temppath))
+	strcpy(temppath, ".");
+    
+    if (!Truename(fullpath, temppath) || (!(*fullpath)) || (fullpath[1] != ':'))
+    {
+	printf("Cannot access %s on %s\n");
+	return;
+    }    
+    
+    strcpy(drive, "?:");
+    drive[0] = fullpath[0];
+    
+    if (!InitReadWriteSectors(drive, &handle))
+    {
+	printf("Cannot access %s\n", drive);
+	return;	
+    }
+    
+    addsep(fullpath);
+    pos = strrchr(file, '\\');
+    if (pos)
+    {
+	strcat(fullpath, pos+1);
+    }	
+    else
+    {
+	strcat(fullpath, file); 	
+    }
+    
+    if (!WalkWildcardPath(handle, fullpath, 0, FileRecoverer, (void**) NULL))
+    {
+	printf("Problem recovering files\n");
+	
+	SynchronizeFATs(handle);
+	CloseReadWriteSectors(&handle);
+	return;
+    }
+	    
+    if (!ConvertLostClustersToFiles(handle))
+    {
+	printf("Problem reclaiming lost clusters\n");
+	
+	SynchronizeFATs(handle);
+	CloseReadWriteSectors(&handle);
+	return;
+    }
+    
+    if (!TruncateCrossLinkedFiles(handle))
+    {
+	printf("Problem resolving cross linked clusters\n");
+	
+	SynchronizeFATs(handle);
+	CloseReadWriteSectors(&handle);	
+	return;    
+    }
+    
+    SynchronizeFATs(handle);
+    CloseReadWriteSectors(&handle);    
+}
+
+static BOOL FileRecoverer(RDWRHandle handle, struct DirectoryPosition* pos, void** structure)
+{
+    CLUSTER cluster;
+    struct DirectoryEntry entry;
+    unsigned long newsize;
+	
+    if (!GetDirectory(handle, pos, &entry))
+	return FAIL;    
+    
+    cluster = GetFirstCluster(&entry);
+    
+    if (!RecoverFileChain(handle, cluster, &newsize))
+	return FAIL;
+    
+    if (newsize != entry.filesize)
+    {
+	entry.filesize = newsize;
+	
+	if (newsize == 0)
+	{
+	   SetFirstCluster(0, &entry);    
+	}
+	
+	if (!WriteDirectory(handle, pos, &entry))
+	    return FAIL;
+    }
+    
+    return TRUE;
+}
+
+static BOOL ReadWriteCheckCluster(RDWRHandle handle, CLUSTER cluster)
+{
+    SECTOR datasector;
+    char sectordata[BYTESPERSECTOR];
+    unsigned char SectorsPerCluster, i;
+    
+    SectorsPerCluster = GetSectorsPerCluster(handle);
+    if (!SectorsPerCluster) return FAIL;
+	
+    datasector = ConvertToDataSector(handle, cluster);
+    if (!datasector) return FAIL;
+	
+    for (i = 0; i < SectorsPerCluster; i++)
+    {
+	if (!ReadDataSectors(handle, 1, datasector+i, sectordata))
+	    return FAIL;
+	
+	if (!WriteDataSectors(handle, 1, datasector+i, sectordata))
+	    return FALSE;	
+    }
+    
+    return TRUE;
+}
+
+struct CheckerPipe
+{
+   char* LoopCheckField;
+   CLUSTER prevcluster;    
+   unsigned long filesize;
+};
+
+static BOOL ClusterChecker(RDWRHandle handle, CLUSTER label, SECTOR datasector,
+                           void** structure)
+{
+    struct CheckerPipe* pipe = *((struct CheckerPipe**) structure);    
+    CLUSTER cluster;
+    
+    cluster = DataSectorToCluster(handle, datasector);
+    if (!cluster) return FAIL;
+	
+    /* Check for loops */
+    if (GetBitfieldBit(pipe->LoopCheckField, cluster))
+    {
+	/* Break the loop */
+	if (!WriteFatLabel(handle, pipe->prevcluster, FAT_LAST_LABEL))
+	    return FAIL;
+	
+	return FALSE;	 /* And then stop */
+    }
+    SetBitfieldBit(pipe->LoopCheckField, cluster);
+    
+    /* Check the validity of the label */
+    switch (IsLabelValidInFile(handle, label))
+    {
+	case FALSE:
+	     if (pipe->filesize)
+	     {
+                if (!WriteFatLabel(handle, pipe->prevcluster, FAT_LAST_LABEL))
+	           return FAIL;	     
+	     }
+	     return FALSE;
+	
+	case FAIL:
+	     return FAIL;	
+    }
+    
+    /* Perform a read/write check on the cluster */
+    switch (ReadWriteCheckCluster(handle, cluster))
+    {	
+	case FALSE:
+             if (!WriteFatLabel(handle, pipe->prevcluster, label))
+	         return FAIL;	     
+	     if (!WriteFatLabel(handle, cluster, FAT_BAD_LABEL))
+		 return FAIL;
+	     break;
+	     
+	case TRUE:
+	     pipe->filesize++;
+	     break;
+	    
+	case FAIL:
+	     return FAIL; 
+    }
+        
+    pipe->prevcluster = cluster;
+    return TRUE;    
+}
+
+BOOL RecoverFileChain(RDWRHandle handle, CLUSTER firstclust, unsigned long* newsize)
+{
+    BOOL result;
+    struct CheckerPipe pipe, *ppipe = &pipe;
+    unsigned long LabelsInFat;
+    
+    LabelsInFat = GetLabelsInFat(handle);
+    if (!LabelsInFat) return FALSE;	
+    
+    pipe.prevcluster = 0;
+    pipe.LoopCheckField = CreateBitField(LabelsInFat);
+    if (!pipe.LoopCheckField) return FALSE;
+    pipe.filesize = 0;
+	
+    result = FileTraverseFat(handle, firstclust, ClusterChecker,  (void**) &ppipe);
+	
+    DestroyBitfield(pipe.LoopCheckField); 
+    
+    if (result)
+	*newsize = pipe.filesize;
+    
+    return result;
+}

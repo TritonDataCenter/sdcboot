@@ -1,0 +1,29 @@
+0.0:Install version %s, Copyright (C) 1998-2000 Jim Hall\n
+0.1:Dieses Programm ist freie Software und Sie können es gerne unter\n
+0.2:bestimmten Bedingungen weitergeben; Lesen Sie dazu die Datei COPYING.\n
+0.3:Sie benutzen Install OHNE GARANTIE für korrekte Lauffähigkeit!\n
+0.4:Die Installation wurde erfolgreich abgeschlossen.\n
+0.5:Es traten %u Fehler und %u nicht-relevante Warnungen auf.\n
+1.0:Drücken Sie eine Taste, um fortzufahren
+1.1:Wo befinden sich die zu installierenden Dateien? (Quelle?)
+1.2:Wo sollen die Dateien installiert werden? (Ziel?)
+2.0:Nein
+2.1:Ja
+2.2:Möchten Sie diese Kategorie installieren?
+2.3:Möchten Sie mit der Installation dieser Kategorie fortfahren?
+2.4:Dieses Paket installieren?
+3.0:Diskette: 
+3.1:Top-level Installation
+3.2:Kategorie: 
+3.3:Paket: 
+3.4:Die Dateien konnten nicht gefunden werden.
+3.5:Installation dieser Kategorie abgeschlossen.
+3.6:FEHLER!  Ein BENÖTIGTES Paket konnte nicht installiert werden.
+3.7:WARNUNG!  Ein OPTIONALES Paket konnte nicht installiert werden.
+3.8:Sie haben möglicherweise nicht die richtige Diskette im Laufwerk.
+3.9:Bitte überprüfen Sie die Diskette und versuchen Sie es noch einmal.
+3.10:Wenn Sie eine andere Kategorie installieren wollen, legen Sie bitte
+3.11:Diskette #1 dieser Kategorie jetzt in das Laufwerk.
+4.0:OPTIONAL
+4.1:BENÖTIGT
+4.2:ÜBERSPRUNGEN

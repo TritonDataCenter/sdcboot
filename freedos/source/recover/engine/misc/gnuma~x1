@@ -1,0 +1,49 @@
+#
+#  Makefile for files in this directory.
+#
+
+include ../../configlinux.mak
+
+incdir = -I../header -I../../misc
+
+.PHONY: misc.a
+
+all: misc.a
+	@echo FTE miscelanous routines compiled.
+
+misc.a: bufshift.o entshift.o wildcard.o pathconv.o mkabspth.o strnicmp.o
+	@$(libman) ../lib/fte.a bufshift.o
+	@$(libman) ../lib/fte.a entshift.o
+	@$(libman) ../lib/fte.a wildcard.o
+	@$(libman) ../lib/fte.a pathconv.o
+	@$(libman) ../lib/fte.a mkabspth.o
+	@$(libman) ../lib/fte.a strnicmp.o
+
+
+bufshift.o: bufshift.c 
+	@$(compiler) $(options) $(incdir) bufshift.c
+     
+entshift.o: entshift.c
+	@$(compiler) $(options) $(incdir) entshift.c
+
+wildcard.o: wildcard.c
+	@$(compiler) $(options) $(incdir) wildcard.c
+
+pathconv.o: pathconv.c
+	@$(compiler) $(options) $(incdir) pathconv.c
+
+mkabspth.o: mkabspth.c
+	@$(compiler) $(options) $(incdir) mkabspth.c
+     
+strnicmp.o: strnicmp.c
+	@$(compiler) $(options) $(incdir) strnicmp.c
+	 
+	 
+clean:
+	@-rm -f bufshift.o
+	@-rm -f entshift.o
+	@-rm -f wildcard.o
+	@-rm -f pathconv.o
+	@-rm -f mkabspth.o
+	@-rm -f strnicmp.o
+

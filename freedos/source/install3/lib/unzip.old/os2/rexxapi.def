@@ -1,0 +1,17 @@
+LIBRARY UNZIPAPI INITINSTANCE LONGNAMES
+PROTMODE
+DESCRIPTION 'UNZIP API - (c) Copyright Scott Maxwell 1994'
+DATA MULTIPLE NONSHARED
+EXPORTS
+     UzpVersion		@1
+     UzpUnzipToMemory	@2
+     UzpFileTree	@3
+     UzpMain		@4
+     UzpAltMain		@5
+     UZDROPFUNCS	= UZDropFuncs      @2000
+     UZLOADFUNCS	= UZLoadFuncs      @2001
+     UZFILETREE		= UZFileTree       @2002
+     UZUNZIPTOVAR	= UZUnZipToVar     @2003
+     UZUNZIPTOSTEM	= UZUnZipToStem    @2004
+     UZVER		= UZVer            @2005
+     UZUNZIP		= UZUnZip	   @2007

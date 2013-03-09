@@ -1,0 +1,16 @@
+Publics by module
+
+CHECKOS 	size = 336
+	_CheckOS                        
+
+CHKARGS 	size = 1188
+	_GetParsedDrive                   _GiveAudibleWarning
+	_GiveFullOutput                   _IsMethodEntered
+	_IsRebootRequested                _MustAutomaticallyExit
+	_ParseArguments                 
+
+CMDEFINT	size = 1013
+	_CMDefint                       
+
+OVLIMPL 	size = 207
+	_CMDEFINT_GetCallbacks          

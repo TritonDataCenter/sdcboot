@@ -1,0 +1,169 @@
+#===========================================================================
+# Makefile for UnZip, ZipInfo & fUnZip:  AMIGA SAS/C Version 6.x
+# Version:  5.20                                    last revised:  11 Feb 96
+#===========================================================================
+
+# from John Bush <john.bush@east.sun.com>                
+
+
+#####################
+# MACRO DEFINITIONS #
+#####################
+
+# Compiler and loader debug flags.  Uncomment as needed.  Recomment when done.
+# 
+# CDBG = DEBUG=L DEF=DEBUG
+# LDBG = ADDSYM
+# LMAP = MAP AMIGA/UNZIP.MAP
+
+# Compiler definitions
+#
+CC = sc
+#
+OPT = OPT OPTINL OPTINLOCAL OPTTIME OPTCOMP=5 OPTDEP=5 OPTRDEP=5
+#
+# Choose one DATAOPTS & SASLIB.  NOTE!  only DATA=FAR is known to work!
+#
+DATAOPTS = DATA=FAR         # link with SCNB.lib
+SASLIB = scnb
+# DATAOPTS = DATA=FAR SINT  # link with SCSNB.lib  [not working yet!]
+# SASLIB = scsnb
+# DATAOPTS = DATA=NEAR      # link with SC.lib
+# SASLIB = sc
+#
+CDEFINES = DEF=AMIGA DEF=PROTO
+COPTIONS = $(DATAOPTS) NOSTKCHK STRMERGE CPU=ANY CODE=NEAR NMINC UNSCHAR
+COPTIONS = $(COPTIONS) ERRORREXX NOERRORCONSOLE NOICONS
+#
+CFLAGS = $(CDEFINES) $(COPTIONS) $(CDBG) $(OPT)
+
+# Linker definitions
+#  See SASLIB definition above
+#
+LD = slink
+LDFLAGS =  FROM LIB:c.o
+LDFLAGS2 = NOICONS $(LDBG) $(LMAP)
+LIBFLAGS = LIB LIB:$(SASLIB).lib+LIB:amiga.lib
+
+# UnZip Objects
+#
+OBJS1 = unzip.o crc32.o crctab.o crypt.o envargs.o explode.o extract.o
+OBJS2 = fileio.o globals.o list.o inflate.o match.o process.o ttyio.o
+OBJS3 = unreduce.o unshrink.o zipinfo.o
+OBJSA = amiga.o
+OBJS  = $(OBJS1) $(OBJS2) $(OBJS3) $(OBJSA)
+LOBJS = $(OBJS)
+
+# UnZipSFX Objects
+OBJX1 = unzip_x.o crc32.o crctab.o crypt.o extract_x.o fileio.o globals.o
+OBJX2 = inflate.o match.o process_x.o ttyio.o
+OBJX  = $(OBJX1) $(OBJX2) amiga_x.o
+
+# fUnZip Objects
+OBJF = funzip.o crypt_f.o globals_f.o inflate_f.o ttyio_f.o filedate_f.o
+
+# Common header files
+UNZIP_H = unzip.h unzpriv.h globals.h
+
+# Output targets
+UNZIPS = unzip unzipsfx funzip
+
+# Temp filename for object lists to load using linker "WITH" command.
+OBJLIST = ram:OBJLIST.TMP
+
+#######################################
+# DEFAULT TARGET AND PROCESSING RULES #
+#######################################
+
+all: $(UNZIPS)
+
+.c.o :
+        $(CC) $(CFLAGS) OBJNAME=$@ $*.c
+
+
+#########################
+# Final output targets. #
+#########################
+
+# NOTE:  When generating MAP files, don't make "all" because only the last 
+#        map generated will be the one that remains after this is finished.
+#        Or, put specific MAP statements in below for each.  
+
+unzip:    $(OBJS)
+          echo "$(OBJS)" >$(OBJLIST)
+          $(LD) TO UnZip $(LDFLAGS) WITH $(OBJLIST) $(LIBFLAGS) $(LDFLAGS2)
+
+unzipsfx: $(OBJX)
+          echo "$(OBJX)" >$(OBJLIST)
+          $(LD) TO UnZipSFX $(LDFLAGS) WITH $(OBJLIST) $(LIBFLAGS) $(LDFLAGS2)
+
+funzip:   $(OBJF)
+          echo "$(OBJF)" >$(OBJLIST)
+          $(LD) TO fUnZip $(LDFLAGS) WITH $(OBJLIST) $(LIBFLAGS) $(LDFLAGS2)
+
+clean:
+        -delete >nil: $(OBJS1)
+        -delete >nil: $(OBJS2)
+        -delete >nil: $(OBJSA)
+        -delete >nil: $(OBJF)
+
+spotless: clean
+        -delete >nil: UnZip UnZipSFX fUnZip
+
+# special rule for adding Amiga internal version number to UnZip
+#
+amiga.o:     amiga/amiga.c amiga/amiga.h
+                rx > env:VersionDate "say '""'translate(date('E'),'.','/')'""'"
+                $(CC) DEF=SFX $(CFLAGS) OBJNAME=amiga.o amiga/amiga.c
+
+# special rules for objects used in UnZipSFX and fUnZip
+#
+unzip_x.o:     unzip.c $(UNZIP_H) version.h consts.h
+                $(CC) DEF=SFX $(CFLAGS) OBJNAME=unzip_x.o unzip.c
+
+extract_x.o:   extract.c $(UNZIP_H) crypt.h
+                $(CC) DEF=SFX $(CFLAGS) OBJNAME=extract_x.o extract.c
+
+process_x.o:   process.c $(UNZIP_H)
+                $(CC) DEF=SFX $(CFLAGS) OBJNAME=process_x.o process.c
+
+amiga_x.o:     amiga/amiga.c amiga/amiga.h
+                $(CC) DEF=SFX $(CFLAGS) OBJNAME=amiga_x.o amiga/amiga.c
+
+crypt_f.o:     crypt.c $(UNZIP_H) zip.h crypt.h ttyio.h
+                $(CC) DEF=FUNZIP $(CFLAGS) OBJNAME=crypt_f.o crypt.c
+
+globals_f.o:   globals.c $(UNZIP_H)
+                $(CC) DEF=FUNZIP $(CFLAGS) OBJNAME=globals_f.o globals.c
+
+inflate_f.o:   inflate.c inflate.h $(UNZIP_H) crypt.h
+                $(CC) DEF=FUNZIP $(CFLAGS) OBJNAME=inflate_f.o inflate.c
+
+ttyio_f.o:     ttyio.c $(UNZIP_H) zip.h crypt.h ttyio.h
+                $(CC) DEF=FUNZIP $(CFLAGS) OBJNAME=ttyio_f.o ttyio.c
+
+# objects common to all revisions/ports:
+#
+crypt.o:        crypt.c $(UNZIP_H) zip.h crypt.h ttyio.h
+envargs.o:      envargs.c $(UNZIP_H)
+explode.o:      explode.c $(UNZIP_H)
+extract.o:      extract.c $(UNZIP_H) crypt.h
+fileio.o:       fileio.c $(UNZIP_H) crypt.h ttyio.h ebcdic.h
+funzip.o:       funzip.c $(UNZIP_H) crypt.h ttyio.h tables.h
+globals.o:      globals.c $(UNZIP_H)
+inflate.o:      inflate.c inflate.h $(UNZIP_H)
+match.o:        match.c $(UNZIP_H)
+process.o:      process.c $(UNZIP_H)
+ttyio.o:        ttyio.c $(UNZIP_H) zip.h crypt.h ttyio.h
+unreduce.o:     unreduce.c $(UNZIP_H)
+unshrink.o:     unshrink.c $(UNZIP_H)
+unzip.o:        unzip.c $(UNZIP_H) version.h consts.h
+zipinfo.o:      zipinfo.c $(UNZIP_H)
+
+
+# objects specific to Amiga
+amiga_x.o:      amiga/amiga.c amiga/amiga.h amiga/filedate.c
+                $(CC) DEF=SFX $(CFLAGS) OBJNAME=amiga_x.o amiga/amiga.c
+
+filedate_f.o:   amiga/filedate.c
+                $(CC) DEF=FUNZIP $(CFLAGS) OBJNAME=filedate_f.o amiga/filedate.c

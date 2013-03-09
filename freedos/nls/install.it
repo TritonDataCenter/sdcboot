@@ -1,0 +1,29 @@
+0.0:Programma di installazione versione: %s, (c) Copyright 1998-2000 Jim Hall\n
+0.1:Questo software è libero ed è liberamente ridistribuibile\n
+0.2:sotto i termini della licenza espressa nel documento copying.txt.\n
+0.3:Questo programma NON HA ALCUNA GARANZIA.\n
+0.4 Il programma è stato eseguito con successo.\n
+0.5:Ci sono stati %u errori ed %u avvertenze ignorabili.\n
+1.0:Premi un tasto per continuare
+1.1:In che unità sono posti i files di installazione? (sorgente)
+1.2:In che unità devono essere installati? (destinazione)
+2.0:no
+2.1:sì
+2.2:Desiderate installare questa serie di dischi?
+2.3:Proseguo con l'installazione di questo disco?
+2.4:Installo questo pacchetto?
+3.0:Serie di dischi:
+3.1:Nel livello più alto del programma di installazione
+3.2:Installazione della serie:
+3.3:Pacchetto:
+3.4:Non è possibile trovare il file di dati di questo disco di installazione!
+3.5:Installazione della serie eseguita.
+3.6:ERRORE! Non è stato possibile installare il pacchetto RICHIESTO.
+3.7:AVVERTIMENTO! Non è stato possible installare il pacchetto FACOLTATIVO.
+3.8:Potreste non avere il disco di installazione corretto nel lettore dei dischetti.
+3.9:Controlla di nuovo che il disco di installazione sia quello corretto e riprova ancora.
+3.10:Se state installando un'altra serie di dischi, per favore inserisci
+3.11:il primo disco della medesima nel lettore dei dischetti.
+4.0:FACOLTATIVO
+4.1:RICHIESTO
+4.2:NON INSTALLATO

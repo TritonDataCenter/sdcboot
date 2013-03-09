@@ -1,0 +1,33 @@
+# Build the Take Command/PM KEYSTACK.EXE file
+
+# Define local names / options
+PRODUCT=__TCMDOS2
+ENV=PM
+SUBSYSTEM=Y
+COMPNAME=CSET2
+EXENAME=KEYSTACK.EXE
+MAPNAME=KEYSTACK.MAP
+
+# Set up language and compiler macros
+!INCLUDE SETUP.MAK
+
+# Define local commands
+LINKCMD=$(LINK) keystack
+
+# Define ALL: target
+ALL : $(LINKTARG)
+
+
+# Build KEYSTACK.EXE
+
+$(OBJ)\keystack.obj : keystack.c
+	$(CCF)
+
+$(LINKTARG) : \
+              $(OBJ)\keystack.obj keystack.def keystack
+              link386 $(OBJ)\keystack, $(OBJ)\keystack.exe, $(OBJ)\keystack.map, , keystack.def
+              copy $(OBJ)\keystack.exe
+              copy $(OBJ)\keystack.map
+
+
+

@@ -1,0 +1,331 @@
+#
+# Borland C++ IDE generated makefile
+# Generated 4/22/96 at 9:14:29 AM 
+#
+.AUTODEPEND
+
+
+#
+# Borland C++ tools
+#
+IMPLIB  = Implib
+BCC     = Bcc +BccW16.cfg 
+TLINK   = TLink
+TLIB    = TLib
+BRC     = Brc
+TASM    = Tasm
+#
+# IDE macros
+#
+
+
+#
+# Options
+#
+IDE_LinkFLAGS =  -LH:\BC45\LIB
+IDE_ResFLAGS = 
+LinkerLocalOptsAtW16_CcbUNZIPbEXEbwizunzipdexe =  -Twe -c -C -LC:\BC5\LIB
+ResLocalOptsAtW16_CcbUNZIPbEXEbwizunzipdexe =  -31
+BLocalOptsAtW16_CcbUNZIPbEXEbwizunzipdexe = 
+CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe = -IC:\BC5\INCLUDE;C:\UNZIP -DWIZUNZIP;NDEBUG;
+LinkerInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe = -x
+LinkerOptsAt_CcbUNZIPbEXEbwizunzipdexe = $(LinkerLocalOptsAtW16_CcbUNZIPbEXEbwizunzipdexe)
+ResOptsAt_CcbUNZIPbEXEbwizunzipdexe = $(ResLocalOptsAtW16_CcbUNZIPbEXEbwizunzipdexe)
+BOptsAt_CcbUNZIPbEXEbwizunzipdexe = $(BLocalOptsAtW16_CcbUNZIPbEXEbwizunzipdexe)
+
+#
+# Dependency List
+#
+Dep_Wunzip16 = \
+   C:\UNZIP\EXE\wizunzip.exe
+
+Wunzip16 : BccW16.cfg $(Dep_Wunzip16)
+  echo MakeNode
+
+Dep_CcbUNZIPbEXEbwizunzipdexe = \
+   wingui\wizunzip.def\
+   C:\UNZIP\OBJ\wizunzip.res\
+   C:\UNZIP\OBJ\msdos.obj\
+   C:\UNZIP\OBJ\about.obj\
+   C:\UNZIP\OBJ\action.obj\
+   C:\UNZIP\OBJ\copyfile.obj\
+   C:\UNZIP\OBJ\iconbar.obj\
+   C:\UNZIP\OBJ\kbdproc.obj\
+   C:\UNZIP\OBJ\makedir.obj\
+   C:\UNZIP\OBJ\password.obj\
+   C:\UNZIP\OBJ\pattern.obj\
+   C:\UNZIP\OBJ\rename.obj\
+   C:\UNZIP\OBJ\replace.obj\
+   C:\UNZIP\OBJ\seldir.obj\
+   C:\UNZIP\OBJ\sizewndw.obj\
+   C:\UNZIP\OBJ\sound.obj\
+   C:\UNZIP\OBJ\status.obj\
+   C:\UNZIP\OBJ\updatelb.obj\
+   C:\UNZIP\OBJ\winit.obj\
+   C:\UNZIP\OBJ\winsetup.obj\
+   C:\UNZIP\OBJ\wizunzip.obj\
+   C:\UNZIP\OBJ\wndproc.obj\
+   C:\UNZIP\OBJ\crctab.obj\
+   C:\UNZIP\OBJ\crypt.obj\
+   C:\UNZIP\OBJ\explode.obj\
+   C:\UNZIP\OBJ\extract.obj\
+   C:\UNZIP\OBJ\fileio.obj\
+   C:\UNZIP\OBJ\globals.obj\
+   C:\UNZIP\OBJ\inflate.obj\
+   C:\UNZIP\OBJ\list.obj\
+   C:\UNZIP\OBJ\match.obj\
+   C:\UNZIP\OBJ\process.obj\
+   C:\UNZIP\OBJ\ttyio.obj\
+   C:\UNZIP\OBJ\unreduce.obj\
+   C:\UNZIP\OBJ\unshrink.obj\
+   C:\UNZIP\OBJ\zipinfo.obj\
+   C:\UNZIP\OBJ\crc32.obj
+
+C:\UNZIP\EXE\wizunzip.exe : $(Dep_CcbUNZIPbEXEbwizunzipdexe)
+  $(TLINK)   @&&|
+ /v $(IDE_LinkFLAGS) $(LinkerOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(LinkerInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) +
+C:\BC5\LIB\c0wl.obj+
+C:\UNZIP\OBJ\msdos.obj+
+C:\UNZIP\OBJ\about.obj+
+C:\UNZIP\OBJ\action.obj+
+C:\UNZIP\OBJ\copyfile.obj+
+C:\UNZIP\OBJ\iconbar.obj+
+C:\UNZIP\OBJ\kbdproc.obj+
+C:\UNZIP\OBJ\makedir.obj+
+C:\UNZIP\OBJ\password.obj+
+C:\UNZIP\OBJ\pattern.obj+
+C:\UNZIP\OBJ\rename.obj+
+C:\UNZIP\OBJ\replace.obj+
+C:\UNZIP\OBJ\seldir.obj+
+C:\UNZIP\OBJ\sizewndw.obj+
+C:\UNZIP\OBJ\sound.obj+
+C:\UNZIP\OBJ\status.obj+
+C:\UNZIP\OBJ\updatelb.obj+
+C:\UNZIP\OBJ\winit.obj+
+C:\UNZIP\OBJ\winsetup.obj+
+C:\UNZIP\OBJ\wizunzip.obj+
+C:\UNZIP\OBJ\wndproc.obj+
+C:\UNZIP\OBJ\crctab.obj+
+C:\UNZIP\OBJ\crypt.obj+
+C:\UNZIP\OBJ\explode.obj+
+C:\UNZIP\OBJ\extract.obj+
+C:\UNZIP\OBJ\fileio.obj+
+C:\UNZIP\OBJ\globals.obj+
+C:\UNZIP\OBJ\inflate.obj+
+C:\UNZIP\OBJ\list.obj+
+C:\UNZIP\OBJ\match.obj+
+C:\UNZIP\OBJ\process.obj+
+C:\UNZIP\OBJ\ttyio.obj+
+C:\UNZIP\OBJ\unreduce.obj+
+C:\UNZIP\OBJ\unshrink.obj+
+C:\UNZIP\OBJ\zipinfo.obj+
+C:\UNZIP\OBJ\crc32.obj
+$<,$*
+C:\BC5\LIB\import.lib+
+C:\BC5\LIB\mathwl.lib+
+C:\BC5\LIB\cwl.lib
+wingui\wizunzip.def
+|
+   $(BRC) C:\UNZIP\OBJ\wizunzip.res $<
+
+C:\UNZIP\OBJ\wizunzip.res :  wingui\wizunzip.rc
+  $(BRC) -R @&&|
+ $(IDE_ResFLAGS) $(ROptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe)  -FO$@ wingui\wizunzip.rc
+|
+C:\UNZIP\OBJ\msdos.obj :  msdos\msdos.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ msdos\msdos.c
+|
+
+C:\UNZIP\OBJ\about.obj :  wingui\about.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\about.c
+|
+
+C:\UNZIP\OBJ\action.obj :  wingui\action.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\action.c
+|
+
+C:\UNZIP\OBJ\copyfile.obj :  wingui\copyfile.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\copyfile.c
+|
+
+C:\UNZIP\OBJ\iconbar.obj :  wingui\iconbar.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\iconbar.c
+|
+
+C:\UNZIP\OBJ\kbdproc.obj :  wingui\kbdproc.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\kbdproc.c
+|
+
+C:\UNZIP\OBJ\makedir.obj :  wingui\makedir.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\makedir.c
+|
+
+C:\UNZIP\OBJ\password.obj :  wingui\password.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\password.c
+|
+
+C:\UNZIP\OBJ\pattern.obj :  wingui\pattern.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\pattern.c
+|
+
+C:\UNZIP\OBJ\rename.obj :  wingui\rename.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\rename.c
+|
+
+C:\UNZIP\OBJ\replace.obj :  wingui\replace.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\replace.c
+|
+
+C:\UNZIP\OBJ\seldir.obj :  wingui\seldir.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\seldir.c
+|
+
+C:\UNZIP\OBJ\sizewndw.obj :  wingui\sizewndw.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\sizewndw.c
+|
+
+C:\UNZIP\OBJ\sound.obj :  wingui\sound.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\sound.c
+|
+
+C:\UNZIP\OBJ\status.obj :  wingui\status.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\status.c
+|
+
+C:\UNZIP\OBJ\updatelb.obj :  wingui\updatelb.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\updatelb.c
+|
+
+C:\UNZIP\OBJ\winit.obj :  wingui\winit.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\winit.c
+|
+
+C:\UNZIP\OBJ\winsetup.obj :  wingui\winsetup.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\winsetup.c
+|
+
+C:\UNZIP\OBJ\wizunzip.obj :  wingui\wizunzip.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\wizunzip.c
+|
+
+C:\UNZIP\OBJ\wndproc.obj :  wingui\wndproc.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ wingui\wndproc.c
+|
+
+C:\UNZIP\OBJ\crctab.obj :  crctab.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ crctab.c
+|
+
+C:\UNZIP\OBJ\crypt.obj :  crypt.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ crypt.c
+|
+
+C:\UNZIP\OBJ\explode.obj :  explode.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ explode.c
+|
+
+C:\UNZIP\OBJ\extract.obj :  extract.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ extract.c
+|
+
+C:\UNZIP\OBJ\fileio.obj :  fileio.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ fileio.c
+|
+
+C:\UNZIP\OBJ\globals.obj :  globals.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ globals.c
+|
+
+C:\UNZIP\OBJ\inflate.obj :  inflate.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ inflate.c
+|
+
+C:\UNZIP\OBJ\list.obj :  list.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ list.c
+|
+
+C:\UNZIP\OBJ\match.obj :  match.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ match.c
+|
+
+C:\UNZIP\OBJ\process.obj :  process.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ process.c
+|
+
+C:\UNZIP\OBJ\ttyio.obj :  ttyio.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ ttyio.c
+|
+
+C:\UNZIP\OBJ\unreduce.obj :  unreduce.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ unreduce.c
+|
+
+C:\UNZIP\OBJ\unshrink.obj :  unshrink.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ unshrink.c
+|
+
+C:\UNZIP\OBJ\zipinfo.obj :  zipinfo.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ zipinfo.c
+|
+
+C:\UNZIP\OBJ\crc32.obj :  crc32.c
+  $(BCC)   -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXEbwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXEbwizunzipdexe) -o$@ crc32.c
+|
+
+# Compiler configuration file
+BccW16.cfg : 
+   Copy &&|
+-w
+-R
+-v
+-vi
+-H
+-H=wunzip.csm
+-ml
+-WS
+-H-
+-d
+-N
+-ff-
+-Ff
+-dc
+-Vf
+-f-
+| $@
+
+

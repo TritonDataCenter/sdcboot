@@ -1,0 +1,27 @@
+FreeDOS Updater's changes history.
+
+
+What's new in v0.54 [07 Dec 2008]:
+- Fixed a serious bug in installing packages (was installing all packages as INST_TMP.ZIP),
+- FDUPDATE's repository has changed to http://www.viste-family.net/mateusz/fdupdate
+
+What's new in v0.53 [14 Feb 2008]:
+- Added configuration for the download command (was hardcoded to "wget"),
+- FDUPDATE doesn't switches to the %TEMP% directory anymore,
+- Changed the configuration file format,
+- Added german translation.
+
+What's new in v0.52 [05 Jan 2008]:
+- Fixed a minor bug in package's description display (when used "/new"),
+- Fixed a bug which caused bad page switching in the "new software" list,
+- Added support for LSM files with TAB characters instead of spaces,
+- Added keyboard's buffer flushing after any keypress,
+- Added internationalisation (NLS) support,
+- Added Polish translations,
+- Added French translations.
+
+What's new in v0.51 [01 Dec 2007]:
+- Added new software installation mode.
+
+What's new in v0.50 [30 Nov 2007]:
+- First public release.

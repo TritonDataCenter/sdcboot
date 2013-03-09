@@ -1,0 +1,9 @@
+Contents of the "proginfo" subdirectory for UnZip 5.2 and later:
+
+  Contents	this file
+  CONTRIBS	list of contributors to UnZip
+  ZipPorts	Info-ZIP rules and guidelines on contributions to the cause
+  defer.in	info about the NEXTBYTE macro and defer/undefer_input functions
+  fileinfo.cms  info about the VM/CMS file system, including record formats
+  pkbugs        known bugs in PK[UN]ZIP, some triggered by Info-ZIP's archives
+

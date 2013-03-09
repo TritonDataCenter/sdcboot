@@ -1,0 +1,331 @@
+#
+# Borland C++ IDE generated makefile
+# Generated 4/22/96 at 9:14:42 AM 
+#
+.AUTODEPEND
+
+
+#
+# Borland C++ tools
+#
+IMPLIB  = Implib
+BCC32   = Bcc32 +BccW32.cfg 
+TLINK32 = TLink32
+TLIB    = TLib
+BRC32   = Brc32
+TASM32  = Tasm32
+#
+# IDE macros
+#
+
+
+#
+# Options
+#
+IDE_LinkFLAGS32 =  -LH:\BC45\LIB
+IDE_ResFLAGS32 = 
+LinkerLocalOptsAtW32_CcbUNZIPbEXE32bwizunzipdexe =  -Tpe -aa -c -LC:\BC5\LIB
+ResLocalOptsAtW32_CcbUNZIPbEXE32bwizunzipdexe = 
+BLocalOptsAtW32_CcbUNZIPbEXE32bwizunzipdexe = 
+CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe = -IC:\BC5\INCLUDE -DNO_ASM;FIX_STAT_BUG;WIZUNZIP;NDEBUG;
+LinkerInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe = -x
+LinkerOptsAt_CcbUNZIPbEXE32bwizunzipdexe = $(LinkerLocalOptsAtW32_CcbUNZIPbEXE32bwizunzipdexe)
+ResOptsAt_CcbUNZIPbEXE32bwizunzipdexe = $(ResLocalOptsAtW32_CcbUNZIPbEXE32bwizunzipdexe)
+BOptsAt_CcbUNZIPbEXE32bwizunzipdexe = $(BLocalOptsAtW32_CcbUNZIPbEXE32bwizunzipdexe)
+
+#
+# Dependency List
+#
+Dep_Wunzip32 = \
+   C:\UNZIP\EXE32\wizunzip.exe
+
+Wunzip32 : BccW32.cfg $(Dep_Wunzip32)
+  echo MakeNode
+
+Dep_CcbUNZIPbEXE32bwizunzipdexe = \
+   wingui\wizunz32.def\
+   C:\UNZIP\OBJ32\wizunzip.res\
+   C:\UNZIP\OBJ32\about.obj\
+   C:\UNZIP\OBJ32\action.obj\
+   C:\UNZIP\OBJ32\copyfile.obj\
+   C:\UNZIP\OBJ32\iconbar.obj\
+   C:\UNZIP\OBJ32\kbdproc.obj\
+   C:\UNZIP\OBJ32\makedir.obj\
+   C:\UNZIP\OBJ32\password.obj\
+   C:\UNZIP\OBJ32\pattern.obj\
+   C:\UNZIP\OBJ32\rename.obj\
+   C:\UNZIP\OBJ32\replace.obj\
+   C:\UNZIP\OBJ32\seldir.obj\
+   C:\UNZIP\OBJ32\sizewndw.obj\
+   C:\UNZIP\OBJ32\sound.obj\
+   C:\UNZIP\OBJ32\status.obj\
+   C:\UNZIP\OBJ32\updatelb.obj\
+   C:\UNZIP\OBJ32\winit.obj\
+   C:\UNZIP\OBJ32\winsetup.obj\
+   C:\UNZIP\OBJ32\wizunzip.obj\
+   C:\UNZIP\OBJ32\wndproc.obj\
+   C:\UNZIP\OBJ32\win32.obj\
+   C:\UNZIP\OBJ32\crctab.obj\
+   C:\UNZIP\OBJ32\crypt.obj\
+   C:\UNZIP\OBJ32\explode.obj\
+   C:\UNZIP\OBJ32\extract.obj\
+   C:\UNZIP\OBJ32\fileio.obj\
+   C:\UNZIP\OBJ32\globals.obj\
+   C:\UNZIP\OBJ32\inflate.obj\
+   C:\UNZIP\OBJ32\list.obj\
+   C:\UNZIP\OBJ32\match.obj\
+   C:\UNZIP\OBJ32\process.obj\
+   C:\UNZIP\OBJ32\ttyio.obj\
+   C:\UNZIP\OBJ32\unreduce.obj\
+   C:\UNZIP\OBJ32\unshrink.obj\
+   C:\UNZIP\OBJ32\zipinfo.obj\
+   C:\UNZIP\OBJ32\crc32.obj
+
+C:\UNZIP\EXE32\wizunzip.exe : $(Dep_CcbUNZIPbEXE32bwizunzipdexe)
+  $(TLINK32) @&&|
+ /v $(IDE_LinkFLAGS32) $(LinkerOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(LinkerInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) +
+C:\BC5\LIB\c0w32.obj+
+C:\UNZIP\OBJ32\about.obj+
+C:\UNZIP\OBJ32\action.obj+
+C:\UNZIP\OBJ32\copyfile.obj+
+C:\UNZIP\OBJ32\iconbar.obj+
+C:\UNZIP\OBJ32\kbdproc.obj+
+C:\UNZIP\OBJ32\makedir.obj+
+C:\UNZIP\OBJ32\password.obj+
+C:\UNZIP\OBJ32\pattern.obj+
+C:\UNZIP\OBJ32\rename.obj+
+C:\UNZIP\OBJ32\replace.obj+
+C:\UNZIP\OBJ32\seldir.obj+
+C:\UNZIP\OBJ32\sizewndw.obj+
+C:\UNZIP\OBJ32\sound.obj+
+C:\UNZIP\OBJ32\status.obj+
+C:\UNZIP\OBJ32\updatelb.obj+
+C:\UNZIP\OBJ32\winit.obj+
+C:\UNZIP\OBJ32\winsetup.obj+
+C:\UNZIP\OBJ32\wizunzip.obj+
+C:\UNZIP\OBJ32\wndproc.obj+
+C:\UNZIP\OBJ32\win32.obj+
+C:\UNZIP\OBJ32\crctab.obj+
+C:\UNZIP\OBJ32\crypt.obj+
+C:\UNZIP\OBJ32\explode.obj+
+C:\UNZIP\OBJ32\extract.obj+
+C:\UNZIP\OBJ32\fileio.obj+
+C:\UNZIP\OBJ32\globals.obj+
+C:\UNZIP\OBJ32\inflate.obj+
+C:\UNZIP\OBJ32\list.obj+
+C:\UNZIP\OBJ32\match.obj+
+C:\UNZIP\OBJ32\process.obj+
+C:\UNZIP\OBJ32\ttyio.obj+
+C:\UNZIP\OBJ32\unreduce.obj+
+C:\UNZIP\OBJ32\unshrink.obj+
+C:\UNZIP\OBJ32\zipinfo.obj+
+C:\UNZIP\OBJ32\crc32.obj
+$<,$*
+C:\BC5\LIB\import32.lib+
+C:\BC5\LIB\cw32.lib
+wingui\wizunz32.def
+|
+   $(BRC32) C:\UNZIP\OBJ32\wizunzip.res $<
+
+C:\UNZIP\OBJ32\wizunzip.res :  wingui\wizunzip.rc
+  $(BRC32) -R @&&|
+ $(IDE_ResFLAGS32) $(ROptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe)  -FO$@ wingui\wizunzip.rc
+|
+C:\UNZIP\OBJ32\about.obj :  wingui\about.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\about.c
+|
+
+C:\UNZIP\OBJ32\action.obj :  wingui\action.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\action.c
+|
+
+C:\UNZIP\OBJ32\copyfile.obj :  wingui\copyfile.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\copyfile.c
+|
+
+C:\UNZIP\OBJ32\iconbar.obj :  wingui\iconbar.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\iconbar.c
+|
+
+C:\UNZIP\OBJ32\kbdproc.obj :  wingui\kbdproc.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\kbdproc.c
+|
+
+C:\UNZIP\OBJ32\makedir.obj :  wingui\makedir.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\makedir.c
+|
+
+C:\UNZIP\OBJ32\password.obj :  wingui\password.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\password.c
+|
+
+C:\UNZIP\OBJ32\pattern.obj :  wingui\pattern.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\pattern.c
+|
+
+C:\UNZIP\OBJ32\rename.obj :  wingui\rename.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\rename.c
+|
+
+C:\UNZIP\OBJ32\replace.obj :  wingui\replace.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\replace.c
+|
+
+C:\UNZIP\OBJ32\seldir.obj :  wingui\seldir.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\seldir.c
+|
+
+C:\UNZIP\OBJ32\sizewndw.obj :  wingui\sizewndw.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\sizewndw.c
+|
+
+C:\UNZIP\OBJ32\sound.obj :  wingui\sound.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\sound.c
+|
+
+C:\UNZIP\OBJ32\status.obj :  wingui\status.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\status.c
+|
+
+C:\UNZIP\OBJ32\updatelb.obj :  wingui\updatelb.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\updatelb.c
+|
+
+C:\UNZIP\OBJ32\winit.obj :  wingui\winit.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\winit.c
+|
+
+C:\UNZIP\OBJ32\winsetup.obj :  wingui\winsetup.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\winsetup.c
+|
+
+C:\UNZIP\OBJ32\wizunzip.obj :  wingui\wizunzip.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\wizunzip.c
+|
+
+C:\UNZIP\OBJ32\wndproc.obj :  wingui\wndproc.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ wingui\wndproc.c
+|
+
+C:\UNZIP\OBJ32\win32.obj :  win32\win32.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ win32\win32.c
+|
+
+C:\UNZIP\OBJ32\crctab.obj :  crctab.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ crctab.c
+|
+
+C:\UNZIP\OBJ32\crypt.obj :  crypt.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ crypt.c
+|
+
+C:\UNZIP\OBJ32\explode.obj :  explode.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ explode.c
+|
+
+C:\UNZIP\OBJ32\extract.obj :  extract.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ extract.c
+|
+
+C:\UNZIP\OBJ32\fileio.obj :  fileio.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ fileio.c
+|
+
+C:\UNZIP\OBJ32\globals.obj :  globals.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ globals.c
+|
+
+C:\UNZIP\OBJ32\inflate.obj :  inflate.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ inflate.c
+|
+
+C:\UNZIP\OBJ32\list.obj :  list.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ list.c
+|
+
+C:\UNZIP\OBJ32\match.obj :  match.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ match.c
+|
+
+C:\UNZIP\OBJ32\process.obj :  process.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ process.c
+|
+
+C:\UNZIP\OBJ32\ttyio.obj :  ttyio.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ ttyio.c
+|
+
+C:\UNZIP\OBJ32\unreduce.obj :  unreduce.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ unreduce.c
+|
+
+C:\UNZIP\OBJ32\unshrink.obj :  unshrink.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ unshrink.c
+|
+
+C:\UNZIP\OBJ32\zipinfo.obj :  zipinfo.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ zipinfo.c
+|
+
+C:\UNZIP\OBJ32\crc32.obj :  crc32.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbEXE32bwizunzipdexe) -o$@ crc32.c
+|
+
+# Compiler configuration file
+BccW32.cfg : 
+   Copy &&|
+-w
+-R
+-v
+-vi
+-H
+-H=wunzip32.csm
+-W
+-H-
+-d
+-N
+-Og
+-wcln
+-wucp
+-wdef
+-wnod
+-wuse
+-Od
+| $@
+
+

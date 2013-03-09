@@ -1,0 +1,60 @@
+What's sub-problems I coded within swsubst:
++ mkdir.c: mkdir -p {path}: makes the directory including path to it
++ subst: switchSubst(): handle CDS entries through DOS3..DOS6
++ cds.c: access to the List of List via inline assembly
++ drive.c: getDrvName(): convert physical drive number => driver name
++ drive.c: name2drv(): search the n'th drive driven by the driver with the name XXX
++ drive.c: searchLabel():search all physical drives for a drive labeled XXX (via findfirst())
++ drive.c: Drive(): strip a leading drive spec & return its (int) presence (all above && normal drive specs)
++ swsubst.c: new_int24(): disable critical errors by always returning FAIL to the system
++ swsubst.c: main(): compact multiple similar functionality within one program
++ set.c: drvSetting(): direct manipulating of the drive flags, set/reset flags; turn drive ON/OFF
+
+Known Bugs:
++ The inline assembly in cds.c works; if the C code, I don't know.
++ Sometimes manipulating seems meaningless; the system locks up or
+  emits mystic errors. Well, they come when I tried something, what's
+  not possible with DOS's standard tools, but what should work by all
+  documentation I have. (I never had a system crash with data lost.)
++ The part of main(), where I start the switchSubst(), is somewhat
+  mystic. That's because that was the place where everything begun!
++ To turn a drive OFF is relativly simple; but re-enabling is aweful, because
+  there is nowhere the information, what SHOULD be on this drive. It works
+  OK for unused entries, local HD's und FD's; sometimes for device
+  driven drives; but seldom for CD-ROMs (networked drives).
++ Works only on MS-DOS like CDS. But does not check, if it's running on
+  MS-DOS. (DR-DOS has a very different CDS.)
++ The program does very little checking for valid operations; therefore,
+  play around a bit, before you try to do serious things with non-DOS-
+  standard functions.
++ Bec‘use I enabled to use logical & physical paths, sometimes the same
+  path is interpreted both physically and logically. That *can* be useful.
+  But normally this results rubish.
++ The DOS-standard emulating entities of swsubst, SUBST and JOIN, have the
+  same command line as DOS's have. But they differ in the following points:
+  	++ The specified path will be make'ed, including the full path to it,
+  	   e.g. "SUBST c: d:/blah/humpf"
+  	   creates the path "d:\blah\humpf", regardless if d:\blah exists.
+  	++ You are allowed to break off relations on the fly, that means:
+  	   an already SUBST'ed can be re-SUBST'ed or re-JOIN'ed without
+  	   further note/warning.
+  	++ You are allowed to process a drive with itself,
+  	   e.g.: "JOIN a: a:\blah"
+  	++ The table dump is different, swsubst prints "X: => Y:\PATH" instead
+  	   of "X: is joined to Y:\PATH".
+  	++ You cannot rename the executables SUBST and JOIN.
+  	++ It won't test the DOS version, unless it's necessary for adjusting
+  	   different data structure sizes.
+
+
+
+What I'm still looking for:
++ How to trick a networked drive (e.g. CD-ROM) of it's drive letter,
+  e.g. for swapping.
++ How to flush DOS internal BUFFERs in that way, that a) non-Written 
+  data is written (flush dirty BUFFERs); and b) mark them unused.
+  That's *maybe* one problem, because DOS's BUFFERs may contain data
+  about a drive, which is now somewhere else & was replaced by another.
+  I trecked DOS a bit, but couldn't found something, what's look like
+  that functionality.
++ What's the HIDDEN flag for?

@@ -1,0 +1,47 @@
+0.0:FreeDOS Install - Copyright (C) 1998-2001 Jim Hall
+0.1:This is free software, and you are welcome to redistribute it
+0.2:under certain conditions; see the file COPYING for details.
+0.3:Install comes with ABSOLUTELY NO WARRANTY
+0.4:The Install program completed successfully.\n
+0.5:There were %u errors and %u non-fatal warnings.\n
+0:6:FreeDOS Install
+1.0:Press any key to continue
+1.1:Where are the install files? (where to install from?)
+1.2:Where will files be installed? (where to install to?)
+1:3:Installing from:
+1:4:Installing to:
+1:5:Are above directories correct?
+2.0:no
+2.1:yes
+2.2:Do you want to install this disk set?
+2.3:Continue installing this disk?
+2.4:Install this package?
+2.5:YyNn
+2.6:Yes to All
+3.0:Disk set: 
+3.2:Installing series: 
+3.3:Package: 
+3.4:Can't find data file for this install disk!
+3.5:Done installing this disk series.
+3.6:ERROR!  Failed to install REQUIRED package.
+3.7:WARNING!  Failed to install OPTIONAL package.
+3.8:You may not have the right install floppy in the drive.
+3.9:Double check that you have the right disk and try again.
+3.10:If you are installing other disk series, please insert
+3.11:disk #1 of the next series in the drive now.
+3:12:Please insert disk #1 for disk set %s
+4.0:OPTIONAL
+4.1:REQUIRED
+4.2:SKIPPED
+5:0:USAGE:  install [/mono] [/src <src path>] [/dst <dest path>] [/nopause] [/nolog]\n\n
+5:1:%s: unknown option /%c\n
+5:2:%s: /%c argument missing\n
+6:0:Unable to allocate memory for install data file!\n
+6:1:The install data file is empty!\n
+6:2:Error!\n
+6:3:Unable to allocate enough memory for install floppy data file!\n
+6:4:The install floppy data file is empty!\n
+6:5:Unable to allocate required memory!\n
+6:6:Error %i, unable to create INSTALL log\n
+7:0:\nControl-C pressed, aborting install!\n\n
+7:1:Are you sure you wish to abort the install? [yn]

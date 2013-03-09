@@ -1,0 +1,19 @@
+# this is a Borland makefile
+
+CATS=C:\jhall\cats39
+
+CC=bcc -mm
+CFLAGS=-I$(CATS)\include -DNDEBUG
+LDFLAGS=
+LDLIBS=$(CATS)\lib\catdb.lib
+
+all: fasthelp.exe
+
+fasthelp.exe: fasthelp.obj
+	$(CC) $(CFLAGS) $(LDFLAGS) fasthelp.obj $(LDLIBS)
+
+clean:
+	-del *.obj
+
+realclean distclean: clean
+	-del *.exe

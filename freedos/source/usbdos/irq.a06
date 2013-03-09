@@ -1,0 +1,578 @@
+  JMP Main0 ;Skip over Data to Main Program
+
+
+;==============================================================================
+;NOTE: This program is written for and compiled with Eric Isaacson's A86
+;      assembly language compiler, using Options +P0 -F (8086/8088 CPU
+;      with no FPU).
+;==============================================================================
+
+
+;In DOCS:
+;*'s indicate hard-wired IRQ's (can't be changed, not for general use).
+;Early Computers have 8 (0-7), newer have 16 (0-15), 8 on each PIC,
+;  though only 15 are usable (one of them used used to "tie" the two PIC's
+;  together).
+;The program will let you change any IRQ, though changing certain ones
+;  can be catastrophic, so make sure you know what you're doing.  E.g.,
+;  disabling IRQ 0 (the System Timer) will crash the computer,
+;  disabling the IRQ 1 (the Keyboard) will disable the keyboard, and
+;  disabling IRQ 2 (if your computer is new enough to have 2 PIC's)
+;  will disable everything attached to the PIC #2 (including the
+;  Hard Drive).
+;Main purpose is to help troubleshoot programs such as my USBUHCI, because
+;  modern computers and BIOS's sometimes do not provide correct
+;  information.  See USBUHCI.DOC for details.
+;Contrary to rumors running around, IRQ's can be shared.  Hardware must
+;  be set for level-triggering rather than edge-triggering, and software
+;  must be written to share (which most aren't).
+;Every IRQ (hardware Interrupt) also has an INT (software interrupt) to
+;  tell it what to do when the IRQ happens.
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;EQUATE/STRUCTURE/MACRO DEFINITIONS
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;EQUATES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;==============================================================================
+;Miscellaneous
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special Codes
+  ;----------------------------------------------------------------------------
+  No  EQU  0 ;Miscellaneous Yes/No tests
+  Yes EQU -1 ;      "        "  "    "
+
+
+;==============================================================================
+;CONsole/Screen Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special ASCII Characters
+  ;----------------------------------------------------------------------------
+  Tab       EQU  9 ;Tab
+  LF        EQU 10 ;Line Feed
+  FormFeed  EQU 12 ;FormFeed
+  CR        EQU 13 ;Carriage Return
+  EOF       EQU 26 ;End-of-File
+  Quote2    EQU 34 ;Double quote
+  Quote1    EQU 39 ;Single quote
+  BackSlash EQU 92 ;BackSlash (\)
+
+
+;==============================================================================
+;DOS Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special "hard-coded" DOS Device Handles.
+  ;These Handles are permanently hard-coded in DOS, and are always open.
+  ;There is no need to issue Find, Open, or Close calls to these
+  ;  devices - you can just use them at will.
+  ;----------------------------------------------------------------------------
+  StdInHandle  EQU 0 ;Standard Input Device Handle
+  StdOutHandle EQU 1 ;Standard Output Device Handle
+  StdErrHandle EQU 2 ;Standard Error Device Handle
+  StdAuxHandle EQU 3 ;Standard Auxiliary Device Handle (COM1 by default)
+  StdPrnHandle EQU 4 ;Standard Printer Device Handle (LPT1 by default)
+
+
+;==============================================================================
+;Program-specific
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;I/O Address fro the PIC's (Programmable Interrupt Controllers)
+  ;----------------------------------------------------------------------------
+  PIC1Addr EQU  20h ;I/O Address for PIC 1 (IRQ's 0-7)
+  PIC2Addr EQU 0A0h ;I/O Address for PIC 2 (IRQ's 8-15)
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;DATA
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;==============================================================================
+;Strings that we write to the screen
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;HelpMsg should be the first data at the top of the compiled file!
+  ;If it is, when the user types "TYPE IRQ.COM", HelpMsg is what
+  ;  they will see (with no Beeps or Happy Faces).
+  ;----------------------------------------------------------------------------
+  Copyright:
+    DB CR
+    DB 'IRQ 1.00, (C) 2008, Bret E. Johnson.',CR,LF,0
+
+  HelpMsg:
+    DB CR,LF
+    DB 'The purpose of this program is to show you which Hardware Interrupt lines',CR,LF
+    DB '  (IRQs or Interrupt ReQuest lines) on your computer are currently in use.',CR,LF
+    DB '  You may want to know this simply as an academic exercise, or may need to',CR,LF
+    DB '  know in order to configure or troubleshoot something.',CR,LF
+    DB LF
+    DB "Note that in the output some of the IRQ descriptions are surrounded by *'s.",CR,LF
+    DB '  This indicates that the particular interrupt is hard-wired on the',CR,LF
+    DB '  motherboard, and is not available for use on external devices.',CR,LF
+    DB LF
+    DB 'In addition to just showing you which IRQs are enabled, this program can',CR,LF
+    DB '  can also enable or disable individual IRQs to help you identify and',CR,LF
+    DB '  troubleshoot things.  You should be EXTREMELY careful when you are doing',CR,LF
+    DB '  this, however, since it can cause your computer to stop responding.',CR,LF
+    DB LF
+    DB 'To enable a particular IRQ, you simply give this program an IRQ number',CR,LF
+    DB '  (a number between 0 and 15).  To disable a particular IRQ, give this',CR,LF
+    DB '  program an IRQ number (between 0 and 15) followed by another character',CR,LF
+    DB '  (any character will do).  For Example:',CR,LF
+    DB LF
+    DB '  IRQ  3       {Enable IRQ 3}',CR,LF
+    DB '  IRQ 12 D     {Disable IRQ 12}',CR,LF
+    DB 0, EOF
+
+Main0:
+  JMP Main ;To avoid Beeps when doing a "TYPE IRQ.COM"
+
+  IRQHdrMsg:
+    DB CR,LF
+    DB 'IRQ  INT      COMMON USE       ENABLED',CR,LF
+    DB 'ÄÄÄ  ÄÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄÄÄÄÄÄ',CR,LF,0
+
+  XTIRQMsg:
+    DB ' 00  08h  *System Timer*       ',0
+    DB ' 01  09h  *Keyboard*           ',0
+    DB ' 02  0Ah  EGA Retrace/LPT2     ',0
+    DB ' 03  0Bh  COM2/COM4            ',0
+    DB ' 04  0Ch  COM1/COM3            ',0
+    DB ' 05  0Dh  Hard Disk            ',0
+    DB ' 06  0Eh  Floppy Disk          ',0
+    DB ' 07  0Fh  LPT1                 ',0
+
+  ATIRQMsg1:
+    DB ' 00  08h  *System Timer*       ',0
+    DB ' 01  09h  *Keyboard*           ',0
+    DB ' 02  0Ah  *IRQ Controller #2*  ',0
+    DB ' 03  0Bh  COM2/COM4            ',0
+    DB ' 04  0Ch  COM1/COM3            ',0
+    DB ' 05  0Dh  LPT2/Sound Card      ',0
+    DB ' 06  0Eh  Floppy Disk          ',0
+    DB ' 07  0Fh  LPT1                 ',0
+  ATIRQMsg2:
+    DB 'ÄÄÄ  ÄÄÄ  ÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ  ÄÄÄÄÄÄÄ',CR,LF,0
+  ATIRQMsg3:
+    DB ' 08  70h  *CMOS Clock*         ',0
+    DB ' 09  71h  n/a                  ',0
+    DB ' 10  72h  n/a                  ',0
+    DB ' 11  73h  n/a                  ',0
+    DB ' 12  74h  PS/2 Mouse           ',0
+    DB ' 13  75h  *Math Coprocessor*   ',0
+    DB ' 14  76h  Hard Disk            ',0
+  IRQ15Msg:
+    DB ' 15  77h  IDE Controller #2    ',0
+  IRQMsgLen EQU ($ - OFFSET IRQ15Msg)
+
+  EnabledMsg:
+    DB '  Yes',CR,LF,0
+  DisabledMsg:
+    DB CR,LF,0
+
+  OKMsg1:
+    DB CR,LF
+    DB 'IRQ ',0
+  OKMsg2:
+    DB ' has been ',0
+  OKMsgE:
+    DB 'Enabled.',CR,LF,0
+  OKMsgD:
+    DB 'Disabled.',CR,LF,0
+  NumberMsg:
+    DB '  ',0
+
+
+;==============================================================================
+;Program-specific Data
+;==============================================================================
+  NumIRQs  DB  16 ;Number of IRQ's.  =8 if PC/XT, =16 if AT+
+  DoEnable DB Yes ;Enable or Disable the interrupt?
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;DATA
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;------------------------------------------------------------------------------
+;DO OUR THING!
+;Inputs:
+;Outputs:
+;Changes: Lots of stuff
+;------------------------------------------------------------------------------
+Main:
+  CLD                  ;Go forward with string functions
+  MOV  DX,Copyright    ;Write our
+  CALL WriteZCon       ;  Copyright
+  CALL GetNumIRQs      ;See if this computer has 8 or 16 IRQ's
+  MOV  SI,81h          ;Point at command line tail
+  CALL IsSpaceOrEOX    ;Search the command line for characters
+  JZ  >M80             ;If end-of-line, just write the Table
+  CMP  AL,'0'          ;Is it a Number?
+  JB  >M70             ;If not, the user needs help
+  CMP  AL,'9'          ;Is it a Number?
+  JA  >M70             ;If not, the user needs help
+  DEC  SI              ;If so, point back at the beginning of the number
+  CALL GetDecimal      ;Get the entire IRQ number from the command line
+  OR   AH,AH           ;Is the number larger than 255?
+  JNZ >M70             ;If so, the user needs help
+  MOV  BL,AL           ;Save it in BL (we'll need it again later)
+  MOV  AH,NumIRQs      ;Get the maximum
+  DEC  AH              ;IRQ Number
+  CMP  AL,AH           ;Is the IRQ within our limits?
+  JA  >M70             ;If not, the user needs help
+  CALL IsSpaceOrEOL    ;Is there another character after the IRQ number?
+  JZ  >M20             ;If not, we'll enable the IRQ
+  MOV  DoEnable,No     ;If so, we'll disable the IRQ
+M20:                   ;DoEnable is set
+  CALL HandleIRQChange ;Change the IRQ as requested
+  JMP >M80             ;Jump to write the Table
+M70:                   ;User needs Help
+  MOV  DX,HelpMsg      ;Write the
+  CALL WriteZCon       ;  Help message
+  JMP >M90             ;Done
+M80:                   ;Need to show status of all IRQ's
+  CALL WriteAllIRQs    ;Write the status of all IRQ's
+M90:                   ;We're done
+  MOV  AX,4C00h        ;Quit with ErrorLevel= 0
+  INT  21h
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;Code to Determine how many IRQ's the computer actually has
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;SEE HOW MANY IRQ's THIS COMPUTER HAS (8 or 16)
+;Inputs:  NumIRQs = 16
+;Outputs: NumIRQs =  8 if computer only has 8 IRQ's (PC/XT or compatible)
+;                 = 16 if comptuer has 16 IRQ's (PC/AT or newer)
+;Changes:
+;------------------------------------------------------------------------------
+GetNumIRQs:
+  PUSH AX,DX           ;Save used registers
+  MOV  DX,(PIC2Addr+1) ;Point at the PIC 2 Interrupt Enable Register
+  IN   AL,DX           ;Get the current Interrupt Enable Status
+  CMP  AL,-1           ;Is it all 1's?
+  JNE >Q90             ;If not, there are 16 IRQ's
+  CLI                  ;If so, Disable interrupts
+  MOV  AL,(NOT 1)      ;Will try to temporarily disable IRQ 8 (CMOS RTC)
+  OUT  DX,AL           ;Send it
+  PUSH AX              ;Wait a
+  POP  AX              ;  little while
+  IN   AL,DX           ;Get the status (see if the PIC accepted the change)
+  MOV  AH,AL           ;Save it in AH
+  MOV  AL,-1           ;Restore the
+  OUT  DX,AL           ;  original status
+  STI                  ;Enable interrupts
+  CMP  AH,-1           ;Were we able to change the PIC IRQ status?
+  JNE >Q90             ;If not, assume it's a real PIC
+Q50:                   ;Only 8 IRQ's
+  MOV  NumIRQs,8       ;Mark as 8 IRQ's
+Q90:                   ;We're done
+  POP  DX,AX           ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;Code to Change (Enable or Disable) an IRQ
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;PROCESS AND HANDLE A REQUEST TO CHANGE (ENABLE OR DISABLE) AN IRQ
+;Inputs:  BL  = IRQ Number to Change (0-15)
+;               Already verified for appropriateness
+;         DoEnable = Yes if we are supposed to Enable the IRQ
+;                  = No if we are supposed to Disable the IRQ
+;Outputs: Enables/Disables IRQ as requested
+;         Writes appropriate Message to the Screen
+;Changes:
+;------------------------------------------------------------------------------
+HandleIRQChange:
+  PUSH AX,CX,DX        ;Save used registers
+  MOV  AL,BL           ;Get the interrupt number
+  MOV  DX,(PIC1Addr+1) ;Assume it's on the first PIC (IRQ 0-7)
+  CMP  AL,7            ;Is it more than 7 (is it on the 2nd PIC)?
+  JBE >C10             ;If not, jump to handle it
+  MOV  DX,(PIC2Addr+1) ;Point at the second PIC I/O port
+  SUB  AL,8            ;Set the IRQ to a 0 offset
+C10:                   ;DX=I/O port, AL = Interrupt Offset
+  MOV  AH,(NOT 1)      ;Convert the IRQ number
+  MOV  CL,AL           ;  to an
+  ROL  AH,CL           ;  IRQ mask
+  IN   AL,DX           ;Get the current IRQ Mask
+  CMP  DoEnable,Yes    ;Are we enabling or disabling the interrupt?
+  JNE >C20             ;If disabling, jump to handle it
+  AND  AL,AH           ;Enable the IRQ
+  JMP >C40             ;Jump to change it
+C20:                   ;Need to disable the interrupt
+  NOT  AH              ;Convert enables to disables
+  OR   AL,AH           ;Mask out the IRQ number
+C40:                   ;We have the new IRQ mask
+  OUT  DX,AL           ;Send it to the PIC
+  MOV  DX,OKMsg1       ;Write the first part
+  CALL WriteZCon       ;  of the OK Message
+  MOV  AL,BL           ;Get the interrupt number back again
+  CALL WriteNumber     ;Write it
+  MOV  DX,OKMsg2       ;Write the second part
+  CALL WriteZCon       ;  of the OK Message
+  MOV  DX,OKMsgE       ;Assume we Enabled it
+  CMP  DoEnable,Yes    ;Did we Enable?
+  JE  >C50             ;If so, we're OK
+  MOV  DX,OKMsgD       ;If not, point at the Disabled Message
+C50:                   ;We're pointed at the correct message
+  CALL WriteZCon       ;Write the message
+  POP  DX,CX,AX        ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;Code to Parse the Command Line for Options
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;GET THE NEXT SERIES OF NUMERIC CHARACTERS, AND CONVERT THEM TO A NUMBER
+;Inputs:
+;Outputs: AX = decimal character string converted to a number, ?? if not
+;         CF = Clear if AX is OK
+;            = Set if no decimal found
+;Changes:
+;------------------------------------------------------------------------------
+GetDecimal:
+  PUSH BX,CX,DX     ;Save used registers
+  XOR  AX,AX        ;Start with zero
+  XOR  BX,BX        ;  "    "    "   - accumulator
+  MOV  CX,10        ;CX=multiplier & digit limit comparer
+  CALL IsSpaceOrEOX ;Skip past the spaces
+  JZ  >D70          ;If End-Of-Line, there's an error
+  SUB  AL,'0'       ;If not, convert it to a number
+  CMP  AL,9         ;Is it really a number?
+  JA  >D70          ;If not, there's an error
+  DEC  SI           ;If so, step back to the number
+D10:                ;Loop to here for each character
+  LODSB             ;Get the next character
+  SUB  AL,'0'       ;Change it to 0-9 range
+  XOR  AH,AH        ;Extend byte to word
+  CMP  AX,CX        ;Is it a digit?
+  JAE >D80          ;If not, we're done
+  CMP  BX,6553      ;Is our number getting too big?
+  JB  >D20          ;If not, jump to store it
+  CMP  AL,5         ;If so, will this number make it too big?
+  JA  >D70          ;If so, there's an error
+D20:                ;Add the digit to our number
+  XCHG AX,BX        ;Swap accumulation into AX, new digit into BX
+  MUL  CX           ;Multiply the previous accumulation by 10
+  ADD  BX,AX        ;Add in the new digit
+  JMP  D10          ;Jump to get next character
+D70:                ;There was an error
+  STC               ;Mark the error flag
+  JMP >D90          ;And quit
+D80:                ;We have a good number
+  DEC  SI           ;Point back at the non-number
+  MOV  AX,BX        ;Put the value where it belongs
+  CLC               ;Mark the OK flag
+D90:                ;We're done
+  POP  DX,CX,BX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP OVER SPACES TO FIND THE NEXT LEGITIMATE CHARACTER, TESTING FOR EOL
+;Inputs:  DS:[SI] = Command Line Pointer
+;Outputs: ZF = Set if EOL
+;               AL  = Unchanged
+;              [SI] = End-of-Line Character
+;            = Clear if not EOL
+;               AL  = First non-space character
+;              [SI] = Character AFTER the next non-space character
+;Changes:
+;------------------------------------------------------------------------------
+IsSpaceOrEOX:
+  CALL IsSpaceOrEOL ;Skip over the spaces
+  JZ  >X90          ;If end-of-line, we're done
+  LODSB             ;If not, get the next character
+  OR   AL,AL        ;Set return flag
+X90:                ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;SKIP OVER SPACES TO FIND LEGITIMATE CHARACTERS, AND TEST FOR EOL
+;Inputs:  DS:[SI] = Command Line Pointer
+;Outputs: ZF = Set if EOL
+;            = Clear if legitimate character
+;              [SI] = The Next non-Space Character
+;Changes:
+;------------------------------------------------------------------------------
+IsSpaceOrEOL:
+  PUSH AX     ;Save used registers
+L10:          ;Loop to here to skip over spaces
+  LODSB       ;Get the next character
+  CMP  AL,' ' ;Is it a space?
+  JE   L10    ;If so, get the next character
+  CMP  AL,Tab ;Is it a Tab?
+  JE   L10    ;If so, get the next character
+  DEC  SI     ;If not, point back at the character
+  CMP  AL,CR  ;Set EOL flag
+  POP  AX     ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;Code to Write our Output to the Screen
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;WRITE THE CURRENT STATUS OF ALL IRQ'S TO THE SCREEN
+;Inputs:
+;Outputs:
+;Changes:
+;------------------------------------------------------------------------------
+WriteAllIRQs:
+  PUSH AX,BX,CX,DX    ;Save used registers
+  CALL GetAllIRQs     ;Get the IRQ status
+  MOV  BX,AX          ;Save it in BX
+  MOV  DX,IRQHdrMsg   ;Write our
+  CALL WriteZCon      ;  Table Header
+  MOV  AX,1           ;Start with IRQ 0
+  CMP  NumIRQs,8      ;Are there only 8 IRQ's?
+  JNE >W40            ;If not, jump to handle 16
+W20:                  ;Only has 8 IRQ's
+  MOV  DX,XTIRQMsg    ;Point at the XT interrupt table
+  CALL Write8IRQs     ;Write 8 IRQ's
+  JMP >W90            ;Done
+W40:                  ;Has 16 IRQ's
+  MOV  DX,ATIRQMsg1   ;Write the
+  CALL Write8IRQs     ;  first 8 IRQ's
+  MOV  DX,ATIRQMsg2   ;Write the
+  CALL WriteZCon      ;  table-splitter message
+  MOV  DX,ATIRQMsg3   ;Write the
+  CALL Write8IRQs     ;  second 8 IRQ's
+W90:                  ;Done
+  POP  DX,CX,BX,AX    ;Restore used registers
+  RET
+
+Write8IRQs:
+  PUSH CX,DX          ;Save used registers
+  MOV  CX,8           ;Do 8 IRQ's
+E10:                  ;Loop to here foe each IRQ
+  PUSH DX             ;Save the current string pointer
+  CALL WriteZCon      ;Write this IRQ's description
+  MOV  DX,EnabledMsg  ;Assume the IRQ is enabled
+  TEST BX,AX          ;Is it enabled?
+  JNZ >E30            ;If so, the string is OK
+  MOV  DX,DisabledMsg ;If not, point at the disabled message
+E30:                  ;We have the status
+  CALL WriteZCon      ;Write the status
+  ROL  AX,1           ;Point at the next IRQ in the list
+  POP  DX             ;Restore the string pointer
+  ADD  DX,IRQMsgLen   ;Point at the next string
+  LOOP E10            ;Keep going until we're done
+  POP  DX,CX          ;Save used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE ENABLED STATUS OF ALL IRQ'S
+;Inputs:
+;Outputs: AX = Mask for IRQ's 0-15, 1 = Enabled!!
+;Changes:
+;------------------------------------------------------------------------------
+GetAllIRQs:
+  PUSH DX              ;Save used registers
+  MOV  DX,(PIC2Addr+1) ;Get IRQ's
+  IN   AL,DX           ;  8-15
+  MOV  AH,AL           ;Store it in the high byte
+  MOV  DX,(PIC1Addr+1) ;Get IRQ's
+  IN   AL,DX           ;  0-7
+  NOT  AX              ;Convert bits so enabled = 1
+  POP  DX              ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE A 2-DIGIT DECIMAL NUMBER (between 00 and 19)
+;Inputs:  AL = Number to write
+;Outputs:
+;Changes:
+;------------------------------------------------------------------------------
+WriteNumber:
+  PUSH AX,DX,DI     ;Save used registers
+  CLD               ;Go forward with string functions
+  MOV  AH,AL        ;Put the number in AH
+  MOV  DI,NumberMsg ;Point at
+  MOV  DX,DI        ;  the string
+  MOV  AL,'0'       ;Assume it's less than 10
+  CMP  AH,10        ;Is it less than 10?
+  JB  >N10          ;If so, store the character
+  MOV  AL,'1'       ;If not, we need to store a '1'
+  SUB  AH,10        ;And subtract 10 from the number
+N10:                ;We have the first character
+  STOSB             ;Store the first character in the string
+  ADD  AH,'0'       ;Convert the second character to ASCII
+  MOV  ES:[DI],AH   ;Store it
+  CALL WriteZCon    ;Write it
+N90:                ;We're done
+  POP  DI,DX,AX     ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;Code to write strings generically to the Screen
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING TO CON OR TO ERR
+;Inputs:  DS:[DX] = Pointer to string
+;         CS = Local Data Area
+;Outputs: Writes the string to CON or ERR
+;Changes:
+;------------------------------------------------------------------------------
+WriteZCon:             ;Write to CON
+  PUSH BX              ;Save used register
+  MOV  BX,StdOutHandle ;Write to STDOUT
+;  JMP >Z00             ;Jump to do it
+;WriteZErr:             ;Write to ERR
+;  PUSH BX              ;Save used register
+;  MOV  BX,StdErrHandle ;Write to STDERR
+;Z00:
+  PUSH AX,CX           ;Save used registers
+  CALL CalcStrSizeDX   ;Calculate the size of the string (returns CX)
+  JZ  >Z80             ;If nothing to write, just quit
+  MOV  AH,40h          ;Function 40h (Write to Device)
+  INT  21h             ;Do it
+Z80:                   ;We're done
+  POP  CX,AX           ;Restore used registers
+  POP  BX              ;Restore used register
+Z90:                   ;We're done
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE LENGTH OF AN ASCIIZ STRING
+;Inputs:  DS:[DX] = Pointer to the string
+;Outputs: CX = Length of the string
+;         ZF = Set if string is 0 length
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+CalcStrSizeDX:
+  PUSH AX,DI  ;Save used registers
+  PUSH ES     ;Save used registers
+  MOV  ES,DS  ;Point ES:[DI]
+  MOV  DI,DX  ; at the string
+  XOR  AL,AL  ;Look for a 0
+  MOV  CX,-1  ;Start with max count for REPNE
+  REPNE SCASB ;Find the end of the string
+  NOT  CX     ;Calculate the size
+  DEC  CX     ;  of the string (sets ZF)
+  POP  ES     ;Restore used registers
+  POP  DI,AX  ;Restore used registers
+  RET

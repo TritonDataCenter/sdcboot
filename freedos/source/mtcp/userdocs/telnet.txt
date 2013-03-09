@@ -1,0 +1,318 @@
+mTCP Telnet client
+2011-10-29 Version
+Michael Brutman (mbbrutman@gmail.com)
+
+
+Introduction
+
+This is a small telnet client like other telnet clients that you
+have probably used before.  Besides communicating with a telnet server
+using the telnet protocol it also emulates a standard 'ANSI' terminal.
+This telnet client features excellent screen updating performance and
+a small memory footprint.
+
+
+Hardware requirements
+
+  8088 processor or better
+  165KB available RAM (using standard backscroll buffer)
+  CGA, Monochrome (MDA), EGA or VGA display
+  Supported Ethernet card, SLIP or PPP connection
+
+
+Software requirements
+
+  DOS 2.1 or newer (DOS 3.3 or newer recommended)
+  Packet driver for your Ethernet card, SLIP or PPP connection
+
+
+Setup instructions
+
+  Telnet is built using the mTCP library. The setup instructions for mTCP
+  can be found in SETUP.TXT.
+
+
+Using Telnet
+
+  Telnet uses the following syntax:
+
+    telnet [options] <telnet_server_addr> [port]
+
+  where <telnet_server_addr> is the name or numerical IP address of the
+  telnet server you wish to connect to and [port] is an optional port
+  to connect on.  By default port is 23, which is the standard telnet
+  server port.
+
+  Options are:
+
+    -help                      Show basic help text
+    -debug_ansi                Create telnet.log with some extra debug info
+    -debug_telnet              Create telnet.log with some extra debug info
+    -sessiontype <telnet|raw>  Force telnet mode or raw mode
+
+  Under normal operation if you connect to port 23 on a server you will be
+  operating in telnet mode.  This means that the telnet client will expect
+  to receive telnet options from the server, and will reply and try to
+  negotiate option settings.  If you connect to any port besides port 23
+  you will be operating in raw mode, where the telnet client will not
+  respond to telnet options and will not try to negotiate option settings.
+
+  If you need to connect to a real telnet server on a non-standard port then
+  use the -sessiontype option to tell the telnet client to do telnet option
+  negotiation even if you are not connecting on port 23.  You probably
+  will never need to specify raw mode but it is there if you need it.
+
+  To make the screen performance tolerable on older machines telnet will
+  take incoming data and render the current screen on a virtual buffer
+  before trying to repaint the real screen.  This approach uses a little
+  bit more memory, but it dramatically improves the performance ot the
+  screen handling, especially when scrolling large amounts of data.
+  You will notice that the screen will pause and stop updating while
+  the machine is getting flooded with incoming data - this is normal and
+  it is keeping you from dying a slow and agonizing death while the display
+  adapter scrolls.  A nice side-effect of the virtual buffer approach is
+  that you get backscroll capability for free - if something does scroll
+  past the screen you can hit Page Up and Page Dn to browse around.
+
+
+Telnet protocol features and limitations
+
+  This isn't a fully compliant telnet client implementation.  It has the
+  following limitations:
+
+    - SGA (Server Go Ahead) must be enabled on both sides of the connection.
+      Most servers expect this behavior, as a TCP/IP socket is a full
+      duplex connection.
+    - This client will not do local line editing.
+    - This client does not support the telnet Data Mark command.  This is
+      not a big issue, but it means that you don't have an easy way to tell
+      the server to squelch a flood of output if it happens.  At Ethernet
+      speeds this should not be a big problem.
+
+  It does properly support the following telnet options:
+
+    - Binary transfer - it will be requested and used if available
+    - Echoing - it will request or let the server offer to do echoing.  You
+      can also turn on local echoing.
+    - Terminal type - it will send the terminal type if asked for it
+    - Window size - it will send the window size in rows and columns if asked
+
+  Other options such as passing the environment variables are not supported,
+  but that is not a big deal considering that you are connecting from a DOS
+  machine.  (If you have a burning desire for a missing option let me know.)
+
+
+ANSI Emulation Notes
+
+  Full blown ANSI terminal emulation is a complicated mess.  All of the
+  different variations of ANSI emulation over the years have not helped
+  anything either.  To put it politely, I've done the best I can and you
+  might still see screen rendering problems.
+
+  That being said, I've tried to do a reasonable good job of interpreting
+  ANSI escape sequences and rendering them properly.  The ANSI emulation
+  does not depend on ANSI.SYS or any other console device driver - it is
+  all internal to the program.  I used a few sources to determine the
+  required set of escape sequences, including the Linux TERMCAP entries
+  for a few ANSI-like terminals, including the generic ANSI terminal
+  definition and a few related PC flavors.  The emulation is good enough
+  for me to write this documentation using VI, browse in text mode with
+  Lynx, run the 'screen' program to get a few virtual terminals, use
+  the 'info' command to browse the terminfo writeup, and run some of the
+  more complicated 'system-config-*' commands provided with Fedora.
+
+  Here are a few notes to improve your experience:
+
+    Unicode:
+
+      This telnet client doesn't have Unicode support in it, so
+      sending a three byte sequence to it and hoping that you will get a
+      Unicode character will not work.  The easiest way to supress the
+      bogus Unicode characters is to set your LANG enviroment variable
+      so that it doesn't trigger Unicode support.  For example, on my
+      recent Linux boxes LANG looks like this:
+
+        echo $LANG
+        en_US.UTF-8
+
+      Set it to en_US instead like this: export LANG=en_US
+
+    Codepages:
+
+      The standard codepage built into the monochrome card or the
+      CGA card is codepage 437.  No other codepages are possible if you are
+      using these two video cards.  Set Lynx to use codepage 437 to avoid
+      getting weird characters.
+
+      EGA and VGA users may be able to get other codepages loaded into memory
+      using country.sys and other DOS configuration commands.  I have not
+      experimented with this yet, but in theory you should be able to use
+      other codepages with telnet by doing that.  (If you try this out please
+      let me know how it works!)
+
+    Terminal Types:
+
+      By default if the telnet server asks type type of terminal is
+      connecting this code will report back as 'ANSI'.  This happens during
+      telnet option negotiation.
+
+      If you want to experiment with other terminal types supported by your
+      system then you can change the string that gets reported.  See the
+      section entitled 'Advanced Setup' for instructions on how to do this.
+
+      If you just want to make a temporary change most Unix systems have a
+      TERM variable in the environment that you can alter.
+
+      Depending on your system there may be several suitable terminal types
+      to explore.  Older Linux systems have over 20 variants of ANSI terminals
+      to choose from.  Newer Linux systems might just have 'ANSI' and
+      'PCANSI' to choose from.  Look in /usr/share/terminfo/ for possible
+      termcap definitions to play with.  If you want to make a custom termcap
+      for this program contact me and I'll tell you exactly what I
+      implemented.
+
+    Monochrome Adapter Users:
+
+      The monochrome adapter does not display color, but it does have the
+      ability to underline characters properly.  If you are on a true
+      monochrome display adapter (MDA) then you should set your terminal type
+      to 'pcansi-mono', or something similar that tells the server that you
+      have a terminal with true underlining capability.  The standard ANSI
+      setting will work, but will not enable underlining.
+
+
+Special note: Telnet BBSes and MUDs
+
+  Not everything out there claiming to be a telnet server is actually running
+  a compliant telnet server that does telnet option negotiation.  A lot of
+  telnet BBBes and multi-user dungeons fall into this category.  If you are
+  having trouble trying to connect to something that is not a standard
+  telnet server, try using the "-sessiontype raw" option.  You will still get
+  ANSI emulation but all of the telnet protocol negotiation code will be
+  disabled.  This is done automatically when you connect to anything other
+  than port 23.
+
+  Assuming that works, you might need to turn on local echoing using Alt-E.
+
+
+[Enter] key handling
+
+  The Telnet standard spells out that a "newline" character is comprised
+  of a CR (carriage return) followed by an LF (line feed).  CR by itself
+  or LF by itself is not technically a newline.
+
+  By default when you press the [Enter] key Telnet will send a CR/LF
+  pair.  Some telnet servers are loose in their interpretation of the
+  spec and will accept either CR or LF by themselves as a newline.  If
+  this happens it will look like you are pressing the [Enter] key
+  twice each time you use it.
+
+  If you are being plagued by a server that does this you can use
+  Alt-N to select whether Telnet will send a CR/LF, CR or LF when
+  the [Enter] key is pressed.  The help screen will show you the
+  current setting.
+
+  Regardless of this setting you can always send a CR by pressing
+  Ctrl-M and send a LF by pressing CTRL-J.
+
+
+Advanced setup
+
+  There are some options that you can specify in the MTCPCFG file to
+  override default behavior, such as the initial state of toggles.
+  Below is the list:
+
+    TELNET_VIRTBUFFER_PAGES n    Replace n with a number from 1 to 8
+    TELNET_CONNECT_TIMEOUT  n    N is time in seconds to wait for a connection
+    TELNET_AUTOWRAP n            Use 0 for autowrap off (default), 1 for on
+    TELNET_SENDBSASDEL n         Use 1 to send DEL chars when Backspace is hit
+    TELNET_TERMTYPE termtype     Report 'termtype' as your terminal type
+                                 during telnet option negotiation
+    TELNET_SEND_NEWLINE chars    Send [Enter] as chars (see below)
+
+  By default the number of Virtual Buffer Pages is 4, the connection timeout
+  is 10 seconds, autowrap is turned on and sending DEL chars when the
+  Backspace key is hit is on.  The terminal type string is set to 'ANSI'.
+
+  The valid values for TELNET_SEND_NEWLINE are "CR/LF", "CR", or "LF".
+  The default is CR/LF, which is what the telnet standard calls for.
+  (See the section on [Enter] key handling above for details.)
+
+  Examples:
+
+    TELNET_SEND_NEWLINE CR/LF    (Default: send both CR and LF)
+    TELNET_SEND_NEWLINE CR       (Send just a CR)
+    TELNET_SEND_NEWLINE LF       (Send just an LF)
+
+
+Special Keys sent to your server at runtime
+
+  Cursor keys (Up, Down, Left Right)
+  Home
+  Insert
+  Back-Tab (shift Tab)
+
+
+Special keys interpreted locally
+
+  PageUp and PageDown: Go up and down through the backscroll buffer
+
+  Alt-H: Show a combined help and status screen
+  Alt-B: Toggle sending DEL chars when the Backspace key is used on and off
+  Alt-E: Toggle local echoing on and off
+  Alt-N: Toggle between sending [Enter] as CR/LF, CR or LF
+  Alt-R: Refresh the screen from our local virtual buffer.  (Should not
+         be needed unless I have a screen drawing problem)
+  Alt-W: Toggle automatic wrapping around the right margin on and off
+  Alt-X: Exit the program (Ctrl-Break does this too)
+
+  When you use one of the toggle options a single beep means it was
+  turned off, while a beep followed quickly by a higher pitched beep
+  means it was turned on.
+
+
+Support
+
+  Have a comment or need help?  Please email me at mbbrutman@gmail.com.
+
+
+Recent changes
+
+  2011-09-11: Fix telnet options bug
+  2011-05-27: First open source release (GPL3)
+
+  2011-05-18: Add Alt-N to toggle between sending [Enter] as CR/LF, CR or LF
+
+  2010-11-27:
+
+    Misc TCP library changes to improve handling when buffers
+      are full.
+    Watcom runtime workaround: improve compatibility with older machines
+
+  2010-06-21:
+
+    Ported to Open Watcom.  Note: The CGA snow code has been removed
+    temporarily.
+
+  2010-04-22:
+
+    Maintenance release for the underlying TCP library.  TCP checksums
+    should be computed correctly all of the time now, and are much faster.
+
+  2010-03-21: Fix a bug involving servers with high numbered telnet options.
+
+  2009-12-27:
+
+    Add local echoing toggle
+    Bug fix: [Enter] key should send CR/LF, not just CR
+    Bug fix: Monochrome displays were freezing
+    Bug fix: Monochrome displays were not underlining
+    Add -sessiontype command line option and implement raw mode
+
+  2009-12-12: Add support for cursor position reporting
+
+
+More information: http://www.brutman.com/mTCP
+
+Created November 2009, Last updated Oct 29th, 2011
+(C)opyright Michael B. Brutman, mbbrutman@gmail.com

@@ -1,0 +1,12 @@
+SAMCFG
+
+SAMCFG is a set of files for creating the config.sys configuration script 
+and the autoexec.bat startup script.
+
+Entries are processor-dependant:
+* 8086: no memory manager installed as no XMS, nor EMS (provide own driver if EMS expansion card)
+* 80186: same
+* 80286: XMS is available through the FDXMS286 driver, EMS requires your own hardware + driver
+* 80386: XMS is available through the HIMEM driver, UMBs and EMS through JEMM386/JEMMEX
+
+

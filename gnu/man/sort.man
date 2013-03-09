@@ -1,0 +1,125 @@
+NAME
+     sort - sort lines of text files
+
+SYNOPSIS
+     sort [-cmu] [-t separator] [-o output-file]  [-bdfiMnr]  [+POS1  [-POS2]]
+     [-k POS1[,POS2]] [file...]
+
+DESCRIPTION
+     This manual page documents the GNU version of sort.  sort sorts,  merges,
+     or  compares all the lines from the given files, or the standard input if
+     no files are given.  A  file  name  of  `-'  means  standard  input.   By
+     default, sort writes the results to the standard output.
+
+     sort has three modes of operation: sort (the default), merge,  and  check
+     for sortedness.  The following options change the operation mode:
+
+     -c   Check whether the given files are already sorted: if  they  are  not
+          all sorted, print an error message and exit with a status of 1.
+
+     -m   Merge the given files by sorting them as a group.  Each  input  file
+          should  already  be  individually  sorted.   It always works to sort
+          instead of merge; merging is provided because it is faster,  in  the
+          case where it works.
+
+     A pair of lines is compared as follows:  if  any  key  fields  have  been
+     specified,  sort  compares each pair of fields, in the order specified on
+     the command line, according to the associated ordering options,  until  a
+     difference is found or no fields are left.
+
+     If any of the global options Mbdfinr are given  but  no  key  fields  are
+     specified,  sort  compares  the  entire  lines  according  to  the global
+     options.
+
+     Finally, as a last resort (or if no ordering options  were  specified  at
+     all), sort compares the lines byte by byte in machine collating sequence.
+
+     GNU sort has no limits on input line  length  or  restrictions  on  bytes
+     allowed within lines.  In addition, if the final byte of an input file is
+     not a newline, GNU sort silently supplies one.  In some  cases,  such  as
+     exactly  what  the  -b  and -f options do, BSD and System V sort programs
+     produce different output; GNU sort follows the POSIX behavior,  which  is
+     usually like the System V behavior.
+
+     If the environment variable TMPDIR is set, sort uses it as the  directory
+     in which to put temporary files instead of the default, /tmp.
+
+     The following options affect the ordering of output lines.  They  may  be
+     specified  globally or as part of a specific key field.  If no key fields
+     are specified, global  options  apply  to  comparison  of  entire  lines;
+     otherwise  the  global  options  are  inherited by key fields that do not
+     specify any special options of their own.
+
+     -b   Ignore leading blanks when finding sort keys in each line.
+
+     -d   Sort in `dictionary order': ignore all  characters  except  letters,
+          digits and blanks when sorting.
+
+     -f   Fold lower case characters into the equivalent upper case characters
+          when  sorting  so  that, for example, `b' is sorted the same way `B'
+          is.
+
+     -i   Ignore characters outside the ASCII range 040-0176 (inclusive)  when
+          sorting.
+
+     -M   An initial string, consisting of any amount of white space, followed
+          by  three letters abbreviating a month name, is folded to lower case
+          and compared in the order `jan' < `feb'  <  ...  <  `dec.'   Invalid
+          names compare low to valid names.  This option implies -b.
+
+     -n   Compare according to arithmetic  value  an  initial  numeric  string
+          consisting  of optional white space, an optional - sign, and zero or
+          more digits, optionally followed by a decimal point and zero or more
+          digits.  This option implies -b.
+
+     -r   Reverse the result of comparison, so that  lines  with  greater  key
+          values appear earlier in the output instead of later.
+
+     Other options are:
+
+     -o output-file
+          Write output to output-file instead of to the standard  output.   If
+          output-file is one of the input files, sort copies it to a temporary
+          file before sorting and writing the output to output-file.
+
+     -t separator
+          Use character separator as the field separator when finding the sort
+          keys  in  each  line.  By default, fields are separated by the empty
+          string  between  a  non-whitespace  character   and   a   whitespace
+          character.   That  is  to say, given the input line ` foo bar', sort
+          breaks it into fields ` foo' and ` bar'.  The field separator is not
+          considered  to  be  part  of either the field preceding or the field
+          following it.
+
+     -u   For the default case or the -m option, only output  the  last  of  a
+          sequence of lines that compare equal.  For the -c option, check that
+          no pair of consecutive lines compares equal.
+
+     +POS1 [-POS2]
+          Specify a field within each line to use as a sorting key.  The field
+          consists  of the portion of the line starting at POS1 and up to (but
+          not including) POS2 (or to the end  of  the  line  if  POS2  is  not
+          given).   The  fields  and character positions are numbered starting
+          with 0.
+
+     -k POS1[,POS2]
+          An alternate syntax for specifying sorting  keys.   The  fields  and
+          character positions are numbered starting with 1.
+
+     A position has the form f.c, where f is the number of the  field  to  use
+     and  c  is  the  number  of the first character from the beginning of the
+     field (for +pos) or from the end of the previous field (for  -pos).   The
+     .c  part of a position may be omitted in which case it is taken to be the
+     first character in the field.  If the -b option has been  given,  the  .c
+     part  of  a  field  specification  is  counted  from  the  first nonblank
+     character of the field (for +pos) or from the  first  nonblank  character
+     following the previous field (for -pos).
+
+     A +pos or -pos argument may also have any of the option  letters  Mbdfinr
+     appended  to  it,  in which case the global ordering options are not used
+     for that particular field.  The -b option may be  independently  attached
+     to  either  or  both of the +pos and -pos parts of a field specification,
+     and if it is inherited from the global options it  will  be  attached  to
+     both.   If  a  -n or -M option is used, thus implying a -b option, the -b
+     option is taken to apply to both the +pos and the -pos  parts  of  a  key
+     specification.  Keys may span multiple fields.

@@ -1,0 +1,113 @@
+[Notes accompanying first beta of VM/CMS port; still mostly applicable
+ to the UnZip 5.2 release.  Somebody with a VM/CMS system will have to
+ update this file.]
+
+Thank you for trying this first port of UNZIP for VM/CMS and MVS!
+
+This is the first beta so there might be some bugs in it.
+
+                        Using under VM/CMS:
+                    ---------------------------
+
+1. To use the Info-Zip's UNZIP under VM/CMS you need:
+
+   - C/370 ver 2.1 compiler or another compatible compiler supporting
+     long names for function/variable names.
+
+   - that the disk where the compiler is on is accessed
+
+   - at least the following nucleus extensions (display of NUCXMAP):
+
+     NAME      ENTRY    USERWORD ORIGIN   BYTES   AMODE (Attributes)
+     EDCX24    0038B000 00000000 0038B000 00002FD8  ANY  SYSTEM
+     EDCXV     001D1000 00000000 001D1000 000824C8   31  SYSTEM
+
+2. To compile the program under VM/CMS do :
+
+   - unzip all the files from unz512vm.zip file. They are stored as
+     ASCII format so you have to unzip them first on PC or other
+     system that already have UNZIP, and then upload them to the
+     mainframe with ASCII to EBCDIC conversion.
+
+   - execute UNZVMC to compile and link all the sources.
+
+   - if everything is ok you will get an UNZIP MODULE
+
+3. Using UNZIP
+
+   - Just read the UNZIP.DOC
+
+   - A few exceptions concerning VM/CMS
+
+     3.1. use always filename.filetype.mdisk format to specify
+          vm/cms files
+
+     3.2. If the ZIP file has been zipped on an ASCII based system
+          it will be automatically translated to EBCDIC
+          ( I hope I got all those translation tables OK :-)
+
+     3.3. The date and the time of the output files is set to the
+          current system date/time - not according the date/time in
+          the zip file.
+
+     3.4. You can even unzip using VM/CMS PIPELINES
+          so unzip can be used as pipeline filter:
+
+          'pipe cms unzip -p test.zip george.test | count lines | cons'
+          ( we do also a lot of pipethinking here ;-)
+
+     3.5. If you got also the ZIP program (see ZIP201VM.ZIP) you can
+          do zipping and unzipping without translating to ASCII
+          the ZIP also preserves the file information (LRECL,BLKSIZE..)
+          So when you UNZIP a file zipped with ZIP under VM/MVS it
+          restores the file info.
+
+          There currently some problems with file with RECFM=V*
+          I don't save the length of each record yet :-)
+
+     3.6. No wildcards are supported in the input zip name you have
+          to give the real name (.zip is not necessary)
+
+          So you CAN'T use things like: unzip -t *.zip
+
+     3.7. But you CAN use wildcards as filename selection like:
+          unzip -t myzip *.c  - OK or even
+          unzip -t myzip *.c -x z*.c  - to exclude all files matching
+                                        z*.c
+
+     3.8. A filename translations is being done in some cases:
+         - when there is no filetype (extension) the name becomes
+           firstname.NONAME
+
+     3.9. When you unzip a file all of your currently accessed disks
+          are checked for the existence of this file if it exist
+          somewhere you get a reply if you want to overwright it ot no
+
+     3.10. If you have CMS PIPELINES installed you can use the MC EXEC
+           as a MAKE utility to conditional compile all the sources
+           using as input UNZIP MAKEFILE.
+
+     3.11. NO SFS is supported if you are using VM/ESA - everything is
+           extracted to the current directory.
+
+     3.12. You can specify destination minidisk for unzip using the -d
+           option. Example : UNZIP myzip *.c -d b
+           This will unzip all .c files on your B disk.
+
+      3.9. All '+' or '-' signs are skipped from the filenames
+
+Please rapport all bugs and problems to :
+     Info-ZIP@WKUVX1.WKU.EDU
+
+That's all for now.
+
+Have fun!
+
+
+George Petrov
+e-mail: c888090@nlevdpsb.snads.philips.nl
+tel: +31-40-781155
+
+Philips C&P
+Eindhoven
+The Netherlands

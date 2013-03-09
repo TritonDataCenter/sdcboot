@@ -1,0 +1,223 @@
+#include <ver.h>
+#include "wizunzip.h"
+#include "replace.h"
+#include "rename.h"
+#include "pattern.h"
+#include "sound.h"
+
+#include "password.h"
+rcinclude password.dlg
+rcinclude about.dlg
+rcinclude pattern.dlg
+rcinclude replace.dlg
+rcinclude rename.dlg
+rcinclude sound.dlg
+rcinclude seldir.dlg
+rcinclude copyfile.dlg
+rcinclude makedir.dlg
+
+WizUnzip ICON wizunzip.ico
+unzipped ICON unzipped.ico
+
+EXIT_BUTTON BITMAP "exit.bmp"
+OPEN_BUTTON BITMAP "open-up.bmp"
+HELP_BUTTON BITMAP "help.bmp"
+COPY_BUTTON BITMAP "copy.bmp"
+MOVE_BUTTON BITMAP "move.bmp"
+RENAME_BUTTON BITMAP "rename.bmp"
+TEST_BUTTON BITMAP "test.bmp"
+DISPLAY_BUTTON BITMAP "display.bmp"
+EXTRACT_BUTTON BITMAP "extract.bmp"
+DELETE_BUTTON BITMAP "trash.bmp"
+COMMENT_BUTTON BITMAP "comment.bmp"
+MAKEDIR_BUTTON BITMAP "makedir.bmp"
+SELECTALL_BUTTON BITMAP "selall.bmp"
+DESELECTALL_BUTTON BITMAP "deselall.bmp"
+SELECTPATTERN_BUTTON BITMAP "selpat.bmp"
+CLEARSTATUS_BUTTON BITMAP "clrstat.bmp"
+COPYSTATUS_BUTTON BITMAP "copystat.bmp"
+UNZIPTODIR_BUTTON BITMAP "unzipto.bmp"
+SPLIT_BUTTON BITMAP "split.bmp"
+STATUS_BUTTON BITMAP "status.bmp"
+LIST_BUTTON BITMAP "list.bmp"
+
+#ifndef WIN32
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 3,0,0,0
+PRODUCTVERSION 3,0,0,0
+FILEFLAGSMASK 0x3L
+//FILEFLAGS 0x2L
+FILEOS VOS__WINDOWS16
+FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "Info-Zip\0"
+            VALUE "FileDescription", "Info-Zip's Windows UnZipper\0"
+            VALUE "FileVersion", "3.00\0"
+            VALUE "InternalName", "WizUnZip\0"
+            VALUE "LegalCopyright", "Info-Zip 1996\0"
+            VALUE "OriginalFilename", "WIZUNZIP.EXE\0"
+            VALUE "ProductName", "Info-Zip's WizUnZip\0"
+            VALUE "ProductVersion", "3.0.0.0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252 
+    END
+END
+#else
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION 3,0,0,0
+PRODUCTVERSION 3,0,0,0
+FILEFLAGSMASK 0x3L
+//FILEFLAGS 0x2L
+FILEOS VOS__WINDOWS32
+FILETYPE VFT_APP
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904E4"
+        BEGIN
+            VALUE "CompanyName", "Info-Zip\0"
+            VALUE "FileDescription", "Info-Zip's Windows UnZipper\0"
+            VALUE "FileVersion", "3.00\0"
+            VALUE "InternalName", "WizUnZip\0"
+            VALUE "LegalCopyright", "Info-Zip 1996\0"
+            VALUE "OriginalFilename", "WIZUNZIP.EXE\0"
+            VALUE "ProductName", "Info-Zip's WizUnZip\0"
+            VALUE "ProductVersion", "3.0.0.0\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1252 
+    END
+END
+#endif
+
+WizUnzip MENU 
+{
+ POPUP "&File"
+ {
+  MENUITEM "&Open Archive...", IDM_OPEN
+  MENUITEM SEPARATOR
+  MENUITEM "&Unzip Archive To...", IDM_CHDIR
+  MENUITEM SEPARATOR
+  MENUITEM "&Copy Archive...\tF5", IDM_COPY_ARCHIVE
+  MENUITEM "&Move Archive...\tF6", IDM_MOVE_ARCHIVE
+  MENUITEM "&Delete Archive...\tF7", IDM_DELETE_ARCHIVE
+  MENUITEM "&Rename Archive...\tF8", IDM_RENAME_ARCHIVE
+  MENUITEM SEPARATOR
+  MENUITEM "Ma&ke Directory...", IDM_MAKE_DIR
+  MENUITEM SEPARATOR
+  MENUITEM "E&xit", IDM_EXIT
+ }
+
+ POPUP "&Archives"
+ {
+  MENUITEM "&Select All Files\tF2", IDM_SELECT_ALL
+  MENUITEM "&Deselect All Files\tF3", IDM_DESELECT_ALL
+  MENUITEM "Select Files by &Pattern...\tF4", IDM_SELECT_BY_PATTERN
+  MENUITEM SEPARATOR
+  MENUITEM "E&xtract", IDM_EXTRACT, GRAYED
+  MENUITEM "D&isplay", IDM_DISPLAY, GRAYED
+  MENUITEM "&Test", IDM_TEST, GRAYED
+  MENUITEM "Show .Zip &Comment", IDM_SHOW_COMMENT, GRAYED
+ }
+
+ POPUP "&Status/Display"
+ {
+  MENUITEM "&Clear Status/Display Window\tDel", IDM_CLEAR_STATUS
+  MENUITEM "C&opy Status/Display Window to Clipboard\tCtrl+C", IDM_COPY
+  MENUITEM SEPARATOR
+  MENUITEM "Clear &Status/Display Window Before Displaying", IDM_AUTOCLEAR_STATUS
+  MENUITEM "&Don't Prompt To Clear Status/Display Window", IDM_AUTOCLEAR_DISPLAY
+ }
+
+ POPUP "&View"
+ {
+  MENUITEM "&Short Format", IDM_SHORT
+  MENUITEM "&Long Format", IDM_LONG
+  MENUITEM SEPARATOR
+  MENUITEM "Maximize &Archive Directory Listbox", IDM_MAX_LISTBOX
+  MENUITEM "S&plit", IDM_SPLIT, CHECKED
+  MENUITEM "Maximize S&tatus/Display Window", IDM_MAX_STATUS
+ }
+
+ POPUP "&Preferences"
+ {
+  MENUITEM "&Recreate Directory Structure", IDM_RECR_DIR_STRUCT
+  POPUP "Save &Options"
+  {
+   MENUITEM "Al&ways Save ""UnZip To"" Dir", IDM_SAVE_UNZIP_TO_DIR
+   MENUITEM "Alwa&ys Save ""UnZip From"" Dir", IDM_SAVE_UNZIP_FROM_DIR
+  }
+
+  MENUITEM SEPARATOR
+  POPUP "E&xtract Options"
+  {
+   MENUITEM "Always &Overwrite Existing Files", IDM_OVERWRITE
+   MENUITEM "E&xtract Only Newer Files", IDM_EXTRACT_ONLY_NEWER
+   MENUITEM "&Prompt to Overwrite Existing Files", IDM_PROMPT_TO_OVERWRITE
+  }
+
+  MENUITEM SEPARATOR
+  MENUITEM "Translate &LF to CR-LF", IDM_TRANSLATE
+  MENUITEM "Translate Filename Spaces to &Underscore", IDM_SPACE_TO_UNDERSCORE
+  MENUITEM SEPARATOR
+  POPUP "List&box Selections"
+  {
+   MENUITEM "Listbox Selection &Extracts File", IDM_LB_EXTRACT
+   MENUITEM "Listbox Selection &Displays File", IDM_LB_DISPLAY
+   MENUITEM "Listbox Selection &Tests File", IDM_LB_TEST
+  }
+
+  MENUITEM SEPARATOR
+  MENUITEM "Unzip to Same Directory as &ZipFile", IDM_UNZIP_TO_ZIP_DIR
+  MENUITEM SEPARATOR
+  MENUITEM "&Sound Options...", IDM_SOUND_OPTIONS
+  MENUITEM SEPARATOR
+  MENUITEM "Show Toolbar &Help", IDM_SHOW_BUBBLE_HELP
+ }
+
+ POPUP "&Help"
+ {
+  MENUITEM "&WizUnZip Help\tF1", IDM_HELP
+  MENUITEM "&Using Windows Help", IDM_HELP_HELP
+  MENUITEM SEPARATOR
+  MENUITEM "&About WizUnZip...", IDM_ABOUT
+ }
+
+}
+
+WizunzipAccels ACCELERATORS
+{
+ VK_F1, IDM_HELP, VIRTKEY
+ VK_F2, IDM_SELECT_ALL, VIRTKEY
+ VK_F3, IDM_DESELECT_ALL, VIRTKEY
+ VK_F4, IDM_SELECT_BY_PATTERN, VIRTKEY
+ VK_F5, IDM_COPY_ARCHIVE, VIRTKEY
+ VK_F6, IDM_MOVE_ARCHIVE, VIRTKEY
+ VK_F7, IDM_DELETE_ARCHIVE, VIRTKEY
+ VK_F8, IDM_RENAME_ARCHIVE, VIRTKEY
+ 0x58, IDM_EXTRACT, VIRTKEY
+ 0x58, IDM_EXTRACT, VIRTKEY, SHIFT
+ 0x58, IDM_EXTRACT, VIRTKEY, CONTROL
+ 0x44, IDM_DISPLAY, VIRTKEY
+ 0x44, IDM_DISPLAY, VIRTKEY, SHIFT
+ 0x44, IDM_DISPLAY, VIRTKEY, CONTROL
+ 0x54, IDM_TEST, VIRTKEY
+ 0x54, IDM_TEST, VIRTKEY, SHIFT
+ 0x54, IDM_TEST, VIRTKEY, CONTROL
+ 0x53, IDM_SHOW_COMMENT, VIRTKEY
+ 0x53, IDM_SHOW_COMMENT, VIRTKEY, SHIFT
+ 0x53, IDM_SHOW_COMMENT, VIRTKEY, CONTROL
+ VK_DELETE, IDM_CLEAR_STATUS, VIRTKEY
+ 0x43, IDM_COPY, VIRTKEY, CONTROL
+}
+
+HelpCursor CURSOR help.cur

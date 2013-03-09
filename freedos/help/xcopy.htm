@@ -1,0 +1,117 @@
+<html>
+<title>xcopy</title>
+<body>
+<h1>xcopy</h1>
+Copies files and directory trees. 
+<pre>
+   <b>XCOPY [source] [destination] [/switches]</b>
+</pre>
+<h2>Options</h2>
+<pre>
+  <b>source</b>       
+  Specifies the directory and/or name of file(s) to copy.
+
+  <b>destination</b>  
+  Specifies the location and/or name of new file(s).
+
+  <b>/A</b>
+  Copies only files with the archive attribute set and doesn't
+  change the attribute.
+
+  <b>/C</b>
+  Continues copying even if errors occur.
+
+  <b>/D[:M/D/Y]</b>
+  Copies only files which have been changed on or after the
+  specified date. When no date is specified, only files which are
+  newer than existing destination files will be copied.
+
+  <b>/E</b>
+  Copies any subdirectories, even if empty.
+
+  <b>/F</b>
+  Display full source and destination name.
+
+  <b>/H</b>
+  Copies hidden and system files as well as unprotected files.
+
+  <b>/I</b>
+  If destination does not exist and copying more than one file,
+  assume destination is a directory.
+
+  <b>/L</b>
+  List files without copying them. (simulates copying)
+
+  <b>/M</b>
+  Copies only files with the archive attribute set and turns off
+  the archive attribute of the source files after copying them.
+
+  <b>/N</b>
+  Suppresses prompting to confirm you want to overwrite an
+  existing destination file and skips these files.
+
+  <b>/P</b>
+  Prompts for confirmation before creating each destination file.
+
+  <b>/Q</b>
+  Quiet mode, don't show copied filenames.
+
+  <b>/R</b>
+  Overwrite read-only files as well as unprotected files.
+
+  <b>/S</b>
+  Copies directories and subdirectories except empty ones.
+
+  <b>/T</b>
+  Creates directory tree without copying files. Empty directories
+  will not be copied. To copy them add switch /E.
+
+  <b>/V</b>
+  Verifies each new file.
+
+  <b>/W</b>
+  Waits for a keypress before beginning.
+
+  <b>/Y</b>
+  Suppresses prompting to confirm you want to overwrite an
+  existing destination file and overwrites these files.
+
+  <b>/-Y</b>
+  Causes prompting to confirm you want to overwrite an existing
+  destination file.
+</pre>
+
+<h2>Notes</h2>
+The switch <b>/Y</b> or <b>/N</b> may be preset in the COPYCMD environment variable.<br>
+This may be overridden with <b>/-Y</b> on the command line.
+<pre>
+   <a href="set.htm">set</a> <b>COPYCMD=/Y</b>
+</pre>
+To cancel the <b>/Y</b> for a particular xcopy command, use <b>/-Y</b> at the command line.<br><br>
+The COPYCMD variable also affects the <a href="copy.htm">copy</a> command.<br>
+Use <b>/Y</b> to change the way both copy and xcopy behave.<br>
+Use <b>/N</b>, which copy ignores, to change only the way xcopy behaves.<br><br>
+
+XCOPY may be used to determine if a drive is valid in a <a href="batch/index.htm">batch</a> file.
+<pre>
+    <b>XCOPY %drive%\NUL /L &gt;NUL</b>
+    <a href="batch/if.htm">if</a> <b>NOT ERRORLEVEL 5</b> <a href="batch/goto.htm">goto</a> <b>invaliddrive</b>
+</pre>
+
+XCOPY may be used to determine if the destination drive is full in a <a href="batch/index.htm">batch</a> file.
+<pre>
+    <b>XCOPY %drive1%\%dir% %drive1%\%dir% /S</b>
+    <a href="batch/if.htm">if</a> <b>ERRORLEVEL 39</b> <a href="batch/goto.htm">goto</a> <b>destinationfull</b>
+</pre>
+
+<h2>See Also</h2>
+<a href="copy.htm">Copy</a><br>
+<a href="diskcopy.htm">Diskcopy</a>
+<hr>
+<address>
+<b>Copyright &copy; 2009 <a href="mailto:powerware@bluebottle.com">Stephan Peters</a></b><br>
+This file is derived from XCOPY v1.3 by Rene Ableidinger (patches 2005: Eric Auer).
+See the file <a href="H2Cpying.txt">H2Cpying.txt</a> for copying conditions.
+</address>
+</body>
+</html>

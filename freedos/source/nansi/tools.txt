@@ -1,0 +1,26 @@
+Tools used to build NANSI.SYS:
+
+Microsoft (R) Macro Assembler Version 5.10 
+  Copyright (C) Microsoft Corp 1981, 1988.  All rights reserved.
+Microsoft (R) Overlay Linker  Version 3.65   
+  Copyright (C) Microsoft Corp 1983-1988.  All rights reserved.
+8424 Apr  9  1991 \bat\exe2bin.exe (part of most DOS versions!)
+
+----- UPDATE 2003: Complete freeware build chain for NANSI -----
+
+You can build NANSI.SYS with the freeware version of Arrowsoft
+Assembler (2.x, MASM compatible up to 286 code, max. 64k source
+file size).
+
+You can link NANSI.SYS with the freeware (if you sign up to the
+Borland community, you can download old Turbo C and Turbo Pascal
+and other compilers for free) Turbo C 2.x TLINK linker (you cannot
+use the free VAL linker: allows no programs without stack segment).
+
+There is an EXE2BIN tool that comes with FreeDOS. It is free open
+source software, as all parts of FreeDOS.
+
+If you have no MAKE tool, you can use the makefile.bat file
+instead. MAKE (e.g. the one of Turbo C) is better, because it
+only recompiles parts that have actually changed.
+

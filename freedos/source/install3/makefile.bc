@@ -1,0 +1,21 @@
+# This is a DOS makefile.
+
+# build targets:
+
+all:
+	cd lib
+	make -fmakefile.bc all
+	cd ..
+	cd src
+	make -fmakefile.bc all
+	cd ..
+
+# clean up:
+
+clean realclean distclean:
+	cd lib
+	make -fmakefile.bc clean
+	cd ..
+	cd src
+	make -fmakefile.bc clean
+	cd ..

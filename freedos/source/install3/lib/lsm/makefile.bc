@@ -1,0 +1,12 @@
+# this is a DOS makefile
+
+CC=tcc
+CFLAGS=-c -ml -DNDEBUG
+
+all: lsm_desc.obj
+
+lsm_desc.obj : lsm_desc.c
+	$(CC) $(CFLAGS) lsm_desc.c
+
+clean:
+	del *.obj

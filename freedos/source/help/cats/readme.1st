@@ -1,0 +1,6 @@
+Put the following files from Catgets 3.97 into this
+directory:
+
+catdb.lib
+catgets.h
+db.h

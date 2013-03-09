@@ -1,0 +1,21 @@
+ENTSHIFT.C(26): Error! E1055: Unable to open 'fte.h'
+ENTSHIFT.C(29): Error! E1022: Missing or misspelled data type near 'BOOL'
+ENTSHIFT.C(29): Error! E1009: Expecting ',' but found 'handle'
+ENTSHIFT.C(31): Error! E1116: An id list not allowed except for function definition
+ENTSHIFT.C(33): Error! E1022: Missing or misspelled data type near 'BOOL'
+ENTSHIFT.C(33): Error! E1009: Expecting ',' but found 'handle'
+ENTSHIFT.C(35): Error! E1116: An id list not allowed except for function definition
+ENTSHIFT.C(38): Error! E1022: Missing or misspelled data type near 'BOOL'
+ENTSHIFT.C(38): Error! E1009: Expecting ',' but found 'handle'
+ENTSHIFT.C(49): Error! E1011: Symbol 'n' has not been declared
+ENTSHIFT.C(52): Error! E1011: Symbol 'handle' has not been declared
+ENTSHIFT.C(52): Error! E1011: Symbol 'dirclust' has not been declared
+ENTSHIFT.C(52): Error! E1011: Symbol 'end' has not been declared
+ENTSHIFT.C(54): Error! E1011: Symbol 'ignoreerror' has not been declared
+ENTSHIFT.C(57): Error! E1011: Symbol 'begin' has not been declared
+ENTSHIFT.C(57): Error! E1011: Symbol 'TRUE' has not been declared
+ENTSHIFT.C(58): Error! E1011: Symbol 'FALSE' has not been declared
+ENTSHIFT.C(66): Error! E1011: Symbol 'begin' has not been declared
+ENTSHIFT.C(66): Error! E1011: Symbol 'TRUE' has not been declared
+ENTSHIFT.C(68): Error! E1011: Symbol 'ignoreerror' has not been declared
+ENTSHIFT.C(68): Error! E1147: Too many errors: compilation aborted

@@ -1,0 +1,14 @@
+..\..\engine\header\direct.h(26): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\direct.h(45): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\direct.h(78): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\direct.h(109): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\direct.h(110): Error! E1091: Wrong LFN entry structure
+..\..\engine\header\boot.h(40): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\boot.h(41): Error! E1091: Wrong struct FAT32Specific
+..\..\engine\header\boot.h(68): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\boot.h(69): Error! E1091: Wrong struct FAT1216Specific
+..\..\engine\header\boot.h(114): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\boot.h(115): Error! E1091: WRONG BOOT SECTOR STRUCT LENGTH
+..\..\engine\header\fsinfo.h(23): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\modlgate\defrpars.h(32): Warning! W138: No newline at end of file
+CMDEFINT.C(104): Warning! W131: No prototype found for function 'ctrlbrk'

@@ -1,0 +1,20 @@
+NAME
+     comm - compare two sorted files line by line
+
+SYNOPSIS
+     comm [-123] file1 file2
+
+DESCRIPTION
+     This manual page documents the GNU version of comm.   comm  prints  lines
+     that  are common, and lines that are unique, to two input files.  The two
+     files must be sorted before comm can be used.  The file  name  `-'  means
+     the standard input.
+
+     With no options, comm produces three column output.  Column one  contains
+     lines  unique  to  file1,  column two contains lines unique to file2, and
+     column three contains lines common to both files.
+
+     OPTIONS
+
+     The options -1,  -2,  and  -3  suppress  printing  of  the  corresponding
+     columns.

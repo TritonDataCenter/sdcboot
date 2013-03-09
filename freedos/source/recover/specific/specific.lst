@@ -1,0 +1,13 @@
+Publics by module
+
+CROSSLNK	size = 2059
+	_DestroyClusterReferenceList      _TruncateCrossLinkedFiles
+
+LOSTCLTS	size = 2999
+	_ConvertLostClustersToFiles     
+
+RECOVDSK	size = 1526
+	_RecoverDisk                    
+
+RECOVFIL	size = 1479
+	_RecoverFile                      _RecoverFileChain

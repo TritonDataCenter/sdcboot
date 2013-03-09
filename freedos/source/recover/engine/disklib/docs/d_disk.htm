@@ -1,0 +1,263 @@
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="GENERATOR" CONTENT="Mozilla/4.05 [en] (Win16; I) [Netscape]">
+   <META NAME="KeyWords" CONTENT="source, source code, library, source library, disk, disk drive, disked, data recovery, hard disk, hard drive">
+   <META NAME="Description" CONTENT="A specifcation and implementation of a set of standard-like functions and data types for low-level disk drive reading and writing based on the POSIX 1003.1 file I/O functions.">
+   <META NAME="Author" CONTENT="diskwarez">
+   <TITLE>D_DISK -- Specifications for POSIX-like DISK I/O library</TITLE>
+</HEAD>
+<BODY>
+
+<CENTER>
+<H1>
+D_DISK - Specifications for POSIX-like DISK I/O library</H1></CENTER>
+
+<CENTER>
+<H3>
+Copyright (C) 1998, Gregg Jennings</H3></CENTER>
+
+<H4>UPDATE: 26-Feb-1999</H4>
+<P>There is a major flaw in my implementation: the <b>count</b>
+argument for <b>d_read</b> and <b>d_write</b> indicate the <i>number of sectors</i>
+rather than the Unix-like way of <i>number of bytes</i>. This means that I
+screwed up and Unix-like code will not be able to be ported via D_DISK to
+DOS/Windows. I will be fixing this.
+
+<H4>
+Last Code Update: 29-Nov-1998</H4>
+
+D_DISK is a specifcation and implementation of a set of standard-like functions
+and data types for low-level disk drive reading and writing based on the
+POSIX 1003.1 file I/O functions.
+
+<P>Please note that for an OS that allows disks to be read and written
+to by the standard C functions open(), read(), write(), etc., the D_DISK
+library is probably NOT going to add anything new. However, for OSs such
+as DOS and Windows, this library should be quite nice.
+
+<P>The implementation is compatible with DOS and WIN32, supporting the
+Watcom, Microsoft and DJGPP compilers. For other compilers and operating
+systems help by others will be needed. (The WIN32 version is only for Windows
+95 and it may have problems. Under Windows NT drives can already be accessed
+by file handles.)
+
+<P>I am in the process of converting D_DISK to use my
+<A HREF="http://www.diskwarez.com/disklib.htm">DISKLIB</A>
+library. If DISKLIB is defined on the command line (see the makefiles)
+it will be used. DISKLIB is more up to date than the disk library files
+in D_DISK and also has a more complete implementation for Windows. The
+test applications here (see
+<A HREF="http://www.diskwarez.com/d_disk/notes.txt">NOTES.TXT</A>) have
+only been proven for the DOS versions. The DJGPP version has also not been
+tested yet. I will be updating D_DISK for Windows and DJGPP some day.
+
+<H3>
+The code archives</H3>
+<A HREF="http://www.diskwarez.com/d_disk/d_disk.zip">Version 0.6b, 29-Dec-1998</A>
+[<A HREF="http://www.diskwarez.com/d_disk/d_disk.txt">more info</A>]
+
+<P><B><FONT COLOR="#FF0000">29-Dec-1998:</FONT></B> Fixed a few bugs introduced
+in the last "update".
+
+<P><B><FONT COLOR="#FF0000">30-Nov-1998:</FONT></B> Code has been cleaned
+up and makefiles updated. Now compiles and runs with Microsoft and Watcom
+for DOS and Windows 98.
+
+<H3>
+Function Summary</H3>
+<B><TT>int d_open(const char *path, int oflags)</TT></B>
+
+<P>Opens a disk for access. The disk is designated by a root <B><TT>path</TT></B>
+name including the drive number (i.e. <TT>"C:\\"</TT>).&nbsp; <B><TT>oflags</TT></B>
+will include <B><TT>O_RDONLY</TT></B>, <B><TT>O_RDWR</TT></B> and <B><TT>O_BINARY</TT></B>.
+Returns a disk handle or -1 if error.
+
+<P><B><TT>O_BINARY</TT></B> refers not to the data read (it's always raw),
+but to the initial disk (sector) position. For non-binary access position
+zero is the BOOT sector; for binary access position zero is the PARTITION
+sector for HD drives.
+
+<P><B><TT>int d_close(int dh)</TT></B>
+
+<P>Closes a disk handle previously open by <B><TT>d_open()</TT></B>.&nbsp;
+Returns zero, or -1 if error.
+
+<P><B><TT>int d_read(int dh, void *buf, int nsectors)</TT></B>
+
+<P>Reads sectors (not bytes) from a disk handle. Sectors are read starting
+at the current disk position and the disk postion incremented accordingly.
+Returns the number of sectors read or -1 if error. If an end of disk condition
+occurs the return may be less than the number requested.
+
+<P><B><TT>int d_write(int dh, const void *buf, int nsectors)</TT></B>
+
+<P>Writes sectors (not bytes) to a disk handle. Sectors are written starting
+at the current disk position and the disk postion incremented accordingly.
+Returns the number of sectors written or -1 if error. If an end of disk
+condition occurs the return will be less than the number requested.
+
+<P><B><TT>long int d_lseek(int dh, long int offset, int whence)</TT></B>
+
+<P>Sets the current disk position. offset is used as an absolute sector
+position. Only <B><TT>SEEK_SET</TT></B> and <B><TT>SEEK_CUR</TT></B> will
+be recognized for values of whence. Returns the new disk position or -1
+if error.
+
+<P><B><TT>long int d_tell(int dh)</TT></B>
+
+<P>Returns the current disk position or -1 if error. A value of zero indicates
+the start of a disk.
+
+<P><B><TT>int d_stat(const char *path, struct stat *buf)</TT></B>
+
+<P>Obtains information about a disk referenced by <B><TT>path</TT></B>
+(i.e. <TT>"C:\\"</TT>) and places it in <B><TT>buf</TT></B>. Returns zero,
+or -1 if error.
+
+<P><B><TT>int d_hstat(int dh, struct stat *buf)</TT></B>
+
+<P>Obtains information about a disk referenced by an opened disk handle
+<B><TT>dh</TT></B> and places it in <B><TT>buf</TT></B>. Returns zero,
+or -1 if error.
+
+<P><B><TT>void d_perror(const char *msg)</TT></B>
+
+<P>Prints a string desribing the last error, if any.
+<BR>&nbsp;
+<H3>
+Defined Types</H3>
+This structure most likely will be changed quite a bit as needed. It currently
+is formed around the FAT file format.
+
+<P><B><TT>struct d_stat {</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; char d_fsid[];&nbsp;&nbsp;&nbsp; /* file
+system id */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; char d_dev[];&nbsp;&nbsp;&nbsp;&nbsp; /*
+disk ID */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_ino;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* disk serial number */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_mode;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* mode of access to disk */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_atime;&nbsp;&nbsp;&nbsp;&nbsp; /*
+time of last access */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_mtime;&nbsp;&nbsp;&nbsp;&nbsp; /*
+time of last data modification */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_ctime;&nbsp;&nbsp;&nbsp;&nbsp; /*
+time of last status change */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_size;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* total size in bytes */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_bsize;&nbsp;&nbsp;&nbsp;&nbsp; /*
+sector size in bytes */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_bnum;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* number of sectors */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_bres;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* number of reserved sectors */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_bhid;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* number of hidden sectors */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_usize;&nbsp;&nbsp;&nbsp;&nbsp; /*
+allocation unit (cluster) size in sectors */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_units;&nbsp;&nbsp;&nbsp;&nbsp; /*
+number of allocation units */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_ufree;&nbsp;&nbsp;&nbsp;&nbsp; /*
+number of free allocation units */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_ftable;&nbsp;&nbsp;&nbsp; /* number
+of allocation tables */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_ftsize;&nbsp;&nbsp;&nbsp; /* allocation
+table size in sectors */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_ndir;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* root dir entries */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_ptracks;&nbsp;&nbsp; /* physical number
+of tracks */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_pheads;&nbsp;&nbsp;&nbsp; /* physical
+number of heads */</TT></B>
+<BR><B><TT>&nbsp;&nbsp;&nbsp; long d_psecs;&nbsp;&nbsp;&nbsp;&nbsp; /*
+physical number of sectors per track */</TT></B>
+<BR><B><TT>};</TT></B>
+<BR>&nbsp;
+<H3>
+Global Data</H3>
+
+<UL><B><TT>int d_errno</TT></B>
+<BR>&nbsp;</UL>
+
+<H3>
+Error Values</H3>
+These are not complete, but should give you enough information.
+<UL><B><TT>D_EHANDLE,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* invalid
+disk handle */</TT></B>
+<BR><B><TT>D_EINVAL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*
+invalid argument */</TT></B>
+<BR><B><TT>D_EUNIT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* unknown unit */</TT></B>
+<BR><B><TT>D_ENREADY,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* drive
+not ready */</TT></B>
+<BR><B><TT>D_ECRC,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* data error (CRC) */</TT></B>
+<BR><B><TT>D_EREQ,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* bad driver request structure length */</TT></B>
+<BR><B><TT>D_ESEEK,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* seek error */</TT></B>
+<BR><B><TT>D_ETYPE,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* unknown media type */</TT></B>
+<BR><B><TT>D_ESECNO,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*
+sector not found */</TT></B>
+<BR><B><TT>D_EWRITE,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*
+write fault */</TT></B>
+<BR><B><TT>D_EREAD,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* read fault */</TT></B>
+<BR><B><TT>D_EGENF,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* general failure */</TT></B>
+<BR><B><TT>D_EINVCH,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*
+invalid media change */</TT></B>
+<BR><B><TT>D_EINVCMD,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* invalid
+command */</TT></B>
+<BR><B><TT>D_EINVMED,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* invalid
+media */</TT></B>
+<BR><B><TT>D_EADDR,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* address mark not found */</TT></B>
+<BR><B><TT>D_ESEEKF,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*
+seek failure */</TT></B>
+<BR><B><TT>D_ECONTRL,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* controller
+failure */</TT></B>
+<BR><B><TT>D_EWPROT,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*
+disk write protected */</TT></B>
+<BR><B><TT>D_ERESET,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /*
+reset failure */</TT></B>
+<BR><B><TT>D_EDMA,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* DMA error/overrun */</TT></B>
+<BR><B><TT>D_EBAD,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+/* bad sector/track detected */</TT></B>
+<BR>&nbsp;</UL>
+
+<H3>
+Notes</H3>
+I do not have any documnents describing the POSIX library; I have used
+only the standard C library references (like those that come with any modern
+ANSI compiler) for my specifications. I have also NOT based my code on,
+nor derived my code from, anybody else's. Certainly, over the years, I
+have "retained in memory" all my experiences of reading other people's
+code, but any similarities, outside the specifications drawn up here in
+this document, to any other program or library is coincidence (or just
+because that is the way code must be written to interface with the operating
+systems that I code for).
+
+<P>However, I will thank the following people and organizations: Ward Christensen
+for his work on CP/M which started me on this road; Brian W. Kernighan
+&amp; Dennis M. Ritchie for "The C Programming Language" which taught me
+C; The C User's Group and Victor Volkman who inspired me to give away much
+of my source code; P. J. Plauger for his many articles about C from which
+I have gained clarity; D. J. Delorie for his DJGPP compiler.
+
+<P>And NO THANKS go to the many slick-magazine-columists-whose-picture-appears-in-print,
+who, over the years, have given out vague, opinionated and false programming
+information which caused me no so much grief when I was trying to figure
+out PC programming.
+
+<P>There are no copy restrictions on the D_DISK Library.
+
+<P>
+<HR WIDTH="10%">
+<BR>&nbsp;
+</BODY>
+</HTML>

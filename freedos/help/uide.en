@@ -1,0 +1,50 @@
+UIDE
+
+UIDE is a generic/universal driver for optical devices,
+enabling you to read discs using the ISO9660 filesystem
+on your CD/DVD/Blu-Ray drives. It's freely distributable,
+unlike vendor drivers for which permission is required
+
+
+---------------------------------------------------------
+
+Usage example (startup): 
+(config.sys  ) :  DEVICE=C:\FDOS\UIDE.SYS /D:FDCD0001 /S5
+(autoexec.bat) :  C:\DOS\SHSUCDX /D:FDCD0001,X
+
+Usage example (no XMS caching, loading from commandline):
+DEVLOAD C:\FDOS\BIN\UIDE.SYS /D:FDCD0001 /N1 /N3 /B /E
+SHSUCDX /D:FDCD0001,X
+
+---------------------------------------------------------
+
+Features:
+* Optionally read-caches contents in XMS-buffer
+* Freely distributable generic driver for multiple drives
+*
+
+Supported:
+* discs using single track ISO9660 filesystem
+* playing CDs
+* CD, DVD, BluRay data
+* PIO and UDMA 
+* Serial ATA
+*
+
+Not supported:
+* ASPI and SCSI interfaces/hardware/drivers
+* CD-writing (due to ASPI)
+* Packet-writing
+* Devices connected to SCSI, USB, FireWire, Thunderbolt, etc
+* true AHCI-mode: only Legacy IDE Emulation for SATA allowed
+* pre-586 systems?
+* pre-386 systems?
+* ISA/VLB (sound)cards with (40pin IDE-)connector on them
+* some virtualisation limitations (try adding /E )
+* non-ISO9660/Joliet filesystems
+*
+
+Requirements:
+* PCI chipset
+* non-AHCI mode (legacy IDE mode, configured in BIOS)
+*

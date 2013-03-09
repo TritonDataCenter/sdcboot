@@ -1,0 +1,242 @@
+Publics by module
+
+ADCPDIRS	size = 595
+	_AdaptCurrentAndPreviousDirs    
+
+APMLIB  	size = 1692
+	_APMGetVer                        _APMIsInstalled
+	_APMVerMax                        _APMVerMin
+	_CtrlAltDel                       _FlushAllCaches
+	_Reboot                           _ShutDown
+	_Suspend                          _apmlib
+
+BACKMEM 	size = 2186
+	_AllocateBackupMemory             _BackupAlloc
+	_BackupFree                       _FreeBackupMemory
+	_InBackupMemoryRange            
+
+BACKUP  	size = 1412
+	_BackupBoot                       _BackupFat
+	_MultipleBootCheck                _SynchronizeFATs
+
+BITFIELD	size = 452
+	_ClearBitfieldBit                 _CreateBitField
+	_DestroyBitfield                  _GetBitfieldBit
+	_SetBitfieldBit                   _SwapBitfieldBits
+
+BLKCACHE	size = 3626
+	_CacheBlockSector                 _ClosePerBlockCaching
+	_GetFirstDirtyTag                 _GetNextDirtyTag
+	_InitialisePerBlockCaching        _InvalidateBlockCache
+	_RetreiveBlockSector              _UncacheBlockSector
+	_WriteBackCache                 
+
+BOOT    	size = 3014
+	_CalculateNewSerialNumber         _DetermineFATType
+	_GetBPBFileSystemString           _GetBPBVolumeLabel
+	_GetBiosDriveNumber               _GetClustersInDataArea
+	_GetDiskSerialNumber              _GetFAT32BackupBootSector
+	_GetFAT32RootCluster              _GetFAT32Version
+	_GetFSInfoSector                  _GetLabelsInFat
+	_GetMediaDescriptor               _GetNumberOfFats
+	_GetNumberOfRootEntries           _GetNumberOfSectors
+	_GetReadWriteHeads                _GetReservedSectors
+	_GetSectorsPerCluster             _GetSectorsPerFat
+	_GetSectorsPerTrack               _IndicateVolumeDataFilled
+	_IndicateVolumeDataFilled_NT      _InvalidateBootInfo
+	_IsVolumeDataFilled               _IsVolumeDataFilled_NT
+	_PrivateIsVolumeDataFilled        _ReadBootSector
+	_ReadBootSectorIfNeeded           _WriteBPBFileSystemString
+	_WriteBPBVolumeLabel              _WriteBiosDriveNumber
+	_WriteBootSector                  _WriteDiskSerialNumber
+	_WriteFAT32BackupBootSector       _WriteFAT32RootCluster
+	_WriteFAT32Version                _WriteFSInfoSector
+	_WriteMediaDescriptor             _WriteNumberOfFats
+	_WriteNumberOfRootEntries         _WriteNumberOfSectors
+	_WriteReadWriteHeads              _WriteReservedSectors
+	_WriteSectorsPerCluster           _WriteSectorsPerFat
+	_WriteSectorsPerTrack           
+
+BUFSHIFT	size = 1080
+	_RotateBufLeft                    _RotateBufRight
+	_SwapBuffer                       _SwapBufferParts
+
+CLCFSIZE	size = 169
+	_CalculateFileSize              
+
+CPYSCT  	size = 272
+	_CopySectors                    
+
+DIRCNT  	size = 259
+	_low_dircount                   
+
+DIRECT  	size = 894
+	_EntryLength                      _GetDirectoryStart
+	_GetFirstCluster                  _GetRootDirPosition
+	_IsRootDirPosition                _LocatePreviousDir
+	_ReadDirEntry                     _SetFirstCluster
+	_WriteDirEntry                  
+
+DRIVE   	size = 126
+	_HasAllFloppyForm                 _HasFloppyForm
+
+EMS     	size = 213
+	_EMSalloc                         _EMSbaseaddress
+	_EMSfree                          _EMSmap
+	_EMSpages                         _EMSstatus
+	_EMSversion                     
+
+ENTSHIFT	size = 3060
+	_RotateEntriesLeft                _RotateEntriesRight
+	_SwapBasicEntries                 _SwapLFNEntries
+
+FAT     	size = 3844
+	_ConvertToDataSector              _DataSectorToCluster
+	_FileTraverseFat                  _GetBytesInFat
+	_GetDataAreaStart                 _GetFatLabelSize
+	_GetFatStart                      _InvalidateFatCache
+	_IsLabelValid                     _IsLabelValidInFile
+	_LinearTraverseFat                _ReadFatLabel
+	_WriteFatLabel                  
+
+FEXIST  	size = 244
+	_LoFileNameExists               
+
+FILECHN 	size = 2261
+	_AddDirectory                     _CreateFileChain
+	_ExtendFileChain                
+
+FNDCIDIR	size = 365
+	_FindClusterInDirectories       
+
+FNDCIFAT	size = 163
+	_FindClusterInFat               
+
+FREESPAC	size = 953
+	_FindFirstFittingFreeSpace        _FindFirstFreeSpace
+	_FindLastFreeCluster              _FindNextFreeSpace
+
+FSINFO  	size = 627
+	_CheckFSInfo                      _GetFreeClusterSearchStart
+	_GetNumberOfFreeClusters          _ReadFSInfo
+	_WriteFSInfo                      _WriteFreeClusterCount
+	_WriteFreeClusterStart          
+
+FTEERR  	size = 32
+	_ClearFTEerror                    _GetFTEerror
+	_SetFTEerror                    
+
+FTEMEM  	size = 194
+	_AllocateBootSector               _AllocateDirectoryEntry
+	_AllocateFSInfo                   _AllocateSector
+	_AllocateSectors                  _FTEAlloc
+	_FTEFree                          _FreeBootSector
+	_FreeDirectoryEntry               _FreeFSInfo
+	_FreeSectors                    
+
+GTNTHCST	size = 369
+	_GetNthCluster                  
+
+LFN     	size = 86
+	_CalculateSFNCheckSum           
+
+LOCPATH 	size = 797
+	_LocateFilePosition               _LocatePathPosition
+	_LocateRelPathPosition          
+
+LOGCACHE	size = 1007
+	_CloseLogicalCache                _EnsureBlockMapped
+	_GetLogicalBlockAddress           _GetMappedPhysicalBlock
+	_InitialiseLogicalCache         
+
+LOWFAT32	size = 276
+	_ExtendedAbsReadWrite             _GetFAT32SectorSize
+
+MKABSPTH	size = 599
+	_GetPreviousDir                   _MakeAbsolutePath
+
+NTHENTRY	size = 818
+	_GetNthDirectoryPosition          _GetNthDirectorySector
+	_GetNthSubDirectoryPosition       _SubdirGetter
+	_positiongetter                 
+
+NTHFLCLT	size = 240
+	_GetNthFileCluster              
+
+PATHCONV	size = 848
+	_ConvertEntryPath                 _ConvertUserPath
+
+PHSCACHE	size = 484
+	_ClosePhysicalCache               _GetPhysicalMemType
+	_InitialisePhysicalCache          _IsEMSCached
+	_RemapEMSBlock                    _RemapXMSBlock
+
+PREREAD 	size = 2188
+	_PreReadClusterChain              _PreReadClusterSequence
+
+RDWRSECT	size = 2521
+	_CloseReadWriteSectors            _GetReadWriteModus
+	_InitReadSectors                  _InitReadWriteSectors
+	_IsWorkingOnImageFile             _LastReadBufferSector
+	_ReadSectors                      _ReadSectorsAddress
+	_WriteSectors                   
+
+READ    	size = 193
+	_disk_read                        _disk_read_ext
+
+RELOCCLT	size = 966
+	_RelocateCluster                
+
+SCTCACHE	size = 286
+	_CacheActive                      _CacheIsCorrupt
+	_CacheSector                      _CloseSectorCache
+	_CommitCache                      _InitSectorCache
+	_InvalidateCache                  _LockSectorCache
+	_RetreiveCachedSector             _StartSectorCache
+	_StopSectorCache                  _UncacheSector
+	_UnlockSectorCache              
+
+SUBDIR  	size = 1046
+	_DirectoryEquals                  _GetDirectory
+	_SubdirTraverser                  _TraverseRootDir
+	_TraverseSubdir                   _WriteDirectory
+
+SUREMEM 	size = 1216
+	_AllocateGuaranteedBlock          _AllocateGuaranteedMemory
+	_CountFreeGuaranteedBlocks        _CountGuaranteedBlocks
+	_FreeGuaranteedBlock              _FreeGuaranteedMemory
+	_LockGuaranteedBlock              _UnlockGuaranteedBlock
+
+SWPCLST 	size = 1778
+	_SwapClusters                   
+
+TRACEPTH	size = 1134
+	_AddToFrontOfString               _FindPointingPosition
+	_GetSurroundingCluster            _GetSurroundingFile
+	_TraceClusterPathName             _TraceFullPathName
+	_TracePreviousDir               
+
+VOLUME  	size = 275
+	_GetRootDirVolumeLabel          
+
+WALKTREE	size = 946
+	_WalkDirectoryTree              
+
+WALKWPTH	size = 635
+	_WalkWildcardPath               
+
+WILDCARD	size = 422
+	_MatchWildcard                  
+
+WRITE   	size = 116
+	_disk_write_ext                 
+
+WRTBACK 	size = 302
+	_InstallWriteFunction             _UninstallWriteFunction
+	_WriteBackSectors                 _WriteFuncs
+
+XMS     	size = 425
+	_DOStoXMSmove                     _XMMinit
+	_XMSalloc                         _XMScoreleft
+	_XMSfree                          _XMSinit
+	_XMStoDOSmove                   

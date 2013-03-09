@@ -1,0 +1,130 @@
+            User-Driver Data Caching, Using UIDE
+            ====================================
+
+UIDE can be called by user drivers to cache data for their read and
+write requests.    A user driver must have a "callback" subroutine,
+to perform the I-O for its devices, and it must use the logic shown
+below to achieve data caching.   Every I-O request to a user driver
+will result in a call to UIDE, which will immediately call-back the
+user subroutine for output, or will see if input data is already in
+the cache and call-back the user subroutine for input, when needed.
+Data already in UIDE's cache will only be moved to the user's input
+buffer, with no call-back to the user-driver subroutine.
+
+A user "callback" subroutine is entered on UIDE's stack.    All but
+the SS:SP-registers are undefined.   The "callback" subroutine must
+save/restore whichever registers it uses, while it executes I-O for
+the request originally submitted to UIDE for caching.     After I-O
+has ended, it must clear the carry flag for "no errors", or set the
+carry flag and post a desired error code in the AL-register.   Then
+the "callback" subroutine exits back to UIDE with a "retf" command.
+
+Upon return from a caching call to UIDE, the user driver must check
+for any device I-O error, and it must also check for an "XMS error"
+(carry set, AH=0FFh) declared by UIDE.    This denotes a problem in
+moving cached data to/from XMS memory, thus a memory DIAGNOSTIC may
+be necessary!
+
+During their initialization, user drivers desiring to call UIDE for
+caching must search memory, from about 0200h to EFFFh, to find UIDE
+and save its segment address (e.g. in variable UIDESeg, as shown in
+the example logic below), for use by caching calls.   A user driver
+searches for a segment with bytes 10-17 (000Ah-0011h) which are the
+UIDE driver name set by the /D: switch, the name UDVD1 used when no
+/D: switch is given, or the "default" name UIDE$ set when no CD/DVD
+drives will be used (for FreeDOS automatic-loading "script" files).
+
+If a user driver finds UIDE, but its UIDE_ENT "entry" offset (bytes
+016h and 017h of UIDE) is zero, user-driver caching is unavailable,
+and such caching calls must NOT be issued!   UIDE_ENT shall be zero
+if UIDE is loaded with its /B "basic driver" switch (no caching).
+
+If UIDE was not loaded, or if its caching is unavailable, the user-
+driver variable UIDESeg can be left "zero" and tested during an I-O
+request, as shown in the logic below.
+
+User drive "CacheUnit" numbers must be from 040h to 07Fh since UIDE
+reserves units 000h to 037h for use by its own disk/diskette/CD/DVD
+drives.   Cache-unit numbers are allocated or released in groups of
+8 by setting or clearing the appropriate bit in UIDE_BMP (byte 019h
+of UIDE), as follows --
+
+UIDE_BMP bit 0:  Allocates cache-units 040h to 047h.
+         bit 1:  Allocates cache-units 048h to 04Fh.
+         bit 2:  Allocates cache-units 050h to 057h.
+         bit 3:  Allocates cache-units 058h to 05Fh.
+         bit 4:  Allocates cache-units 060h to 067h.
+         bit 5:  Allocates cache-units 068h to 06Fh.
+         bit 6:  Allocates cache-units 070h to 077h.
+         bit 7:  Allocates cache-units 078h to 07Fh.
+
+User drivers must set or clear these bits themselves, when a driver
+is being initialized or "unloaded".    Other drivers must NOT use a
+UIDE cache-unit number that has already been allocated!
+
+After doing the above initialization procedures, a user driver then
+calls UIDE for data caching with the following logic --
+
+         ..
+         ..
+         ..
+UIDE_ENT equ  word  ptr 016h    ;UIDE user-caching "entry" offset.
+UIDE_IOF equ  byte  ptr 018h    ;UIDE I-O control flags.
+UIDE_BMP equ  byte  ptr 019h    ;UIDE cache-unit number "bitmap".
+UIDE_CBA equ  dword ptr 01Ch    ;UIDE user "callback" address.
+UIDE_TYP equ  byte  ptr 023h    ;UIDE device-type code.
+         ..
+         ..
+         ..
+        mov   cx,UIDESeg        ;UIDE absent or caching unavailable?
+        jcxz  NoUIDE            ;If either, go do normal device I-O.
+        mov   es,cx             ;Set saved UIDE driver segment.
+        mov   eax,BufferAddr    ;Set EAX = 32-bit buffer address.
+                                ;("VDS lock" address, NOT seg:offs!).
+        mov   cl,Sectors        ;Set CL = number of 512-byte sectors.
+        mov   ch,RdWrCmd        ;Set CH = 00h if read, 02h if write.
+        mov   di,LBAHighBits    ;Set DI =  upper 16 LBA addr. bits.
+        mov   dx,LBAMidBits     ;Set DX = middle 16 LBA addr. bits.
+        mov   si,LBALowBits     ;Set SI =  lower 16 LBA addr. bits.
+                                ;(Unused hi-order bits must be 0!).
+        movzx bp,CacheUnit      ;Set BP = 8-bit cache unit number.
+        pushf                   ;Stack current CPU flags.
+        cli                     ;Disable CPU interrupts.
+        bts   es:UIDE_IOF,7     ;Is UIDE currently busy?
+        jc    BsyErr            ;Yes?  Handle as an error!
+        push  cs                ;Set "callback" subroutine seg:offs
+        push  offset OurCBRtn   ;  address in UIDE bytes 01Ch-01Fh.
+        pop   es:UIDE_CBA
+        mov   es:UIDE_TYP,07Eh  ;Set "user device" in UIDE byte 023h.
+        push  cs                ;Stack UIDE "Int 13h" exit address.
+        push  offset Return
+        pushf                   ;Stack "dummy" flags and BP-reg.,
+        push  bp                ;  loaded when UIDE does its exit.
+        push  es                ;Do 32-bit jump (not call) to UIDE.
+        push  es:UIDE_ENT
+        retf
+Return: jc    CachErr           ;If carry is set, go handle error!
+        ..                      ;No UIDE errors if we arrive here.
+        ..
+        ..
+BsyErr: popf                    ;If busy, reload interrupt state.
+        ..                      ;Handle UIDE-busy error as desired.
+        ..
+        ..
+NoUIDE: ..                      ;No UIDE caching -- do normal I-O.
+        ..
+        ..
+
+If a media-change or serious error for a user drive requires a UIDE
+cache "flush", the following logic can be used --
+
+        ..
+        ..
+        cmp   UIDESeg,0         ;UIDE absent or caching unavailable?
+        je    NoFlsh            ;If either, no cache "flush" needed.
+        mov   es,UIDESeg        ;Set saved UIDE driver segment.
+        or    es:UIDE_IOF,002h  ;Post UIDE "flush cache" flag.
+                                ;("Flush" occurs before next I-O).
+NoFlsh: ..
+        ..
+

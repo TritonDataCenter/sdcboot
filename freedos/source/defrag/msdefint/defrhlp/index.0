@@ -1,0 +1,25 @@
+$[CENTER](index)
+$(-)
+
+General isues:
+$(Overview)[1]
+$(Using a mouse)[2]
+$(Using the keyboard)[3]
+
+Operations:
+$(Checking the FAT file system)[4]
+$(Sorting directory entries)[5]
+$(Defragmenting the drive)[6]
+
+Dialogs:
+$(Select drive)[7]
+$(Select optimization method)[8]
+$(File sort)[9]
+$(Map legend)[10]
+$(About FreeDOS defrag)[11]
+
+General:
+$(Speed issues)[20]
+
+$(-)
+Copyright 2000, 2002, 2004 Imre Leber

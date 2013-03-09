@@ -1,0 +1,20 @@
+FreeDOS 1.0 Final Distribution
+
+ripcord [PROGRAM | ALL | BETA[6|7|8|9] | 1.0 | NA | INTERNAL]
+  PROGRAM is the program to display version information for.
+  Do NOT include extension, eg use FORMAT not FORMAT.EXE
+
+  The remaining choices are keywords that will display
+  version information for the corresponding programs included
+  on the boot disk and in the base package:
+    ALL     : all programs on boot disk & in base (including INTERNAL)
+    BETA#   : only those updated in Beta [6/7/8/9]
+    1.0     : only those updated in 1.0 Final
+    NA      : "standard" programs not yet available
+    INTERNAL: programs internal to FreeCOM
+
+This program displays hard coded information and only
+reflects information for the distribution it is included with.
+
+Maintained by Kenneth J Davis <jeremyd@computer.org>
+It is public domain.

@@ -1,0 +1,71 @@
+# this is a DOS makefile
+
+CATS=..\lib\cats
+UZPHOME=..\lib\unzip
+
+CC=tcc
+CFLAGS=-ml -DNDEBUG -I..\include -I..\lib\lsm -I$(UZPHOME) -I$(CATS)
+LDFLAGS=-ml
+LDLIBS1=$(UZPHOME)\unzip.lib $(CATS)\catsdb.lib
+LDLIBS2=..\lib\dat.obj ..\lib\lsm\lsm_desc.obj
+
+SRC=install.c
+OBJ=install.obj
+
+SOURCES1=bargraph.c cat.c isfile.c inst.c pause.c cdp.c log.c int24.c
+SOURCES2=box.c getkey.c sel_list.c repaint.c unz.c globals.c cchndlr.c
+OBJECTS1=bargraph.obj cat.obj isfile.obj inst.obj pause.obj cdp.obj log.obj int24.obj
+OBJECTS2=box.obj getkey.obj sel_list.obj repaint.obj unz.obj globals.obj cchndlr.obj
+
+.c.obj:
+	$(CC) -c $(CFLAGS) $<
+
+# targets:
+
+all: install.exe # cat_file.exe
+
+clean realclean:
+	del *.obj
+
+distclean: realclean
+	del *.exe
+
+
+# the del cat.obj lines are due to cat.obj include or doesn't include a main()
+# depending on how CAT_FILE_PROGRAM is defined, install.exe's cat.obj should NOT
+# have a main, whereas when compiled standalone is should.
+cat_file.exe: cat.c
+	del cat.obj
+	echo $(CFLAGS) > cflags.tmp
+	echo $(LDLIBS1) > ldlibs1.tmp
+	$(CC) @cflags.tmp -DCAT_FILE_PROGRAM -ecat_file cat.c @ldlibs1.tmp 
+	del cat.obj
+	del *.tmp
+
+inst.lib: $(OBJ) $(OBJECTS1) $(OBJECTS2)
+	@if exist inst.lib del inst.lib
+	tlib inst.lib +bargraph.obj
+	tlib inst.lib +cat.obj
+	tlib inst.lib +isfile.obj
+	tlib inst.lib +inst.obj
+	tlib inst.lib +pause.obj
+	tlib inst.lib +cdp.obj
+	tlib inst.lib +log.obj
+	tlib inst.lib +int24.obj
+	tlib inst.lib +box.obj
+	tlib inst.lib +getkey.obj
+	tlib inst.lib +sel_list.obj
+	tlib inst.lib +repaint.obj
+	tlib inst.lib +unz.obj
+	tlib inst.lib +globals.obj
+	tlib inst.lib +cchndlr.obj
+	tlib inst.lib +..\lib\dat.obj
+	tlib inst.lib +..\lib\lsm\lsm_desc.obj
+
+LDLIBS1=$(UZPHOME)\unzip.lib $(CATS)\catsdb.lib
+LDLIBS2=..\lib\dat.obj ..\lib\lsm\lsm_desc.obj
+OBJECTS1=bargraph.obj cat.obj isfile.obj inst.obj pause.obj cdp.obj log.obj int24.obj
+OBJECTS2=box.obj getkey.obj sel_list.obj repaint.obj unz.obj globals.obj cchndlr.obj
+install.exe: $(OBJ) $(OBJECTS1) $(OBJECTS2) inst.lib
+	$(CC) $(LDFLAGS) $(OBJ) $(UZPHOME)\unzip.lib $(CATS)\catsdb.lib inst.lib
+

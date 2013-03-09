@@ -1,0 +1,254 @@
+Changes to the FreeDOS Install program:
+
+Copyright (C) Jim Hall <jhall@freedos.org>
+
+
+3.7.7 (VER_3_7_7) - Added a Swedish translation of the Install
+  program, by Martin Stromberg.  [Aug 15, 2002]
+
+3.7.6 (VER_3_7_6) - critical error fixes.  Jeremy Davis is now the
+ maintainer.
+
+3.7.5 (VER_3_7_5a) - changes by Jeremy Davis to fix bug introduced by
+ previous changes: install.c and inst.c would indicate failure to
+ allocate memory instead of correctly indicating error reading dat
+ file.  Minor cleanup.
+
+3.7.4 (VER_3_7_4) - Jeremy Davis has again fixed more bugs and added
+ extra patches.  Fixed in this release: minor changes to the NLS files
+ to remove the y/n prompt, updates to dat.c to support dynamic sizing
+ of the dat array, additional code to make Install portable across
+ compilers.
+
+3.7.3 (VER_3_7_3) - Changes by Jeremy Davis to better support '/'
+ instead of '-' for DOS option characters.  Really, this should use
+ getopt, but that is next on the list.  Haven't had the chance to
+ test-build this before the release, so I hope it works!  -jh
+
+3.7.2 (VER_3_7_2) - Jeremy Davis (jeremyd@computer.org) has fixed some bugs.
+ Version 3.7.2 includes those fixes.  Specifically:
+
+3.7.1a
+Modified so all text messages now in catalog (no hard coded ones)
+  That is, all text messages (not filenames) are now in single header file,
+  text.h, which provides defines for the text and catalog numbers, and 
+  all references to any text message (including some error messages) use
+  these defines and go through cats.
+Bug 653 - [yn] removed from english & hard coded prompts - TODO other langs
+          also uses the patch to cats that supports \n and other
+          C escape codes in the message catalogs
+Bug 611 - Yes To All for packages when installing a disk (applies only to
+          current disk, not whole disk set)
+Bug  31 - added /mono switch to use BLACK & LIGHTGRAY instead of BLUE & WHITE
+          currently getopt is not used, simple string compare since it is the
+          only option, I plan to work on bug 8 and add more command line
+          options, so will probably change to use improved version of getopt.
+Bug  67 - added prompt showing user specified install to/from dirs and 
+          question user if correct (if user answers no, then will forget
+          their current specified directories and let them re-enter them)
+Modified some of the makefile.bc files.  This archive should contain everything
+  except unzip, which should be placed in LIB\UNZIP, note makefile previously
+  in LIB\UNZIP\MSDOS used and updated copy of unzip's makefile.bc, which is
+  now in LIB\UNZIP (so when installing on DOS with Borland C/C++ then don't
+  have to do anything other than unzip the Unzip archive then from main
+  directory run make -f makefile.bc, and all libs and source built as before).
+
+May 07, 2001
+
+
+3.7.1b
+Bug   8 - added -src -dst and -nopause options (changed /more to -more) to 
+          support automatic installs (ie no prompting or only partial prompts)
+Bug  66 - after directory specified, we now ensure the path exists by creating
+          it if it does not [ no error checking is done, as it attempts to
+          create path even if it already exists which should fail silently ]
+          A future approach could actually test if valid dir, if not prompt
+          the user should we create it.
+Bug 609 - Install now attempts to read *.%lang%, failing that tries *.TXT, then *
+          A future approach/enhancement maybe to try a directory, ie either
+          %lang%\*.TXT or possibly %NLSPATH%\%lang%\*.TXT or %NLSPATH%\*.%lang%
+Modified install.c so if TZ not set, assumes GMT0 so unzip gives no warnings.
+
+May 08, 2001
+
+
+3.7.1c
+Bug   5 - added support for a log file, the file is both user readable, and in
+          a format that can be used to repeat an install (requires external program).
+          The file is <dst path>\INSTALL.LOG, to use for repeat install, backup
+          <src path>\INSTALL.DAT, then MKRPINST.EXE INSTALL.LOG, this generates
+          an INSTALL.DAT and series of <disk>.# files, all with either Y or N
+          as done in the install and INST.BAT.  The INSTALL.DAT and <disk>.#
+          files can be used as replacements for ones in the disk sets, and
+          INST.BAT can be used instead of INSTALL.EXE to execute INSTALL.EXE with
+          the -dst, -src, and -nopause options allow for automated repeat installations
+          from the same source to same destination.
+TODO      write MKRPINST.EXE
+Added 1 line to dat.c so INSTALL.DAT may have comments (if 1st character is a #),
+          and ignores empty lines
+Removed getopt.c as not currently used.  Should getopt be used in the future,
+          I recommond using the getopt [.c, .h, 1.c] from isapnptools, as its
+          version supports short and long options and is meant largely for DOS
+          (DJGPP and BC) compatibility with Linux's glibc getopt.
+Fixed where I forgot to change repaint.c to also use the message catalog strings.
+
+May 10, 2001
+
+
+3.7.1d
+Bug 610 - changed so if does not find <disk>.1 will prompt for 1st disk
+Bug 608 - modified getkey() so checks for Ctrl-C and signal via raise(SIGINT),
+          which under borland at least, results in normal Ctrl-C handler (INT 23)
+          being called.  Added signal handler for SIGINT that closes all open
+          files, displays an error message, and exits. Possible future enhancement
+          would be to save the screen, prompt asking user if sure, if not then
+          restore screen and continue, otherwise exit with message.
+Modified pause routine to call getkey() instead of getch() directly
+
+May 10, 2001
+
+
+3.7.1e
+Changed default behavior to log, so now switch is -nolog to disable logging.
+Now when control-c is pressed user is prompted to see if they really want to abort.
+Created MKRPINST.EXE (see above) and MAUTOCFG.EXE (reads the log file and creates
+           an appropriate autoexec.bat and config.sys file, possibly useful 
+           for bug 612).  [also a testlog.c just as a demo/test app]. 
+           Placed in SRC\EXTRA\
+TODO - test/fix so can once again compile under Linux.
+May 11, 2001
+
+
+3.7.1f
+Modified cat_file so does a better search for localized file.  Also made it so
+           so can be compiled independently (allowing for batch files to 
+           automatically print localized text file if LANG set).
+Fixed minor bug in Cats library.  The search alg used nlspath instead of tok,
+           so only the 1st component of %NLSPATH% was ever used for that 
+           part of search. [The included version of cats now corresponds to
+           cats393b.zip from http://www.darklogic.org/internationalization/ 
+           except catpath.h is moved from lib/ to include/ .]
+Fixed so after calling unzip restores our pretty SIGINT handler.
+The install.exe in sample is compressed with upx --8086 --best
+May 12, 2001
+
+
+3.7.1g
+Corrected cat.c to actually return -1 when failed to open file (used to return 0,
+            but I changed to return -1, except I initially forget to make the change).
+            Changed it to not prepend .\, so can actually specify paths such as \filename
+Updated INSTALL.TXT and HELP
+All included .EXE files are packed with UPX (using --best and --8086)
+May 13, 2001
+
+___________
+
+3.7.1 (VER_3_7_1) - Added a Hungarian translation of the Install
+  program, by Nagy Daniel.
+
+3.7 (VER_3_7) - major cleanup of interface, some cleanup of code.  Now
+  uses select_yn instead of getch_yn to grab yes/no responses from the
+  user.  This should be better for internationalization, although I
+  don't grab "Yes" and "No" from the catalog yet.
+  ** now in CVS on SourceForge
+
+3.62 - Maxime Vincent <max.vincent@skynet.be> has provided a fix to
+ the French language file, and a new NL (Dutch) file.
+
+3.61 - We've taken the FreeDOS install program out of CVS, since I now
+  do all the development on DOS (not under UNIX.)  In 3.61, Ilya
+  Vasilyev has provided a Russian translation.
+
+3.6 - A few changes made, the most notable being that I
+  removed the need for its own lib/conio library (under UNIX).  This
+  has been separated from the FreeDOS Install program, and is now its
+  own UNIX library called 'libconio'.  New install.fr translation.
+  Updated install.de file.
+
+3.5c - New install.pt translation by Luiz Passarelli
+<luizp@sti.com.br>.  New install.it translation by Alessio Palma
+<kht@iol.it>
+
+3.5b - New install.es file from Altair
+<aitor.sm@teleline.es>
+
+3.5a - New install.de file from Karsten Hilbert
+<Karsten.Hilbert@gmx.net>
+
+3.5 - Adds international support using UNIX-like catopen/catgets.
+
+3.2b - Used _makepath() instead of using sprintf() to build
+my paths by hand.  This is cleaner for Borland C.  This also fixes a
+bug for me where the install program would barf (under DOS) if you
+gave it a Dest Dir or Source Dir that contained a trailing backslash.
+_makepath() handles the trailing backslash just fine.
+
+3.2a - Added a bar graph to inst.c. Fixes for building on
+FreeDOS.  Works great.
+
+3.141 - Version "pi".  Minor hack to clean up a forgotten
+curses refresh().  Removed it from DOS using '#ifdef'.
+
+3.14 - More cleanup for the UI.  I hope I'm making this
+easier to use.  Complaints about the interface and what the user is
+supposed to do next are my top two complaints.  Also made a hack so
+that tabs in TXT and LSM files are displayed as a row of blank space
+(tabs were being displayed as a small circle, which is ASCII 09h.)
+
+3.13 - Cleaned up the UI quite a bit, and made the error
+messages more clear.  Fixed a few bugs that were reported on
+http://www.freedos.org/bugs/
+
+3.12 - Where the program is expecting a y/n response, the
+program now only accepts 'y' or 'n', case insensitive.  This was done
+by adding getch_yn(), and calling it in place of getch() where needed.
+
+3.11 - Added code to set the background to blue and the
+foreground to white, and to re-set the console colors back to the
+user's default colors when the program ends.
+
+3.1 - Major code cleanup to the Install program.  Basically
+re-wrote the entire install.c file, and re-worked the sources to use
+conio instead of curses.  This should make for faster execution on
+DOS, at the expense of slower execution (due to conio emulation
+through curses) on UNIX.  Dropped the `thecurse' compatibility library
+(provided curses emulation through conio) because it is no longer
+needed.  Program now uses .LSM files only for the description files.
+If you want to use another format, write your own.  Standardized the
+printed strings so that it will be easier to migrate to MSGLIB for
+internationization.  Due to the significant changes in the source
+tree, I moved all development to a new CVS project.
+
+3.0 - adds a curses-style interface.
+
+2.2 - Added support for LSM files.  Also generally cleaned
+up the code.  Removed the "Extractor List" functionality, since we are
+all using zip files now.  The INSTALL.TXT has been replaced with
+individual series.TXT files.  All .TXT files are plain text files.
+
+2.1 - added support for Debian description files
+
+2.0 - Incorporates the Unzip code into the source tree, so I
+don't need to use system().  Note that the Unzip code IS NOT INCLUDED
+in this source tree - you need to download it separately and compile
+UNZIP.LIB using the LIB\UNZIP\MSDOS\MAKEFILE.BC file (for Borland C.)
+Also added support for Red Hat Package Header files (.rph files) to
+print the description.
+
+1.2.1 - Added the proper files to support the FreeDOS
+"Orlando" distribution.
+
+1.2 - If the install program gets a fatal error (can't find
+UNZIP) then it will quit immediately with a message to that effect.
+Also will display an OEM.TXT file at the beginning.  Checks return
+codes for the system() function call on unzip.  Counts non-fatal
+errors, and report them at the end.  Checks for next disk number file
+before it looks for the Endfile.
+
+1.1 - Fixed a bug where entries from the TXT file are not
+printed if the case does not match.
+
+1.0 - First release of the Install program.  Uses a call to
+system() to extract the packages using 'unzip'.  Requires that the
+install.exe program be in the same directory as install.txt and
+install.dat.

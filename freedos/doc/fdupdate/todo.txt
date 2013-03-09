@@ -1,0 +1,9 @@
+FreeDOS Updater TODO list:
+
+- Handle properly 8-bytes package's names in LSM search (like LBACACHE...),
+- Check for FDPKG and INFOZIP prior to starting,
+- Multi-channel support,
+- Using XML remote index file,
+- Better way of comparing packages (older/newer),
+- Be aware of any troubles while downloading and/or unpacking packages,
+- Checking for WGET or CURL at program's start...

@@ -1,0 +1,18 @@
+# Makefile for Borland C/C++ 3.0
+
+# set the memory model
+MEMMODEL=s
+
+# compiler macros
+CC=bcc
+CFLAGS=-v- -f- -d -m$(MEMMODEL)
+LDFLAGS=
+LDLIBS=
+RM=del
+
+# build target
+replace.exe: replace.obj
+  $(CC) $(CFLAGS) $(LDFLAGS) replace.obj $(LDLIBS)
+
+# clean up
+  -$(RM) replace.obj

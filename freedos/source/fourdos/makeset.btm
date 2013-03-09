@@ -1,0 +1,24 @@
+:: Set up directories for Rex's system
+
+:: Base directory for Watcom C compiler
+set watcom=d:\watcom
+
+:: Base directory for MASM 6.11
+set _masm=d:\masm6
+
+:: Base directory for Spontaneous Assembly
+rem set spontasm=g:\spontasm
+
+:: Base directory for MIX TUI
+rem set tui=g:\
+
+:: Base directory for CTL3D
+rem set ctl3d=g:\ctl3d
+
+:: Set up for MASM 6.0, set OS/2 toolkit directory
+set masmold=d:\masm6
+set os2sdk=d:\toolkit
+
+:: Set up MASM386 directory
+set masm386=d:\mstools\bin
+

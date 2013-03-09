@@ -1,0 +1,28 @@
+EDIT
+
+EDIT is a text-editor
+
+
+---------------------------------------------------------
+
+Usage example #1 :
+EDIT C:\FDCONFIG.SYS
+
+
+---------------------------------------------------------
+
+Features:
+* read/modify text files
+*
+
+Supported:
+* 8086+
+
+Not supported:
+* Files over 64KB
+* long filenames
+*  
+
+Requirements:
+* Sufficient free diskspace to save a copy of the file due to overwriting bugs
+*

@@ -1,0 +1,19 @@
+Contents of the "wizdll" sub-archive for UnZip 5.2 and later:
+
+  Contents       this file
+  windll16.bcc   Borland makefile for 16-bit WizUnZip DLL
+  windll32.bcc   Borland makefile for 32-bit WizUnZip DLL
+  usedll16.bcc   Borland makefile for 16-bit WizUnZip GUI app built using DLL
+  usedll32.bcc   Borland makefile for 32-bit WizUnZip GUI app built using DLL
+  wizunz32.msc   Microsoft makefile for 32-bit WizUnZip DLL
+  usedll32.msc   Microsoft makefile for 32-bit WizUnZip GUI app built using DLL
+  wizunz.def     definition file for 16-bit WizUnZip DLL
+  wizunz32.def   definition file for 32-bit WizUnZip DLL
+  wizunz.c       DLL functions not found in wingui/*.c code
+  wizdll.h       header file for wizunz.c
+  wizunz.rc      resource file for both 16- and 32-bit DLLs
+
+The wizdll code is tightly coupled with the code in the "wingui" sub-archive,
+which is why there's so little of it here.  The Microsoft C port is not tested
+as completely as the Borland port.  Note the Borland C++ 5.0 is full of bugs;
+version 4.5 is recommended instead.

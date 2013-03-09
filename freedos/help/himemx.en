@@ -1,0 +1,33 @@
+HIMEMX
+
+HimemX is a further-developed version of FreeDOS HIMEM,
+acting as a memory manager for extended memory (XMS) up
+to 4GB.
+
+
+---------------------------------------------------------
+Usage: DEVICE=C:\FDOS\HIMEMX.EXE
+
+
+
+
+---------------------------------------------------------
+
+Features:
+* freely distributable DOS kernel
+* menu system
+* interface with Memdisk parameters to set additional commands
+
+
+Supported:
+* 386 processor or newer
+* XMS v2 (64MB), v3
+*
+
+Not supported:
+* 8086/80186/80286 platforms, use FDXMS286 instead
+* Some systems might crash, try DOS=LOW or XMGR.SYS by Jack R Ellis
+
+Requirements:
+* 386SX or better processor
+*

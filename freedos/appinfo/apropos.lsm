@@ -1,0 +1,14 @@
+Begin3
+Title:          APROPOS
+Version:        1.1
+Entered-date:   06JAN04 
+Description:    Displays commands relevant to a given keyword.
+Keywords:       freedos, help, whatis, apropos
+Author:         Robert Platt (worldwiderob@yahoo.co.uk)
+Maintained-by:  Robert Platt (worldwiderob@yahoo.co.uk)
+Primary-site:   http://projects.freedos.net/htmlhelp
+Alternate-site: www.freedos.org
+Original-site:  http://www.geocities.com/worldwiderob/
+Platforms:      freedos
+Copying-policy: GNU GPL
+End

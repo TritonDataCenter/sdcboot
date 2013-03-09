@@ -1,0 +1,8 @@
+XMGR
+
+XMGR is an extended memory driver for DOS. It requires a 386 or better processor
+and can provide access to up to 4GB of system memory.
+You're encouraged to actually use the XMS through either:
+* a ramdisk driver (RDISK or others)
+* a filecache driver (UIDE, LBAcache, CDRcache or others)
+* protected mode programs

@@ -1,0 +1,55 @@
+            WizUnZip 3.0 Development Notes
+                 Mike White, 96.02.09
+
+MODIFICATIONS:
+- Modified to compile under Borland C compiler.
+- Added support for 32 bit Windows
+- Added ability to "remember" the last directory "unzipped" to.
+- Added support for encryption.
+- Fixed support for all the different UnZip options, i.e., overwrite
+   files always, etc., etc.
+- Added button toolbar
+- Added various options to display
+- Added ability to copy, move, rename, delete archive files
+- Moved define in SELDIR.H to WIZUNZIP.H, deleted references to SELDIR.H
+- No longer use unzip.c at all.
+
+TODO:
+- Add "zip" dll      [GRR 960427:  see Zip 2.1 release]
+
+INTRODUCTION
+This sub-archive contains the source files which you can use to 
+re-create WizUnZip 3.0.  WizUnZip is a non-profit Windows
+unzipper product based on the Info-ZIP group's product, UnZip.
+Johnny Lee and Robert Heath, who wrote the original Windows
+interface code, have chosen to place their code in the public
+domain for you to use freely. I have chosen to do likewise with my
+modifications and additions.
+
+DEVELOPMENT SYSTEM REQUIREMENTS
+To re-create WizUnZip, you'll need a `C' Compiler and possibly
+a Windows Software Development Kit. I use the Borland 4.5 and 5.0
+compiler but have periodically checked the code with Visual C++ 
+1.5x, 2.x and 4.0.
+
+BORLAND USERS
+The Borland compiler does not like the named segment construction
+that WizUnZip uses widely, e.g.,
+
+	char __based(__segname("STRINGS_TEXT")) szString[] = 
+            "String"; 
+
+If you take out all the __based(__segname("STRINGS_TEXT"))
+constructions, WizUnZip's data segment tends to be crowded
+and WizUnZip runs out of stack.
+
+To get around this, Borland users need to set up your compiler to
+put the strings into the code segment. I have also merged duplicate
+strings in my own builds. I have defined
+    char __based(__segname(x)) to be x
+if __BORLANDC__ is defined, as it is for all the later Borland compilers.
+You might have to do similar things if you are compiling with different
+compilers.
+
+FILE ACKS
+The helpicon.bmp and help.cur files come from the Microsoft SDK.

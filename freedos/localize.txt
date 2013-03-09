@@ -1,0 +1,160 @@
+# generic config.sys settings, line 1 and 2 are created by batchfile
+0.1:!COUNTRY=001,858,C:\FDOS\BIN\COUNTRY.SYS
+0.2:!SET DOSDIR=C:\FDOS
+0.3:!LASTDRIVE=Z
+0.4:!BUFFERS=20     
+0.5:!FILES=40
+0.6:!MENUCOLOR=7,0
+0.7:MENUDEFAULT=1,5
+
+0.8:!DOS=HIGH,UMB
+0.9:!DOSDATA=UMB
+0.10:!SET DIRCMD=/P /OGN /4
+
+# x.yz where y is the CPU generation (8086/80186=1, 80286=2, 80386+=3),
+# z starts at *1* ; x starts at 0 (config.sys)
+# 8086/80186 specific FreeDOS multi configuration menu in CONFIG.SYS/FDCONFIG.SYS
+0.11:MENU 1 - Load FreeDOS 
+0.12:1?ECHO To free more RAM in order to start a program,
+0.13:1?ECHO Use following command: CALL /S program.exe /parameters
+0.18:1?SHELL=C:\FDOS\BIN\COMMAND.COM C:\FDOS\BIN /E:1024 /P=C:\AUTOEXEC.BAT
+
+# 286-specific FreeDOS multi configuration menu in CONFIG.SYS/FDCONFIG.SYS
+0.21:MENU 1 - Load FreeDOS while providing XMS-memory
+0.22:MENU 2 - Load FreeDOS without drivers 
+0.25:1?DOS=HIGH
+0.28:12?SHELL=C:\FDOS\BIN\COMMAND.COM C:\FDOS\BIN /E:1024 /P=C:\AUTOEXEC.BAT
+0.29:2?SET CONFIG=4
+
+# 386-specific FreeDOS multi configuration menu in CONFIG.SYS/FDCONFIG.SYS
+0.30:MENU 1 - Load FreeDOS with JEMMEX, no EMS (most UMBs), max RAM free
+0.31:MENU 2 - Load FreeDOS with EMM386 (Expanded Memory) and SHARE loaded
+0.32:MENU 3 - Load FreeDOS including XMGR XMS-memory driver
+0.33:MENU 4 - Load FreeDOS without drivers 
+0.34:MENU 5 - Load GRUB4DOS
+0.35:123?DOS=HIGH
+0.36:12?DOS=UMB
+0.37:12?DOSDATA=UMB
+0.38:34?SHELL=C:\FDOS\BIN\COMMAND.COM C:\FDOS\BIN /E:1024 /P=C:\AUTOEXEC.BAT
+0.39:12?SHELLHIGH=C:\FDOS\BIN\COMMAND.COM C:\FDOS\BIN /E:1024 /P=C:\AUTOEXEC.BAT
+
+
+# autoexec.bat
+2.0:SET PATH=%dosdir%\\BIN
+2.1:SET NLSPATH=%dosdir%\\NLS 
+2.2:SET HELPPATH=%dosdir%\\HELP
+2.3:SET TEMP=%dosdir%\\TEMP
+2.4:SET TMP=%TEMP%
+2.5:SET BLASTER=A220 I5 D1 H5 P330
+2.6:SET DIRCMD=/P /OGN /4
+2.7:SET COPYCMD=/-Y
+2.8:if "%config%"=="4" goto end
+2.9:SHSUCDX /QQ /D3
+
+2.10:REM LH VIAUDIO
+2.11:REM LH VIAFMTSR
+2.12:LH FDAPM APMDOS
+2.13:LH DISPLAY CON=(EGA,,1)
+2.14:MODE CON CP PREP=((858) %dosdir%\\cpi\\EGA.CPX)
+2.15:MODE CON CP SEL=858
+
+2.16:LH SHSUCDHD /QQ /F:FDBOOTCD.ISO
+2.17:LH FDAPM APMDOS
+2.18:IF "%config%"=="2" LH SHARE
+2.19:MOUSE 
+2.20:DEVLOAD /H /Q %dosdir%\\BIN\\UIDE.SYS /H /D:FDCD0001 /S5
+2.21:SHSUCDX /QQ /~ /D:?SHSU-CDR,D /D:?SHSU-CDH,D /D:?FDCD0001,D /D:?FDCD0002,D /D:?FDCD0003,D
+2.22:MEM /C /N
+2.23:IF NOT "%config%"=="4" SHSUCDX /D
+2.24:GOTO END
+2.25::END
+2.26:SET AUTOFILE=%0
+
+# codepage stuff: http://support.microsoft.com/kb/60080
+2.30:device=e:\\dos\\display.sys con=(ega,437,2)
+2.31:country=001,437,e:\dos\country.sys
+2.32:rem AUTOEXEC.BAT
+2.33:nlsfunc
+2.34:mode con codepage prepare=((850)e:\dos\ega.cpi)
+2.35:chcp 850
+2.36:mode con codepage select=850
+2.37:keyb us,850,e:\dos\keyboard.sys
+
+# This is for POSTINST.BAT
+3.0:FreeDOS 1.1 Final cdrom distribution.
+3.1:ÿ
+3.2:Performing post installation steps:
+3.3:Trying to install mouse support (may hang your computer)
+3.4:Mouse support succesfully installed!
+
+# completed steps first.
+4.0:FreeDOS 1.1 Final cdrom distribution.
+4.1:[+] Stage 1 : Install FAT32-enabled kernel
+4.2:[+] Stage 2 : Create startup configuration file
+4.3:[+] Stage 3 : Create startup automation file
+4.4:[+] Stage 4 : Setting up translated programs.
+4.5:[+] Stage 5 : Setup all packages.
+4.6:[+] Stage 6 : Done, reboot system?
+
+# uncompleted steps after completed steps.
+5.1:[-] Stage 1 : Install FAT32-enabled kernel
+5.2:[-] Stage 2 : Create startup configuration file
+5.3:[-] Stage 3 : Create startup automation file
+5.4:[-] Stage 4 : Setting up translated programs.
+5.5:[-] Stage 5 : Setup all packages.
+5.6:[-] Stage 6 : Done, reboot system?
+
+# bootsector information message.
+6.0:FreeDOS 1.1 Final cdrom distribuion.
+6.1:ÿ
+6.2:FreeDOS SETUP has completed the installation. 
+6.3:You need to reboot to load the operating system.
+6.4:Reboot now [Y/N]?
+
+# for C:\autoexec.bat, to end with. See step5 in postinst.bat
+7.0:alias reboot=fdapm warmboot 
+7.1:alias reset=fdisk /reboot
+7.2:alias halt=fdapm poweroff 
+7.3:alias shutdown=fdapm poweroff
+7.4:alias cfg=edit %cfgfile%
+7.5:alias auto=edit %0
+7.6:echo Done processing startup files %cfgfile% and %0
+7.7:echo Type HELP to get support on commands and navigation
+7.8:echo. 
+7.9:echo Welcome to the FreeDOS 1.1 operating system (http://www.freedos.org)
+
+# Boot sector updating
+8.0:aborted
+8.1:not bootable (missing signature AA55)
+8.2:not DOS
+8.3:unknown DOS
+8.10:For your convenience the contents of drive C:'s bootsector area has been saved
+8.11:(restore by "SYS C: /BOOTONLY /RESTORBS C:\\FDOS\\BOOTSECT.BSS").
+8.12:ÿ
+
+8.16:Currently it seems to contain code belonging to FreeDOS
+8.17:Currently it seems to contain code belonging to MetaKern
+8.18:Currently it seems to contain code belonging to MSDOS/Win9x/WinNT
+8.19:Currently it seems to contain code belonging to MSDOS/Win9x/WinNT
+8.20:Currently it seems to contain code belonging to Windows 95/98/ME
+8.21:Currently it seems to contain code belonging to Windows NT/2000/XP/Vista/7
+8.22:Currently it seems to contain code belonging to DR-DOS / PC-DOS
+8.23:Currently it seems to contain code belonging to DR-DOS / PC-DOS
+8.24:Currently it seems to contain code belonging to Syslinux bootloader
+
+8.25:Please select what to do with the bootsector (also known as Volume Boot Record)
+8.26:1) Write FreeDOS specific code to this area so KERNEL.SYS will be loaded
+8.27:2) Install and configure the Syslinux bootloader with its startup code
+8.28:3) Try to integrate FreeDOS into the system's current bootloader (experimental)
+8.29:4) Skip updating and restart system from harddisk
+8.30:5) Skip updating and finalise installation by dropping to commandline.
+
+8.32:Currently it seems to contain code belonging to FreeDOS
+8.33:Currently it seems to contain code belonging to MetaKern
+8.34:Currently it seems to contain code belonging to MSDOS/Win9x/WinNT
+8.35:Currently it seems to contain code belonging to MSDOS/Win9x/WinNT
+8.36:Currently it seems to contain code belonging to Windows 95/98/ME
+8.37:Currently it seems to contain code belonging to Windows NT/2000/XP/Vista/7
+8.38:Currently it seems to contain code belonging to DR-DOS / PC-DOS
+8.39:Currently it seems to contain code belonging to DR-DOS / PC-DOS
+8.40:Currently it seems to contain code belonging to Syslinux bootloader

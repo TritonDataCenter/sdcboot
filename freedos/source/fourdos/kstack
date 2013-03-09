@@ -1,0 +1,33 @@
+# Build the KSTACK.COM file
+
+# Define local names / options
+PRODUCT=__4DOS
+ENV=DOS
+ENV_D=DOS_D
+COMPNAME=MSC7
+EXENAME=KSTACK.COM
+MAPNAME=KSTACK.MAP
+POSTLINKCMD=exe2com kstack.exe kstack.com
+
+# Set up language and compiler macros
+!INCLUDE SETUP.MAK
+
+# Define local commands
+LINKCMD=$(ALINK) kstack/map;
+
+# Define ALL: target
+ALL : setenv $(LINKTARG)
+
+# Define target to do SETs
+setenv :
+     set CL=$(CFLAGS_ENV)
+     set ML=$(AFLAGS_ENV)
+
+# Compile KSTACK
+$(OBJ)\kstack.obj : kstack.asm
+        $(ASM) $**
+
+# Set up link dependencies and do the link
+$(LINKTARG) : $(OBJ)\kstack.obj kstack
+!INCLUDE DOLINK.MAK
+

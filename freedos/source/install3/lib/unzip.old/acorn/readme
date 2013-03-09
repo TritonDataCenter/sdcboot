@@ -1,0 +1,8 @@
+Use the "RunMe1st" file (it is an Obey file) to convert all the files from
+"filename/[chs]" to "[chs].filename" (so that Unzip could be easily compiled
+under RISC OS). It will also set the correct makefile.
+
+To compile just set the CSD to the main unzip directory and run 'amu'.
+
+Currently only the Acorn C V5 compiler has been tested but probably also
+Acorn C V4 and the Acorn Assembler V2 will be able to compile unzip.

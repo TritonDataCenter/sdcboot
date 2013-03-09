@@ -1,0 +1,9 @@
+Contents of the "win32" sub-archive for UnZip 5.2 and later:
+
+  Contents      this file
+  Makefile      makefile for UnZip using MS Visual C++
+  makefile.wat  makefile for UnZip using Watcom C/C++
+  crc_i386.asm  32-bit Intel-assembler version of CRC routine
+  w32cfg.h      Win32-specific configuration, included by unzpriv.h
+  win32.c       Win32-specific support routines
+

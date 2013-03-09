@@ -1,0 +1,31 @@
+0.0:Install version %s, Copyright (C) 1998-2000 Jim Hall\n
+0.1:ce sont des logiciels gratuits et vous ˆtes les bienvenu de redistribuer\n
+0.2:sous certaine conditions; regarder le fichier COPYING pour des d‚tails.\n
+0.3:Install VIENT SANS AUCUNE GARENTIS\n
+0.4:l'installation a ‚t‚ compl‚t‚ avec succŠs.\n
+0.5:il y a eu %u erreurs et %u avertissement fatals.\n
+1.0:pressez une touche pour continuer...
+1.1:o— sont les fichiers d'installations? (d'o— installer?)
+1.2:o— les fichiers d'installations doivent ˆtres install‚? (o— installer?)
+2.0:non
+2.1:oui
+2.2:voulez-vous installer ce jeu de disquettes?
+2.3:continuer d'installer ce disque?
+2.4:installer ce paquetage?
+3.0:jeu de disques: 
+3.1:dans l'installation haut niveau.
+3.2:installation des s‚ries: 
+3.3:Paquetage: 
+3.4:impossible de trouver les fichiers de donn‚es sur cette disquette!
+3.5:fin de l'installation de ces s‚ries de disques.
+3.6:erreur!  ‚chŠque … l'installation du paquetage requis.
+3.7:avertissement!  ‚chŠque … l'installation des paquetage optionnels.
+3.8:vous n'avez pas la bonne disquette d'installation dans le lecteur.
+3.9:v‚rifier si vous avez la bonne disquette et r‚essayer.
+3.10:si vous installer d'autre s‚ries de disquettes veuillez les ins‚rer
+3.11:la disquette #1 des prochaine s‚ries dans le lecteur maintenant.
+4.0:OPTIONNEL
+4.1:REQUIÔRE.
+4.2:PASS
+
+

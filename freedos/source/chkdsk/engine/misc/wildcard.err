@@ -1,0 +1,2 @@
+WILDCARD.C(29): Error! E1055: Unable to open 'fte.h'
+WILDCARD.C(67): Warning! W131: No prototype found for function 'RETURN_FTEERROR'

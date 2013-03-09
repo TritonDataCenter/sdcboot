@@ -1,0 +1,368 @@
+		   === FAT transformation engine ===
+		  === draft preview documentation ===
+
+
+Author.
+-------
+
+Imre Leber (ilebr@vub.ac.be)
+
+Introduction.
+-------------
+
+This document describes the plannend workings of the FAT transformation
+engine. This document is supposed to be a preview of the engine for the
+soul purpose of designing curedisk. Since the engine is in no way finished
+the material in this document can be discarded as being immaterial and gives
+only a very rough introduction to the engine.
+
+The engine.
+-----------
+
+The fat transformation engine is a library, written in C, which allows
+programs to easily ask information about and change the structures of the
+fat file system. The engine can handle drives as well as image files created
+by FreeDOS diskcopy.
+
+The fat file system roughly exists of:
+
+	    boot sector
+	---------------------
+	file allocation table (can have multiple copies)
+	---------------------
+	  root directory
+	---------------------
+	     data area
+
+Initialisation.
+---------------
+
+Before you can use the functions in this library you first need to allocate
+a handle with one of the following functions:
+
+  int InitReadWriteSectors(char* driveorfile, RDWRHandle* handle);
+  int InitReadSectors     (char* driveorfile, RDWRHandle* handle);
+
+As the first argument it expects a string holding the name of the drive 
+(a:, b:, c:) or the name of the image file for which you want to use the 
+function.
+
+As the second argument it returns a pointer to the following struct, which
+is allocated on the near heap.
+
+  struct RDWRHandleStruct
+  {
+     int handle;                /* Drive number or file handle of image  */
+				/* file.                                 */
+     int IsImageFile;           /* Remembers wether an image file is     */
+				/* intended.                             */
+     int dirbegin;              /* First sector with directory entries.  */
+
+     /* Specific cached information of boot sector. */
+     unsigned char  SectorsPerCluster; /* sectors per cluster.              */
+     unsigned short ReservedSectors;   /* number of reserved sectors.       */
+     unsigned char  Fats;              /* number of fats.                   */
+     unsigned short NumberOfFiles;     /* number of files or directories in */
+				       /* the root directory.               */
+     unsigned short NumberOfSectors;   /* number of sectors in the volume.  */
+     unsigned char  descriptor;        /* media descriptor.                 */
+     unsigned short SectorsPerFat;     /* number of sectors per fat.        */
+     unsigned short SectorsPerTrack;   /* sectors per track.                */
+     unsigned short Heads;             /* number of read/write heads.       */
+
+     /* Function to read from drive or image file. */
+     int (*ReadFunc)  (int handle, int nsects, int lsects, void* buffer);
+   
+     /* Function to write to drive or image file. */
+     int (*WriteFunc) (int handle, int nsects, int lsects, void* buffer);
+}; 
+typedef struct RDWRHandleStruct* RDWRHandle;
+
+The reason for having three init functions comes from the fact that 
+some drives can be write protected. It depends on the kind of program 
+you are writing wether the system will actually change data on the disk
+or image file.
+
+Therefore if your program only reads from the disk use InitReadSectors,
+if your program allso writes to the disk InitReadWriteSectors.
+
+If you are done with that file or image file you can close the handle
+by using:
+
+  void CloseReadWriteSectors(RDWRHandle* handle);
+
+Once you have a handle you can read and write sectors using:
+
+  int ReadSectors(RDWRHandle handle, int nsects, int lsect, void* buffer);
+  int WriteSectors(RDWRHandle handle, int nsects, int lsect, void* buffer);
+
+Boot sector.
+------------
+
+The boot sector contains various information about the disk and the fat
+structures on the disk, as folows:
+
+  struct BootSectorStruct
+  { 
+    char     Jump[3];                 /* Jump instruction in boot routine. */
+    char     Identification[8];       /* Identification code.              */
+    unsigned short BytesPerSector;    /* bytes per sector.                 */
+    unsigned char  SectorsPerCluster; /* sectors per cluster.              */
+    unsigned short ReservedSectors;   /* number of reserved sectors.       */
+    unsigned char  Fats;              /* number of fats.                   */
+    unsigned short NumberOfFiles;     /* number of files or directories in */
+				      /* the root directory.               */
+    unsigned short NumberOfSectors;   /* number of sectors in the volume.  */
+    unsigned char  descriptor;        /* media descriptor.                 */
+    unsigned short SectorsPerFat;     /* number of sectors per fat.        */
+    unsigned short SectorsPerTrack;   /* sectors per track.                */
+    unsigned short Heads;             /* number of read/write heads.       */
+    unsigned short Divider;
+    char  BootRoutine[482];           /* bootroutine.                      */
+  };
+
+The following two functions read and write the boot sector from disk:
+  
+  int ReadBootSector(RDWRHandle handle, struct BootSectorStruct* buffer);
+  int WriteBootSector(RDWRHandle handle, struct BootSectorStruct* buffer);
+
+For reasons of speed the fields that make up the bios parameter block 
+(+ Heads + SectorsPerTrack) are repeated in the RDWRHandle. Since the
+above functions only read and write from disk and do no caching the following
+functions are provided. These functions first look wether the right values
+are allready in the RDWRHandle and if they are they are read from the
+handle, otherwise they are read from disk using ReadBootSector and 
+WriteBootSector.
+
+  unsigned char  GetSectorsPerCluster   (RDWRHandle handle);
+  unsigned short GetReservedSectors     (RDWRHandle handle);
+  unsigned char  GetNumberOfFats        (RDWRHandle handle);
+  unsigned short GetNumberOfRootEntries (RDWRHandle handle);
+  unsigned char  GetMediaDescriptor     (RDWRHandle handle);
+  unsigned short GetNumberOfSectors     (RDWRHandle handle);
+  unsigned short GetSectorsPerFat       (RDWRHandle handle);
+  unsigned short GetSectorsPerTrack     (RDWRHandle handle);
+  unsigned short GetReadWriteHeads      (RDWRHandle handle);
+
+There is one caveet here. Since there is no way to link an instance of the
+BootSectorStruct to a RDWRHandle. The cached values in the RDWRHandle are 
+only updated when a boot sector is read from or written to disk.
+
+Root directory.
+---------------
+
+The root directory is the root of the directory structure. It contains
+the following information associated with a file.
+
+	- file name
+	- file extension
+	- file attribute
+	- time last changed
+	- date last changed
+	- first cluster in file (accessed from the FAT)
+	- file size
+
+Or as the c structure:
+
+  struct DirectoryStruct
+  {
+      char  filename[8];              /* file name.              */
+      char  extension[3];             /* extension.              */
+      char  attribute;                /* file attribute.         */
+      char  reserved[10];             /* reserved.               */
+      short timestamp;                /* time last modified.     */
+      short datestamp;                /* date last modified.     */
+      short firstclust;               /* first cluster of file.  */
+      long  filesize;                 /* file size.              */
+  };
+
+Since each of these entries contains 32 bytes and there are 512 bytes in a 
+sector we can uniquelly refer to each directory entry by a sector and 
+an offset in this sector.
+
+  struct DirectoryPosition
+  {
+	  unsigned sector;          
+	  int      offset:4;           /* 16 entries per sector. */
+  };
+
+Since the number of directory entries is fixed we can refer to each directory
+entry using an index. Therefore the functions to querry and change the
+root directory entries are as follows:
+
+	int ReadDirEntry(RDWRHandle handle, int index,
+			 struct DirectoryStruct* entry);
+
+	int WriteDirEntry(RDWRHandle handle, int index,
+			  struct DirectoryStruct* entry);
+
+The constants for the file attributes can be taken from the header files
+of the C library. For tc201 these are:
+
+	FA_RDONLY
+	FA_HIDDEN
+	FA_SYSTEM
+	FA_LABEL
+	FA_DIREC
+	FA_ARCH
+
+as defined in <dos.h>
+
+Last in this section we have to mention that the dates and time in the 
+directory are encoded. To work with this coding the following functions
+are provided:
+
+	void UnPackTimeDateStamp(struct tm* time, 
+				 short timestamp, short datestamp);
+
+	void PackTimeDateStamp(struct tm* time, 
+			       short* timestamp, short* datestamp);
+
+Struct tm is the c structure define in <time.h>.
+
+FAT
+---
+
+The fat indicates the position of the file clusters in the data area. It
+exist of linked lists of labels. These labels can be any of the following
+values, depending on the size of the fat labels:
+
+  #define FAT12 12
+  #define FAT16 16
+
+  /* FAT labels for FAT12. */
+  #define FAT12_FREE_LABEL     0x000
+  #define FAT12_BAD_LABEL      0xff7
+
+  #define FAT12_FREE(x)     (x == FAT12_FREE_LABEL)
+  #define FAT12_BAD(x)      (x == FAT12_BAD_LABEL)
+  #define FAT12_RESERVED(x) ((x >= 0xff0) && (x <= 0xff6))
+  #define FAT12_LAST(x)     ((x >= 0xff8) && (x <= 0xfff))
+  #define FAT12_NORMAL(x)   ((x != 0) && (x < 0xff0))
+
+  /* FAT labels for FAT16. */
+  #define FAT16_FREE_LABEL     0x0000
+  #define FAT16_BAD_LABEL      0xfff7
+
+  #define FAT16_FREE(x)     (x == FAT16_FREE_LABEL)
+  #define FAT16_BAD(x)      (x == FAT16_BAD_LABEL)
+  #define FAT16_RESERVED(x) ((x >= 0xfff0) && (x <= 0xfff6))
+  #define FAT16_LAST(x)     ((x >= 0xfff8) && (x <= 0xffff))
+  #define FAT16_NORMAL(x)   ((x != 0) && (x < 0xfff0))
+
+To iterate over the different parts of the fat two traversal functions 
+are provided:
+    
+    typedef unsigned long CLUSTER;
+    
+    int LinearTraverseFat(RDWRHandle handle,
+			  int (*func) (unsigned long label,
+				       unsigned long datasector,
+				       void** structure),
+			  void** structure);
+
+
+    int FileTraverseFat(RDWRHandle handle, CLUSTER startcluster,
+			int (*func) (unsigned long label,
+				     unsigned long datasector,
+				     void** structure),
+			void** structure);
+
+
+These functions call a function for each label that is being traversed.
+The function needs to have the following proto type:
+
+    int <func> (unsigned long label, unsigned long datasector,
+		void** structure),
+
+Label is the encountered label in the fat extended to a 32 bit integer,
+datasector is the start sector of the corresponding cluster in the 
+data area.
+
+The structure is a structure which is passed directly from the caller 
+of the traversal function to the function which is periodically called. This 
+allows to accumulate any amount of data over the traversal.
+
+The reason to use void** comes from the expected need for realloc, 
+which has as proto type:
+
+	void* realloc(void* block, size_t size);
+
+So the pointer to the memory that contains the accumulated data can 
+change, to be able to handle this change in pointers we need
+an extra level in indirection, so a void**.
+
+In case of LinearTraverseFat it calls the function for every label in the 
+fat. In case of FileTraverseFat the function is called for every label in
+a file.
+
+There are some other functions to work on the fat, these include:
+
+    int GetFatStart(RDWRHandle handle);
+
+    Gives the start sector of the fat.
+
+    int GetFatLabelSize(RDWRHandle handle);
+
+    Calculates wether we have fat12 or fat16, this function returns
+    FAT12 (12) or FAT16 (16) or 0 if error.
+
+    unsigned long ConvertToDataSector(RDWRHandle handle,
+				      CLUSTER fatcluster);
+
+    Convert a cluster number to the corresponding start sector in the
+    data area.
+
+    int ReadFatLabel(RDWRHandle handle, CLUSTER labelnr,
+		     CLUSTER* label);
+
+    Read a specified fat label.
+
+    int WriteFatLabel(RDWRHandle handle, CLUSTER labelnr,
+		      CLUSTER label);
+
+    Overwrite a specified label in the fat.
+
+
+Sub directories.
+----------------
+
+Sub directories are files that contain directory entries. Since the 
+file can be spread out over the entire disk it is no longer possible to
+simply use an index to get to a certain directory entry.
+
+Therefore we have a new kind of traversal:
+
+  int TraverseSubdir(RDWRHandle handle, CLUSTER fatcluster,
+		     int (*func) (struct DirectoryPosition* pos,
+				  void** buffer),
+		     void** buffer, int exact);
+
+which calls a function for every entry in the sub directory. The function 
+has the form:
+		     
+  int <func> (struct DirectoryPosition* pos, void** buffer);
+
+The position that is given by the traversal is the identification for a 
+directory entry on a disk, for which the corresponding entry can be read with:
+
+  int GetDirectory(RDWRHandle handle,
+		   struct DirectoryPosition* position,
+		   struct DirectoryStruct* direct);
+
+  which fills direct with the corresponding entry.
+
+A directory entry can be changed with the following function:
+
+  int WriteDirectory(RDWRHandle handle, struct DirectoryPosition* pos,
+		     struct DirectoryStruct* direct);
+
+The last two functions (GetDirectory, WriteDirectory) can allso be used
+with entries from the root directory, for which the position of a directory
+can be calculated with:
+
+  int GetRootDirPosition(RDWRHandle handle, int index, 
+			 struct DirectoryPosition* pos);
+
+which puts the corresponding position in pos.
+

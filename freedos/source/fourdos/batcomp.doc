@@ -1,0 +1,42 @@
+   ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+   ³                CONFIDENTIAL JP SOFTWARE MATERIALS               ³
+   ³                                                                 ³
+   ³   These materials comprise confidential and valuable trade      ³
+   ³   secrets owned by JP Software Inc., and are provided to you    ³
+   ³   under a non-disclosure agreement.  Only those individuals     ³
+   ³   who have signed a non-disclosure agreement with JP Software   ³
+   ³   Inc. relating specifically to these materials are permitted   ³
+   ³   to receive, view, or use them in any way.  Use of a           ³
+   ³   copyright notice below does not imply publication of these    ³
+   ³   materials.  This notice must not be removed from these        ³
+   ³   materials.                                                    ³
+   ³                                                                 ³
+   ³   Unpublished work, Copyright 1993, JP Software Inc., All       ³
+   ³   Rights Reserved.                                              ³
+   ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ
+
+BATCOMP 1.0 Beta 1, 10/25/93
+----------------------------
+
+BATCOMP is the batch file compressor for 4DOS, 4OS2, and 4DOS/NT.  To run
+it use this syntax:
+
+   batcomp [/O] infile [outfile]
+
+This compresses infile to outfile.
+
+If you do not specify outfile it defaluts to the infile name with a BTM
+extension.  If you specify outfile you must give an extension or the output
+file will not have one, in other words there is no BTM default if you just
+give a file name for outfile.  If outfile already exists it will not be
+overwritten unless /O is used.
+
+The output BTM file will not be legible, but it should run under the
+current betas of 4DOS, 4OS2, and 4DOS/NT.  The behavior and performance of
+the file should be the same as if it was run in source form as a .BTM file.
+
+Compression is not effective for very small files.  If you try to use it
+the file will be "compressed", but you will be warned that you didn't gain
+anything!
+
+

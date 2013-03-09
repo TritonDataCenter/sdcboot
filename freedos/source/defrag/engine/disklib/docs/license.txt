@@ -1,0 +1,14 @@
+Yes you are in the right place. And yes, I am slow in responding
+to e-mail.
+
+I am Gregg Jennings and I certainly will allow you to use the
+DISKLIB code. I am quite familiar with the GPL but I have my own
+license which should be part of the DISKLIB archive. If it is too
+vague let me state unequivocably (sp?) that you or FreeDOS or anyone
+else can use the DISKLIB code for anything.
+
+I am familiar with FreeDOS although it has been a while since I have
+looked at your stuff. I wish you and FreeDOS well.
+
+Peace,
+Gregg Jennings 

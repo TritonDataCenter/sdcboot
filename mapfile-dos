@@ -1,0 +1,13 @@
+$mapfile_version 2
+
+LOAD_SEGMENT text {
+	FLAGS = READ EXECUTE;
+	NOHDR;
+	PADDR = 0x100;
+	VADDR = 0x100;
+	OS_ORDER = .text;
+	ASSIGN_SECTION {
+		TYPE = PROGBITS;
+		FLAGS = ALLOC !WRITE;
+	};
+};

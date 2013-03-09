@@ -1,0 +1,7 @@
+NAME=UnZip
+PKG=OPTunzip
+ARCH=sparc
+VERSION=5.20
+CATEGORY=application
+DESC=Info-ZIP's UnZip utility
+BASEDIR=/

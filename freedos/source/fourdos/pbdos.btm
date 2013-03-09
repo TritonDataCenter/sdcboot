@@ -1,0 +1,2 @@
+if "%_newbuild" == "Y" echo INTVER    equ       %_buildnum>intver.asm
+

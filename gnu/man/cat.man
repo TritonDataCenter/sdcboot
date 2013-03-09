@@ -1,0 +1,45 @@
+NAME
+     cat - concatenate files and print on the standard output
+
+SYNOPSIS
+     cat  [-benstuvAET]   [--number]   [--number-nonblank]   [--squeeze-blank]
+     [--show-nonprinting] [--show-ends] [--show-tabs] [--show-all] [file...]
+
+DESCRIPTION
+     This manual page documents the  GNU  version  of  cat.   cat  writes  the
+     contents  of  each given file, or the standard input if none are given or
+     when a file named `-' is given, to the standard output.
+
+     OPTIONS
+
+     -b, --number-nonblank
+          Number all nonblank output lines, starting with 1.
+
+     -e   Equivalent to -vE.
+
+     -n, --number
+          Number all output lines, starting with 1.
+
+     -s, --squeeze-blank
+          Replace multiple adjacent blank lines with a single blank line.
+
+     -t   Equivalent to -vT.
+
+     -u   Ignored; for Unix compatibility.
+
+     -v, --show-nonprinting
+          Display control characters except for LFD and TAB using `^' notation
+          and precede characters that have the high bit set with `M-'.
+
+     -A, --show-all
+          Equivalent to -vET.
+
+     -E, --show-ends
+          Display a `$' after the end of each line.
+
+     -T, --show-tabs
+          Display TAB characters as `^I'.
+
+     The long-named options can be introduced with `+' as well  as  `--',  for
+     compatibility with previous releases.  Eventually support for `+' will be
+     removed, because it is incompatible with the POSIX.2 standard.

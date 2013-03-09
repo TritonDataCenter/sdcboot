@@ -1,0 +1,14 @@
+Begin3
+Title:          deltree
+Version:        1.02f
+Entered-date:   06 Apr 2005
+Description:    Delete a directory and all directories under it
+Keywords:       freedos delete
+Author:         raster@highfiber.com
+Maintained-by:  raster@highfiber.com
+Primary-site:   http://www.highfiber.com/~raster/freeware.htm
+Alternate-site: www.freedos.org
+Original-site:  http://www.highfiber.com/~raster/freeware.htm
+Platforms:      dos
+Copying-policy: GPL
+End

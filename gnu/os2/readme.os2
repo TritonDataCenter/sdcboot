@@ -1,0 +1,41 @@
+GNU text utilities for OS/2
+
+The programs were tested under OS/2 1.3 with a HPFS, they support
+long filenames.
+
+The following programs of the GNU text utilities were ported to OS/2:
+
+cat
+cmp
+comm
+csplit
+cut
+expand
+fold
+head
+join
+nl
+paste
+pr
+sort
+split
+sum
+tac
+tail
+tr
+unexpand
+uniq
+wc
+
+
+Kai Uwe Rommel
+rommel@informatik.tu-muenchen.de
+
+Version 1.0
+Mon 16-Sep-1991
+
+Version 1.1 update
+Sun 29-Sep-1991
+
+Version 1.2 update
+Mon 10-Feb-1992

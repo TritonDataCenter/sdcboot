@@ -1,0 +1,26 @@
+files.txt   This file
+history.txt History of FreeDOS tree (changelog)
+compile.txt Describes information about compiling tree
+tree.mak    Makefile for compiling (replaces cmplall.bat)
+cmplall.bat Sample batch file that compiles with all tested compilers
+bugs.txt    Information for reporting bugs and all known bugs/issues.
+
+copying     The GPL license - License this tree released under
+
+findfile.h  Public Domain findfirst/findnext/etc wrappers
+tree.c      GPL'd tree v3.7 based on Dave Dunfield's tree in Micro-C/PC
+
+tree.en     English message catalog for tree v3.7 & pdTree
+tree.es     Partial spanish message catalog for tree v3.7 & pdTree
+            Spanish from Aitor Santamaria Merino translations from
+            an earlier version of pdTree.  Newer messages are in English.
+
+getopt.c    Command line parsing routines
+getopt.h
+
+catgets.c   Jim Hall <jhall@freedos.org> LGPL cats 3.9.4, catgets.c modified.
+            Modification only needed if using Microsoft Visual C
+catgets.h   Unmodified header from cats 3.9.4
+db.c        Unmodified from cats 3.9.4
+db.h        Unmodified from cats 3.9.4
+get_line.c  Unmodified from cats 3.9.4

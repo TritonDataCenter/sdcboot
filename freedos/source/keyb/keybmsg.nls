@@ -1,0 +1,65 @@
+STR1_1 = 'International keyboard BIOS enhancement for the FreeDOS project';
+STR1_2 = 'Last module is: ';
+STR1_3 = 'Keyboard layout    : ';
+STR1_4 = 'Resident part of Keyb removed.';
+STR1_5 = 'Keyboard type      : enhanced AT';
+STR1_6 = 'Keyboard type      : PC standard';
+STR1_7 = 'Compilation author : ';
+STR1_8 = 'Compilation info   : ';
+STR1_9 = 'Japanese extensions active';
+
+STR2_1 = 'Different Version of Keyb installed.';
+STR2_2 = 'Incompatible keyboard driver installed.';
+STR2_3 = 'Missing keyboard identifier';
+STR2_4 = 'Specified file could not be opened.';
+STR2_5 = 'The resident part of Keyb could not be removed.';
+STR2_6 = 'Internal failure: Global memory space too small (contact the author).';
+STR2_7 = 'Keyb (still) requires an AT/286 or better';
+STR2_8 = 'KEYB was not installed';
+STR2_9 = 'Overloading is (still) not supported';
+STR2_10 = 'The keyboard table could not be created';
+STR2_11 = 'Invalid modifier -  ';
+STR2_12 = 'Codepage not found in keyboard definition file - ';
+STR2_13 = 'Invalid file, or file corrupt';
+STR2_14 = 'Specified file does not contain information for this layout/id';
+STR2_15 = 'KL file too large ((still) 3KB maximum)';
+{ STR2_16 = 'Error in communication with the CON device';
+STR2_17 = 'The codepage has not been prepared';  }
+STR2_18 = 'Incompatible version of DR-DOS KEYB was found';
+STR2_19 = 'Incompatible version of Keyboard descriptors';
+STR2_20 = 'Invalid checksum for the data block';
+STR2_21 = 'Required submapping does not match with current codepage';
+STR2_22 = 'Requested library file is not closed for edition';
+STR2_50 = 'Warning: could not deallocate previous MCB. DOS reported error: ';
+STR2_51 = 'Critical error: cannot allocate memory. DOS reported error: ';
+
+STR3_1  = '("Taurus") Second generation keyboard driver for FreeDOS';
+STR3_2  = 'License:  GNU-GPL 2.0 or later';
+STR3_3  = 'KEYB  layoutName[,[CP][,filename] [/ID:nnn] [/E] [/9] [/I] [/Dx] [/V] [/L=m]';
+STR3_5  = 'LayoutName  A physical layout identifier, such as GR or DE';
+STR3_6  = 'CP          The initial codepage for the layout';
+STR3_7  = 'filename    File containing the information for the layout';
+STR3_8 = '/ID:nnn     Numeric identifier for a keyboard variant';
+STR3_9  = '/?          shows this help';
+STR3_10 = '/9          Installs the int9h handler (incompatible with /E) ';
+STR3_11 = '/B          Beep off: disable KEYB sound effects (speaker)';
+STR3_12 = '/Dx         Decimal separator: x is the character to be used';
+STR3_13 = '/E          Specifies that the keyboard is an Enhanced keyboard';
+STR3_14 = '            (incompatible with /9)';
+STR3_15 = '/I          (force Install) Install keyb unconditionally';
+STR3_16 = '/L=m        (force subLayout) Force usage of sublayout m';
+STR3_17 = '/NOHI       Avoids KEYB to load data into upper memory';
+STR3_18 = '/S          (Safemode) forbids strings,... (see documentation)';
+STR3_19 = '/U          (Uninstall) unloads the driver from memory';
+STR3_20 = '/V          (Verbose) shows verbose information about the install';
+STR3_21 = 'More information: README.TXT';
+
+
+STR4_1  = 'Driver active flag    : ';
+STR4_2  = 'Current layout name   : ';
+STR4_3  = 'DETAILS FOR CURRENT LAYOUT:';
+STR4_4  = 'Current codepage      : ';
+STR4_4b = 'Current submapping    : ';
+STR4_5  = 'Number of submappings : ';
+STR4_6  = 'Admissible codepages  : ';
+

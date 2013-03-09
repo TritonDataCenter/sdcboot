@@ -1,0 +1,85 @@
+NAME
+     pr - convert text files for printing
+
+SYNOPSIS
+     pr [+PAGE] [-COLUMN]  [-abcdfFmrtv]  [-e[in-tab-char[in-tab-width]]]  [-h
+     header]  [-i[out-tab-char[out-tab-width]]]  [-l  page-length] [-n[number-
+     separator[digits]]] [-o  left-margin]  [-s[column-separator]]  [-w  page-
+     width] [file...]
+
+DESCRIPTION
+     This manual page documents the GNU version  of  pr.   pr  prints  on  the
+     standard  output  a paginated and optionally multicolumn copy of the text
+     files given on the command line, or of the standard input if no files are
+     given  or when the file name `-' is encountered.  Form feeds in the input
+     cause page breaks in the output.
+
+     OPTIONS
+
+     +PAGE
+          Begin printing with page PAGE.
+
+     -COLUMN
+          Produce COLUMN-column output and print  columns  down.   The  column
+          width is automatically decreased as COLUMN increases; unless you use
+          the -w option to increase the page width as well, this option  might
+          cause some columns to be truncated.
+
+     -a   Print columns across rather than down.
+
+     -b   Balance columns on the last page.
+
+     -c   Print control characters using  hat  notation  (e.g.,  `^G');  print
+          other unprintable characters in octal backslash notation.
+
+     -d   Double space the output.
+
+     -e[in-tab-char[in-tab-width]]
+          Expand tabs to spaces on input.  Optional  argument  in-tab-char  is
+          the  input  tab  character,  default tab.  Optional argument in-tab-
+          width is the input tab character's width, default 8.
+
+     -F, -f
+          Use a formfeed instead of newlines to separate output pages.
+
+     -h header
+          Replace the filename in the header with the string header.
+
+     -i[out-tab-char[out-tab-width]]
+          Replace spaces with tabs on output.  Optional argument  out-tab-char
+          is  the  output  tab character, default tab.  Optional argument out-
+          tab-width is the output tab character's width, default 8.
+
+     -l page-length
+          Set the page length to page-length lines.  The default  is  66.   If
+          page-length is less than 10, the headers and footers are omitted, as
+          if the -t option had been given.
+
+     -m   Print all files in parallel, one in each column.
+
+     -n[number-separator[digits]]
+          Precede each column with a line number; with parallel files, precede
+          each line with a line number.  Optional argument number-separator is
+          the character to print after each  number,  default  tab.   Optional
+          argument digits is the number of digits per line number, default 5.
+
+     -o left-margin
+          Offset each line with a margin left-margin spaces wide.   The  total
+          page width is this offset plus the width set with the -w option.
+
+     -r   Do not print a warning message  when  an  argument  file  cannot  be
+          opened.  Failure to open a file still makes the exit status nonzero,
+          however.
+
+     -s[column-separator]
+          Separate columns by the single character  column-separator,  default
+          tab, instead of spaces.
+
+     -t   Do not print the 5-line header  and  the  5-line  trailer  that  are
+          normally  on  each  page,  and  do not fill out the bottoms of pages
+          (with blank lines or formfeeds).
+
+     -v   Print unprintable characters in octal backslash notation.
+
+     -w page-width
+          Set the page width to page-width columns.  The default is 72.

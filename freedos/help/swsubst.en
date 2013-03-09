@@ -1,0 +1,660 @@
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+NNAAMMEE
+       swsubst - CDS manipulator
+
+SSYYNNOOPPSSIISS
+       swsubst { option | command } [ arguments ]
+
+       Valid  _o_p_t_i_o_n_s are: /h /?  /# /!  /a /f /k /t /_ /d /x and
+       /o
+
+       Valid _c_o_m_m_a_n_d_s are: /m /c /j /u /q /s /r /l /n /w
+
+       Instead of the name _s_w_s_u_b_s_t the following names alter  the
+       default  setting  of  _s_w_s_u_b_s_t _j_o_i_n _s_u_b_s_t _m_k_d_i_r _c_h_d_i_r _q_u_e_r_y
+       _s_w_a_p _w_h_i_c_h _-_j_o_i_n _-_m_k_d_i_r _-_c_h_d_i_r _-_q_u_e_r_y _-_s_w_a_p  _d_r_v_l_i_s_t  _m_c_b_-
+       _l_i_s_t _-_w_h_i_c_h
+
+DDEESSCCRRIIPPTTIIOONN
+       _s_w_s_u_b_s_t is designed to manipulate the CDS ( D S is access-
+       able.  By  renaming  or  by  copying  of  the   executable
+       swsubst.exe  to  one of the above mentioned file names one
+       command switch is automatically inserted right  after  the
+       executable's  name,  e.g.   "query  /a c:+net" is equal to
+       "swsubst /q /a c:+net". Only _j_o_i_n and _s_u_b_s_t have an  addi-
+       tional  meaning  by  restricting _s_w_s_u_b_s_t to conform to the
+       DOS standard tools with the same name.
+
+       Unnecessary options, or options which has no meaning  with
+       the invoked command, are scanned and ignored.
+
+       A path specification can be logical or physical. The drive
+       specification of a physical drive means that drive,  which
+       got that letter while booting. The logical drive specfica-
+       tion is the one typed on the command line, e.g.  after the
+       command "SUBST C: E:FREEDOS", the logical drive specifica-
+       tion "C:" is the physical "E:", that  means,  if  the  DOS
+       Prompt  says:  "C:>",  that  is  the  "original" directory
+       "E:FREEDOS". The "original" drive "C" is no longer  avail-
+       able.
+
+       In  order  to  remove  that  limitation a leading dash '-'
+       indicates a physical path. So after "SUBST D:  C:RCE"  the
+       logical drive "D:" will point into "E:FREEDOSRCE", whereas
+       after "SWSUBST D: -C:RCE" drive "D:" points into  "C:RCE".
+       _N_o_t_e_:  If  a physical path is not fully qualified, it will
+       be qualifed  according  to  the  logical  current  working
+       directory.
+
+       Drive specifications are also enhanced:
+       Where  only  a  drive  specification is expected, a single
+       letter acts a drive letter as  well  as  a  full-qualified
+       path.
+       Besides  these  methods, it is possible to specify a drive
+       specification by the name of  its  driver  or  its  volume
+       label.  Driver  names  are specified with ":*:", where "*"
+
+
+
+                           22 May 1995                          1
+
+
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+       stands for the up to eight characters long  name.  Because
+       one  driver  may  handle  several  drives, a number can be
+       specified, like ":#:*:", where "#" stands  for  the  zero-
+       based  number  and "*" for the driver name.  _N_o_t_e_: Not all
+       drivers have a name.
+       The search for a volume label is activated by using "::*:"
+       or  ":-:*:", where "*" stands for the volume label and the
+       optional dash '-' causes to temporarily release SUBST  and
+       JOIN relations.
+       While  scanning, the drives are searched in the order: A:,
+       B:, ...  If one drive does not respond, it is ignored.
+       The names are case-insensitive and are matched,  that rthe
+       characters  specified  with  "*" must lead the name, e."g.:
+       ":1:stac:os" means: The path ".br  And  "-:-:hd_c:\foomns:
+       the  path  "FOOBAR"  on  the  physical drive, which voelume
+       label starts with "HD_C".  _N_o_t_e_: The dash '-'  within  the
+       colons ":-:" stands for: "retrieve the physical drive let-
+       ter", whereas the dash '-' before the first  colon  stands
+       for "treat the following path as a physical one".
+
+
+
+OOPPTTIIOONNSS
+       special names
+              _j_o_i_n  _s_w_s_u_b_s_t  to  act like the standard JOIN.  See
+              the help page for join.
+              _s_u_b_s_t _s_w_s_u_b_s_t to act like the standard SUBST.   See
+              the help page for subst.
+              _m_k_d_i_r and _-_m_k_d_i_r add the /m command.
+              _c_h_d_i_r and _-_c_h_d_i_r add the /c command.
+              _q_u_e_r_y and _-_q_u_e_r_y add the /q command.
+              _s_w_a_p and _-_s_w_a_p add the /s command.
+              _w_h_i_c_h and _-_w_h_i_c_h add the /w command.
+              _-_j_o_i_n adds the /j command.
+              _d_r_v_l_i_s_t adds the /r command.
+              _m_c_b_l_i_s_t adds the /l command.
+              Any other name defaults to the /u command.
+
+
+       /? and /h
+              Display a help screen.
+
+       /#     Causes  _s_w_s_u_b_s_t  to  display  the  statistic  about
+              JOIN'ed drives, when it dumps the  CDS  table.   It
+              displays  the number of JOIN'ed drives according to
+              the CDS and the number retrieved fromout DOS inter-
+              nal data structures. When these differ, it's possi-
+              ble, that the system will not work correctly.
+              If this option is used twice, it cancels the effect
+              of the previous one.  It also cancels the effect of
+              /!
+
+       /!     This option displays the  JOIN'ed  drive  statistic
+              under  the  CDS  table  and  updates  the  internal
+
+
+
+                           22 May 1995                          2
+
+
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+              number, if both differ.
+              When this option is  given  twice,  the  second  is
+              ignored.
+
+       /a     After the given command has been processed success-
+              fully, the CDS table should be printed. If the com-
+              mand  itself  orders  to  dump the CDS table, it is
+              displayed only once.
+              This options also causes to display unused entries.
+              A second /a option cancels the effect of the previ-
+              ous one.
+
+       /f     There is a little space within the device  drivers,
+              where  their names can be stored. Normally the part
+              of the name from the frist available byte up to the
+              first  non-printable charchater forms the name.  If
+              this option is given, the whole name is  displayed,
+              non-printable  characters  are  displayed in a hex-
+              adecimal manner, like , where ?? are the  two  hex-
+              adecimal numbers for that value.
+              A second /f option cancels the effect of the previ-
+              ous one.
+
+       /_     Normally only a subset of the  16  available  flags
+              are  displayed.  This  option enables a little map,
+              where the named flags: Networked, Physical, Joined,
+              Substed,  and  Hidden are marked with their capital
+              letter, if they are set; the others  will  be  dis-
+              played  as  a  plus  '+'. If a flag is not set, its
+              positions is overwritten by a dash '-'.
+              A second /_ cancels the effect of the previous one.
+
+       /k     Causes  _s_w_s_u_b_s_t  to  create  the path if necessary,
+              e.g. whren  invoking  the  command  "swsubst  /k  f:
+              c:\foo"  _N_o_t_e_: This feature is disabled by default!
+              This o.ption cancels the effect of a previous /t and
+              /k
+
+       /t     Causes  _s_w_s_u_b_s_t  to  test, if the desired paths are
+              available, if not the command is aborted.
+              This option cancels the effect of a previous /t and
+              /k
+
+       /d     This  is  not  really a options and is for use only
+              with the commands /j and /u and acts like a  /d  as
+              the second argument.
+              The second /d cancels the effect of a previous one.
+
+       /o=#   This option is also for the commands /u and /j only
+              and overwrites the fromout the path-argument deter-
+              mined backslash offset.  Use with caution!
+              A second option will overwrite a previous one.
+              The number # must be within the range 0..66 and can
+              be  given  in C notation. That means, if the number
+
+
+
+                           22 May 1995                          3
+
+
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+              starts with either "0x" or "0X", the rest  will  be
+              treated hexadecimal, if the number starts with "0",
+              the rest will be treated octal, and if  the  number
+              starts  with a number from "1" to "9", it's treated
+              decimal.  When # is zero, this option  is  disabled
+              and  the backslash offset is determined fromout the
+              path argument.
+              This option is needed to use network  paths,  which
+              normally  do not conform to the DOS path specifiac-
+              tion.
+
+       /x=??  This  option  specifies  the  drives,   which   are
+              excluded  while searching for the drive of a volume
+              label via the enhanced "::*:" drive  specification.
+              Each  Option  cancels  the effect of a previous one
+              and /x= excludes no drive.
+              This option is very useful to  exclude  the  floppy
+              drives, because scanning them with no floppy loaded
+              uses an huge amount of time.
+
+       /m     This command accepts any number of arguments, which
+              are  treated  as path specifications. Those will be
+              created along with the full path to them.
+
+       /c     This command accepts  exactly  one  argument.  This
+              argument  is treated as a path specification, which
+              is made with the /k command. If this  was  success-
+              ful,  the current working directory and the current
+              disk will be set to that path.
+
+       /j     This acts like _J_O_I_N without the restrictions.
+              There are two formats:
+              1) dr ( /d | - )
+              which will release any existing SUBST or JOIN rela-
+              tion  of  the  logical drive dr and is equal to " -
+              _s_w_s_u_b_s_t tries to determine  the  settings  of  this
+              physical drive while boot time.
+              2) dr1 [
+              which  will release any exising SUBST or JOIN rela-
+              tion of the logical drive dr1 and joins it into the
+              path  of drive dr2 optional dash indicates a physi-
+              cal path. A logical path will be transformed into a
+              physical  by  the  DOS  call  _t_r_u_e_n_a_m_e path is only
+              upper-cased and fully qualified. To omit this, too,
+              a  second dash must be placed in front the optional
+              one.  _N_o_t_e_: Drives starting  with  two  backslashes
+              "\\"  are  treated  as networked drives and preceed
+              the path with one dash automatically.
+              When DOS displays a path, it can skip some  charac-
+              ters. This is called backslash offset for networked
+              paths by _s_w_s_u_b_s_t for sure, the /o  is  offered  and
+              the offset can be altered manually.
+
+       /u     Is equal to /j
+
+
+
+                           22 May 1995                          4
+
+
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+       /q     This  command test the drive flags, if they are set
+              according to the specified  flags.  The  syntax  is
+              equal  to  set  drive  flags mode '=' and the flags
+              "ON" and "OFF" are not allowed.
+              _s_w_s_u_b_s_t returns the result to the  calling  process
+              via  the  errorlevel.   An errorlevel of zero indi-
+              cates, that the flags are set  equally;  an  error-
+              level greater than zero indicates, that they arn't.
+
+       /r     This command accept up to one argument. It  enables
+              to  display  and search in the device driver chain.
+              The chain is displayed, when  the  command  has  no
+              additional argument, or when the argument is either
+              '+' or '-'.
+              The output looks like:
+              NUL
+              CON      <<D>> ANSI
+              MSCD001  <<D>> SGCDU
+              EMMXXXX0 <<D>> EMM386
+              CON
+              AUX
+              PRN
+              CLOCK$
+              COM1
+              LPT1
+              LPT2
+
+              The names left of the "<< >>" are the driver names,
+              the  character  within the "<< >>" is the MCB type,
+              and the names right of the "<< >>" are the names of
+              the  file. Latter is a favour of the routine, which
+              has been loaded the driver, so it might be  missed.
+              The  MCB  type itself was invented with DOS version
+              4.
+
+              The search is activated, when the additional  argu-
+              ment is neither '+' nor searched, too. For matching
+              an leading '+' or '-' is stripped.
+              The errorlevel is set to zero, if  the  search  was
+              successful, otherwise to a value greater than zero.
+
+       /l     This command accept up to one argument. It  enables
+              to  display  and search in the MCB ( C B displayed,
+              when the command has  no  additional  argument,  or
+              when the argument is either '+' or '-'.
+              The output looks like:
+              0x0264 M 0x01e4 nam=SD sys:data
+              0x0265     D    0x0048    nam=HIMEM    drv=XMSXXXX0
+              sys:device_driver
+              0x02ae    D    0x00c3    nam=EMM386    drv=EMMXXXX0
+              sys:device_driver
+              0x0372 F 0x0082 nam=ilegiert sys:FILES
+              0x03f5 X 0x0005 sys:FCBS
+              0x03fb B 0x0020 sys:BUFFERS
+
+
+
+                           22 May 1995                          5
+
+
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+              0x041c L 0x002c sys:LASTDRIVE
+              0x041d A 0x0000 own#0x5c3a
+              0x0449 M 0x0004 nam=SC sys:code
+              0x044e M 0x0003 own=COMMAND
+              0x0452 M 0x00bc nam=COMMAND
+              0x050f M 0x0040 nam=arameter env=COMMAND
+              0x0550 M 0x001d env=SWSUBST
+              0x056e M 0x020f nam=sgcdu
+              0x077e M 0x03de nam=MSCDEX
+              0x0b5d M 0x1aa3 nam=SWSUBST
+              0x2601 Z 0x79fd sys:free sys:end_of_chain
+              0x9fff M 0x1159 nam=SC sys:code
+              0xb159 M 0x0107 nam=SD sys:data
+              0xb15a D 0x0106 nam=ANSI drv=CON sys:device_driver
+              0xb261 M 0x0003 sys:free
+              0xb265 M 0x0598 sys:free
+              0xb7fe M 0x2002 nam=SC sys:code
+              0xb7ff M 0x2000 nam=SM sys:memory
+              0xd801 M 0x07d5 nam=SMARTDRV
+              0xdfd7 Z 0x1028 sys:free sys:end_of_chain
+
+              The  elements have the following meaning, from left
+              to right:
+              + The address of the  MCB.  It's  hexadezimal,  and
+              always preceeded by "0x".
+              + The type of the MCB. It might be a space.
+              +  The  number  of associated paragraphs. It's also
+              always hexadecimal and preceeded by "0x". This num-
+              ber will be displayed only, if the argument "+" has
+              been given.
+              + A *guess*, what this MCB is for. This can be  any
+              combination of the following items:
+              ++  nam=???.  The name of the loaded program, which
+              is read directly out of this MCB.
+              ++ env=???. The name of  the  program,  which  owns
+              this MCB as its environment.
+              ++ drv=???. The name of the driver, which owns this
+              MCB.
+              ++ own=???. The name of  the  program,  which  owns
+              this MCB.
+              ++  sys:???.  This is memory controlled by the sys-
+              tem. "???" stands  for  the  type  of  data  stored
+              there.  A  special  meaning has "sys:end_of_chain",
+              what indicates the last MCB in the chain.
+              The names need not be stored  within  the  MCB;  if
+              there should be a name, these items are substituted
+              by an item of the  format:  "*#0x????",  where  "*"
+              stands  for  the item type (the first three charac-
+              ters), and "????"  stands for the 4-digit hexadezi-
+              mal value of the owner's MCB.
+              The  output  is  designed  as  input  for programs.
+              Therefore the elements contains no  spaces  itselfs
+              and  each  MCB is printed on its own line.  Because
+              _s_w_s_u_b_s_t tries to determine  a  sub-chain  within  a
+
+
+
+                           22 May 1995                          6
+
+
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+              MCB,  these  sub-chains  are indented. But this can
+              lead into false  entries.  This  is  shown  at  the
+              beginning of the above example (s. 0x041d).
+              The  above  example  contains  two MCBs marked with
+              "sys:end_of_chain".  This behaviour  bases  on  the
+              way  later DOS versions manage the memory by divid-
+              ing into two chains; one in the  conventional  mem-
+              ory, the other in the UMBs.
+
+              The  search is activated, when the additional argu-
+              ment is neither '+' nor character is  an  '+',  the
+              name determined fromout the MCBs (which follows the
+              "nam=" item in the MCB  chain  display)  must  only
+              start  with  the  argument. For matching an leading
+              '+' or '-' is stripped.
+              The errorlevel is set to zero, if  the  search  was
+              successful, otherwise to a value greater than zero.
+
+       /s     This command requires two arguments. Both are logi-
+              cal drive specifications, which are simply swapped.
+
+       /n     This command  is  closely  related  to  /s  entries
+              within the CDS, but tries to swap their unit number
+              of the device  driver.  This  requires,  that  both
+              drives  share  the  same device driver. That is the
+              only way to swap the floppies, for some reason.
+              If there is no argument to this command,  it  tries
+              to identify both floppies and swaps them; otherwise
+              two arguments must be specified, which  are  to  be
+              swapped.   _C_a_u_t_i_o_n_:  Better do not use this command
+              on hard disks.
+              This swap will not be resetted, neither by the com-
+              mands  - -- and /d nor by directly manipulating the
+              drive flags, e.g. "X:=OFF" or "X:=ON". Them must be
+              swapped again or the computer must be rebooted.
+
+       /w     This  command requires one argument, treats it as a
+              drive specification  and  translates  it  into  the
+              drive  letter.  This  will  returned via the error-
+              level.
+              An errorlevel between 65 (ASCII 'A') and 90  (ASCII
+              'Z')  indicates  OK  and  the  drive letter itself;
+              whereas a errorlevel of zero indicates, that  there
+              is no such drive; and other errorlevels indicate an
+              error.
+
+
+       without any command switch
+              In that case the arguments decide, what command  is
+              invoked:
+
+       without arguments
+              This will dump the CDS table onto screen:
+
+
+
+
+                           22 May 1995                          7
+
+
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+              H  0000:0000  NET  ....  PHYS  ..... HIDDEN \H.1.br
+              ==>.MSCD001 .<==        _NP------H-------_
+              Number of JOIN'ed drives per CDS 0  per flag: 0  =>
+              seems OK
+
+              Line 1 from left to right:
+              + logical drive letter
+              + far address of DPB
+              + NETWORKED flag set
+              + JOINED flag not set
+              + PHYSICAL flag set
+              + SUBST flag not set
+              + HIDDEN flag set
+              +  physical  path. The double quote marks the _b_a_c_k_-
+              _s_l_a_s_h _o_f_f_s_e_t characters to the left are  not  visi-
+              ble.  If  the  path  points to "A:" or "B:" and the
+              unit number has been changed, for example  by  com-
+              mand  /n the string " => X:" is appended, where 'X'
+              stands for the  possible  drive  letter  this  path
+              points to.
+
+              Line 2:
+              +  driver  name. The "==>..<==" are not part of the
+              name.
+              + full set of flags. Caused by the /_ options.  The
+              "_"  surrounding the flags does not effect the val-
+              ues.
+
+              Line 3:
+              JOIN'ed drives statistic: both numbers  are  equal,
+              so there schould be no error.
+              Unless the /a options is enabled, only used and the
+              last entries are displayed.
+
+       one argument: either - or --
+              - will remove  all  SUBST  and  JOIN  relations  by
+              invoking  the  command  "/u  dr:  /d"  on  all such
+              drives;
+              -- does the same but for all not networked  drives.
+
+       set drive flags
+              This requires exacly one argument in the syntax: dr
+              - means: unset or is not set; + = other flags.
+              The following flags are available: OFF  switch  the
+              drive  OFF,  it  is no more accessable; ON switch a
+              drive ON (This is _N_O_T the reversal of OFF, but  the
+              invoking  of  the  command  "/u dr: /d".); PHYSICAL
+              JOIN NETWORK SUBST HIDDEN refer to  the  associated
+              flag;  and  a number between 0 and 15 refers to the
+              bit.
+              All flags but ON can be abbreviate down to a single
+              letter.
+
+
+
+
+
+                           22 May 1995                          8
+
+
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+       in all other cases
+              is the command /u assumed.
+
+SSEEEE AALLSSOO
+       subst, join.
+
+KKNNOOWWNN BBUUGGSS
+       o      A  relative  physical  path is qualified by logical
+              components.
+
+       o      Sometimes the manipulation by the non-standard pos-
+              sibilities  fails;  then either the system locks up
+              or a harmless 'Cannot find *.*' error message beeps
+              up.
+
+       o      To  turn  ON  a  drive is the opposit of turning it
+              OFF. For local hard disks this  works;  for  device
+              driver  driven  drives  sometimes;  and for CD-ROMs
+              seldom.
+
+       o      Works  on  MS-DOS  compatibles  only,  but  doesn't
+              check, if it is.
+
+       o      This  program  does  some  error checking, but much
+              could be valid, but locks  the  system  in  several
+              cases.
+
+       o      Several  commands,  like /s /u /j 32 bit access and
+              the ability to hold  the  permanent  swap  file  of
+              Microsoft Windows 3+ on the used drives.
+
+EEXXAAMMPPLLEESS
+       swsubst /w ::HD_e:
+              Checks,  if an hard disk with a label starting with
+              "HD_E" is currently available via a  logical  drive
+              letter. The result can be checked with:
+
+              swsubst /w ::hd_e:
+              if errorlevel 91 goto error
+              if errorlevel 90 echo Drive Z:
+              if errorlevel 89 echo Drive Y:
+              if errorlevel 65 echo Drive A:
+              if errorlevel 1 goto error
+              if  not errorlevel 1 echo No volume with label HD_E
+              found!
+
+              With 4DOS e.g.:
+
+              iff %? .LE. 90 .AND. %? .GE. 65 then
+              echo Drive %@char[%?]
+              elseiff errorlevel 1 then
+              echo error
+              else
+              echo There is no volume with label HD_E
+
+
+
+                           22 May 1995                          9
+
+
+
+
+
+SWSUBST(1)                                             SWSUBST(1)
+
+
+              endiff
+
+       swsubst /s e ::HD_e:
+              Swap the drive currently accessable via the logical
+              drive  letter  E:  and  the  drive  with  the label
+              "HD_E". Doing so can ensure, that the drive  "HD_E"
+              is  always  accessable  via  the  drive  letter E:.
+              _N_o_t_e_: Have a look at the Known Bugs section!
+
+CCOONNTTRRIIBBUUTTEERRSS
+                             Steffen Kaiser
+                         Mittelstra'ae 112/B115
+                     53757 Sankt Augustin - Menden
+                         Deutschland - Germany
+
+                e-mail: Steffen.Kaiser@@FH-Rhein-Sieg.DE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                           22 May 1995                         10
+
+

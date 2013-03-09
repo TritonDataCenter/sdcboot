@@ -1,0 +1,2468 @@
+  JMP Main
+
+
+;In DOCs
+;Drives don't show up in list until they've been accessed at least once
+;  (even non-USB drives).
+
+
+;ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
+;EQUATE/STRUCTURE/MACRO DEFINITIONS
+;‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;EQUATES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;==============================================================================
+;Miscellaneous
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special Codes
+  ;----------------------------------------------------------------------------
+  No  EQU  0 ;Miscellaneous Yes/No tests
+  Yes EQU -1 ;      "        "  "    "
+
+
+;==============================================================================
+;CPU Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Bit masks in the CPU Flags Register
+  ;----------------------------------------------------------------------------
+  CarryFlag  EQU 0001h ;Carry Flag
+  ParityFlag EQU 0004h ;Parity Flag
+  AuxFlag    EQU 0010h ;Auxiliary Flag
+  ZeroFlag   EQU 0040h ;Zero Flag
+  SignFlag   EQU 0080h ;Sign Flag
+  TrapFlag   EQU 0100h ;Trap Flag
+  IntFlag    EQU 0200h ;Interrupt Flag
+  DirFlag    EQU 0400h ;Direction Flag
+  OFFlag     EQU 0800h ;Overflow Flag
+
+  ;----------------------------------------------------------------------------
+  ;Special CPU OpCodes we need to process
+  ;----------------------------------------------------------------------------
+  OpCodeJmpNear  EQU 0E9h ;JMP NEAR  (Within Same Segment)
+  OpCodeJmpShort EQU 0EBh ;JMP SHORT (+127/-128 Bytes)
+
+
+;==============================================================================
+;CONsole/Screen Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special ASCII Characters
+  ;----------------------------------------------------------------------------
+  Tab       EQU  9 ;Tab
+  LF        EQU 10 ;Line Feed
+  FormFeed  EQU 12 ;FormFeed
+  CR        EQU 13 ;Carriage Return
+  EOF       EQU 26 ;End-of-File
+  Quote2    EQU 34 ;Double quote
+  Quote1    EQU 39 ;Single quote
+  BackSlash EQU 92 ;BackSlash (\)
+
+  ;----------------------------------------------------------------------------
+  ;Special Keys that can be pressed during Pause routine
+  ;----------------------------------------------------------------------------
+  CtrlC  EQU  3 ;Control-C Keystroke
+  Escape EQU 27 ;Escape Keystroke
+
+
+;==============================================================================
+;DOS Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;;Minimum DOS Version required to use this program
+  ;----------------------------------------------------------------------------
+  MinDOSVer EQU 030Ah ;Version 3.10
+
+  ;----------------------------------------------------------------------------
+  ;Special "hard-coded" DOS Device Handles.
+  ;These Handles are permanently hard-coded in DOS, and are always open.
+  ;There is no need to issue Find, Open, or Close calls to these
+  ;  devices - you can just use them at will.
+  ;----------------------------------------------------------------------------
+  StdInHandle  EQU 0 ;Standard Input Device Handle
+  StdOutHandle EQU 1 ;Standard Output Device Handle
+  StdErrHandle EQU 2 ;Standard Error Device Handle
+  StdAuxHandle EQU 3 ;Standard Auxiliary Device Handle (COM1 by default)
+  StdPrnHandle EQU 4 ;Standard Printer Device Handle (LPT1 by default)
+
+  ;----------------------------------------------------------------------------
+  ;Codes returned by INT 21h, Function 4400h (Get Device Information)
+  ;----------------------------------------------------------------------------
+  ;If bit 7 is Set (is a Device):
+  DvcInfoIsStdIn    EQU 0001h ;STDIN
+  DvcInfoIsStdOut   EQU 0002h ;STDOUT
+  DvcInfoIsNUL      EQU 0004h ;NUL
+  DvcInfoIsClock    EQU 0008h ;CLOCK$
+  DvcInfoInt29h     EQU 0010h ;Uses Int 29h (Special Device)
+  DvcInfoBinary     EQU 0020h ;Binary (Raw) Mode
+  DvcInfoEOF        EQU 0040h ;EOF on Input
+  DvcInfoIsDevice   EQU 0080h ;Is a Device (not a File)
+  DvcInfoKEYB       EQU 0100h ;Unknown (set by DOS 6.2x KEYB program)
+  DvcInfoOpenClose  EQU 0800h ;Supports Open/Close calls
+  DvcInfoOutputBusy EQU 2000h ;Supports Output until Busy
+  DvcInfoIOCTL      EQU 4000h ;Can process IOCTL requests (INT 21h, Func 4402h)
+
+  ;If bit 7 is Clear (is a File):
+  DvcInfoDriveMask    EQU 003Fh ;Drive number (0 = A:)
+  DvcInfoNotWritten   EQU 0040h ;File has not been written (Dirty Buffer?)
+  ;Bit 7 = Clear!
+  DvcInfoInt24h       EQU 0100h ;Generate Int 24h on Errors (DOS 4 only)
+  DvcInfoNotRemovable EQU 0800h ;Media Not Removable
+  DvcInfoNoDateTime   EQU 4000h ;Don't set File Date/Time on Closing (DOS 3.0+)
+  DvcInfoRemote       EQU 8000h ;File is Remote (DOS 3.0+)
+
+
+;==============================================================================
+;DOS Drive/File Related
+;==============================================================================
+  DefSectorSize EQU   512  ;Default Sector Size.  Technically, Drives can have
+                           ;  any value that is an exponent of 2 between
+                           ;  32 & 4096, but using anything other than 512
+                           ;  512 can cause problems since some programs are
+                           ;  "hard-wired" for 512 bytes, and most
+                           ;  documentation is based on the assumption of
+                           ;  512-byte sectors.
+  MinSectorSize EQU    32  ;Minimum Sector Size allowed by DOS
+  MaxSectorSize EQU  4096  ;MAximum Sector Size allowed by DOS
+  DefNumFATs    EQU     2  ;Default number of FATs on a Drive
+  BootRecSig    EQU 0AA55h ;Signature at Offset 510 (last two bytes)
+                           ;  of a Partition Record or Boot Record Sector
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;STRUCTURES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;==============================================================================
+;DOS Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Program Segment Prefix
+  ;----------------------------------------------------------------------------
+  PSPStruc      STRUC
+    PSPDOSExit     DW       20CDh ;Int 20h Call
+    PSPNextSegment DW          ?  ;Segment of First Byte of Memory beyond Program
+    PSPCPMCall5    DB   6 DUP (?) ;CPM Far Call 5
+    PSPInt22Addr   DD          ?  ;Stored Int 22h Handler
+    PSPInt23Addr   DD          ?  ;Stored Int 23h (Ctrl-Break) Handler
+    PSPInt24Addr   DD          ?  ;Stored Int 23h (Critical Error) Handler
+    PSPParentPSP   DW          ?  ;Segment of Parent PSP
+    PSPJFT         DB  20 DUP (?) ;Job File Table (20 File Handles)
+    PSPEnvirSeg    DW          ?  ;Environment Segment for PSP
+    PSPSSSPOnEntry DD          ?  ;Processes SS:SP on Entry to last Int 21h Call
+    PSPJFTSize     DW          ?  ;Number of entries in JFT (default = 20)
+    PSPJFTPointer  DD          ?  ;Pointer to JFT (Default = PSP:0018h)
+    PSPPreviousPSP DD          ?  ;Pointer to previous PSP (Default = FFFF:FFFF)
+    PSPFiller1     DB  18 DUP (?) ;Misc stuff used by SHARE, Windows, etc.
+                                  ;Memory Below here available to TSR!
+    PSPFiller2     DB   2 DUP (?) ;Unused in DOS <= 6.00
+    PSPInt21       DW       21CDh ;Int 21h Call
+    PSPRETF        DB        0CBh ;RETF Call
+    PSPFiller3     DB   9 DUP (?) ;Can be used to make Extended FCB from FCB1
+    PSPFCB1        DB  16 DUP (?) ;First File Control Block
+    PSPFCB2        DB  16 DUP (?) ;Second File Control Block
+    PSPFiller4     DB   4 DUP (?) ;Unused
+    PSPCmdLineLen  DB          ?  ;Command Line Length & DTA
+    PSPCmdLine     DB 127 DUP (?) ;Command Line String
+   ENDS
+  PSPStrucSize EQU (TYPE PSPStruc) ;Should be 256 bytes
+
+  ;----------------------------------------------------------------------------
+  ;Memory Control Block
+  ;----------------------------------------------------------------------------
+  MCBStruc STRUC
+    MCBID              DB        ?  ;Memory Control Block ID
+      MCBIDValid      EQU       'M' ;Memory Block is Valid
+      MCBIDLastInList EQU       'Z' ;Memory Block is Last in List
+    MCBOwnerID         DW        ?  ;PSP Segment of Owner
+                                    ;   0 = Owns Self (Free)
+                                    ;   6 = DR-DOS XMS UMB
+                                    ;   7 = DR-DOS Excluded Upper Memory (Hole)
+                                    ;   8 = Belongs to DOS
+                                    ;FFFx = 386Max
+    MCBSize            DW        ?  ;Size in Paragraphs
+    MCBFiller          DB 3 DUP (?) ;Filler
+    MCBOwnerName       DB 8 DUP (?) ;Owner Name
+   ENDS
+  MCBStrucSize EQU (TYPE MCBStruc) ;Should be 16 bytes
+
+  ;----------------------------------------------------------------------------
+  ;Structure needed to Initialize DOS EXEC Function
+  ;----------------------------------------------------------------------------
+  ParamBlockStruc STRUC
+    PBEnvirSegment   DW ? ;Environment Segment to use (0 = Copy Callers Segment)
+    PBCmdTailPtr     DD ? ;Pointer to Command Tail
+    PBFCB1Offset     DD ? ;Pointer to File Control Block #1
+    PBFCB2Offset     DD ? ;Pointer to File Control Block #2
+    PBSSSPOnReturn   DD ? ;Holds Childs Initial SS:SP on Return (if AL = 01)
+    PBCSIPOnReturn   DD ? ;Holds Entry Point (CS:IP) on Return (if AL = 01)
+   ENDS
+  ParamBlockSize EQU (TYPE ParamBlockStruc) ;Size of EXEC Parameter Block
+
+  ;----------------------------------------------------------------------------
+  ;DTA (Disk Transfer Area) after Find First Matching File (INT 21h, Func 4Eh)
+  ;The first several bytes of the DTA are DOS version specific, and
+  ;  we don't care about that data anyway.  We only care about the data
+  ;  that is documented and the same across all versions of DOS.
+  ;----------------------------------------------------------------------------
+  FindFirstStruc   STRUC            ;Find First Matching File
+    FFVerSpecific     DB 21 DUP (0) ;DOS Version-specific Data
+    FFAttribs         DB         ?  ;File Attributes
+      FAttrReadOnly  EQU        01h ;Read-Only
+      FAttrHidden    EQU        02h ;Hidden
+      FAttrSystem    EQU        04h ;System
+      FAttrVolume    EQU        08h ;Volume Label
+      ;Bit 3 = Execute-only (Novell Netware)
+      FAttrDirectory EQU        10h ;Directory
+      FAttrArchive   EQU        20h ;Archive
+      FAttrUnused    EQU        40h ;Unused
+                                    ;DOS 3+ returns this bit set if file
+                                    ;  is actually a character device
+                                    ;DOS Window underneath Windows XP doesn't
+      ;Bit 7 = Delete Pending (OpenDOS, NovellDOS)
+      ;      = Shareable (Novell Netware)
+   FFTime            DW         ?  ;File Creation Time
+    FFDate            DW         ?  ;File Creation Date
+    FFSize            DD         ?  ;File Size
+    FFName            DB 13 DUP (?) ;ASCIIZ File Name & Extension
+   ENDS
+
+   FAttrToUse EQU FAttrHidden+FAttrSystem
+     ;Attributes to use in DOS's Find First Matching File Function
+     ;DOS ignores the Read-Only and and Archive bits, so they don't matter
+
+
+;==============================================================================
+;Structures: List of Lists, Current Directory Structure, Drive Parameter Block
+;==============================================================================
+
+;==============================================================================
+;BIOS Parameter Block
+;This is sent back and forth between DOS and all Block Device Drivers.
+;It is also included in the Boot Sector of all Drives.
+;
+;This is the structure for a BIOS Parameter Block
+;It is used during a Build BPB call to the Device Driver
+;This is also in the Boot Sector of the drive, starting at Offset 11
+;  (after three bytes of Code and 8 bytes of OEM Name)
+;==============================================================================
+  BIOSParamBlockStruc STRUC
+    BPBBytesPerSect   DW         ?  ;Number of Bytes per Sector
+                                    ;Must be a multiple of 32
+                                    ;Values other than 512 can cause problems!
+    BPBSectsPerClust  DB         ?  ;Number of Sectors per Cluster
+                                    ;Must be a power of 2
+    BPBReservedSects  DW         ?  ;Number of Reserved Sectors at start of disk
+                                    ;  Starting Sector of first FAT (usually 1)
+    BPBNumFATs        DB         ?  ;Number of FAT copies (usually 2)
+    BPBRootEntries    DW         ?  ;Maximum Number of Root Directory Entries
+                                    ;  (0 for FAT32)
+    BPBNumSects16     DW         ?  ;Total Number of Sectors
+                                    ;If DOS 4+ and partition > 32MB, set this
+                                    ;  to 0 and use DWORD value at Offset 15h
+    BPBMediaID        DB         ?  ;Media ID (Descriptor) Byte
+                                    ;    Sec/ Root Totl Sec/
+                                    ;Sid Clus Entr Sect Trak Diam Trak
+      MediaID160k    EQU       0FEh ; SS    1   64  320    8 5.25   40
+      MediaID180k    EQU       0FCh ; SS    1   64  360    9 5.25   40
+      MediaID200k    EQU       0FCh ; SS    1   64  400   10 5.25   40
+      MediaID205k    EQU       0FCh ; SS    1   64  410   10 5.25   41
+      MediaID320k    EQU       0FFh ; DS    2  112  640    8 5.25   40
+      MediaID360k    EQU       0FDh ; DS    2  112  720    9 5.25   40
+      MediaID400k    EQU       0FDh ; DS    2  112  800   10 5.25   40
+      MediaID410k    EQU       0FDh ; DS    2  112  820   10 5.25   41
+      MediaID720k    EQU       0F9h ; LD    2  112 1440    9 3.5    80
+      MediaID800k    EQU       0F9h ; LD    2  112 1600   10 3.5    82
+      MediaID820k    EQU       0F9h ; LD    2  112 1640   10 3.5    82
+      MediaID1200k   EQU       0F9h ; HD    1  224 2400   15 5.25   80
+      MediaID1440k   EQU       0F0h ; HD    1  224 2880   18 3.5    80
+      MediaID1476k   EQU       0F0h ; HD    1  224 2952   18 3.5    82
+      MediaID2988k   EQU       0F9h ; HD    1  224 2988   18 5.25   83
+      MediaID1600k   EQU       0F0h ; HD    1  224 3200   20 3.5    80
+      MediaID1640k   EQU       0F0h ; HD    1  224 3280   20 3.5    82
+      MediaID1680k   EQU       0F0h ; HD    1  224 3360   21 3.5    80
+      MediaID1722k   EQU       0F0h ; HD    1  224 3444   21 3.5    82
+      MediaID1743k   EQU       0F0h ; HD    1  224 3486   21 3.5    83
+      MediaID2880k   EQU       0F0h ; ED    2  240 5760   36 3.5    80
+      MediaID3360k   EQU       0F0h ; ED    2  240 6720   42 3.5    80
+      MediaID3486k   EQU       0F0h ; ED    2  240 6792   42 3.5    83
+      MediaIDHP995k  EQU       0FAh ;HP 200LX ROM Disk,   16 Sectors/Track
+      MediaIDHard    EQU       0F8h ;Hard Drive
+      MediaIDOther   EQU       0F0h ;Other Media
+      MediaIDNone    EQU       000h ;No Media Installed
+    BPBSectsPerFAT16  DW         ?  ;Number of Sectors per FAT (0 if FAT32)
+    ;DOS v3+ below this line
+    BPBSectsPerTrack  DW         ?  ;Number of Sectors per Track
+    BPBNumHeads       DW         ?  ;Number of Heads
+    BPBHiddenSects    DD         ?  ;Number of Hidden Sectors (DOS 4+)
+                                    ;For DOS 3-, this is a Word
+                                    ;This is the Number of Sectors on the
+                                    ;  Physical Disk that Precede the Partition
+                                    ;  Boot Record (including the Master Boot
+                                    ;  Record and all Partition Records)
+    ;DOS 3 is 11 Bytes Reserved after this
+    ;DOS v4+ below this line (Extended BIOS Signature)
+    BPBNumSects32     DD         ?  ;Number of Sectors (if DOS 4+ &
+                                    ;  NumSects16 = 0)
+   ENDS
+  BPBSize EQU (TYPE BIOSParamBlockStruc) ;25 bytes
+
+  BPBStrucDOS4  STRUC    ;Structure for a DOS 4+ BPB
+    BPB4Common     DB BPBSize DUP (0) ;Basic Structure
+    BPB4DriveNum   DB 80h ;Physical Drive Number (usually 80h)
+    BPB4Reserved1  DB 00h ;Reserved (0)
+    BPB4Signature  DB 29h ;Extended Boot Record Signature
+                          ;  Some references say this could be 28h or 29h
+                          ;  Any other value here indicates non-DOS (like NT)
+    BPB4SerialNum  DD  ?  ;Volume Serial Number
+    BPB4VolumeName DB 'NO NAME    ' ;Volume Name (NO NAME if never LABELed)
+    BPB4FileSystem DB 'FAT16   '    ;ASCII File System Type
+    BPB4Reserved2  DB 8 DUP (?)     ;Reserved for Future Use
+   ENDS ;Total Size = 59 Bytes
+
+  BPBExtStruc         STRUC ;Structure for an Extended BPB (FAT32)
+    BPBXCommon           DB BPBSize DUP (0) ;Basic Structure
+    BPBXSectsPerFAT32    DD         ?  ;Sectors/FAT (if SectorsPerFAT16 = 0)
+    BPBXFlags            DW         ?  ;Extended Flags
+      ;Bits 8-15 = Reserved?
+      BPBXNoFATMirror   EQU      0080h ;Do not Mirror Active FAT
+      ;Bits 0-4 = Reserved
+      BPBXActiveFATMask EQU      000Fh ;Active FAT (if Mirroring Disabled,
+                                       ;  0-based)
+    BPBXVersion          DW         ?  ;File System Version (0=Win95 OSR2)
+    BPBXRootCluster      DD         ?  ;Starting Cluster of Root Dir
+    BPBXInfoSectNum      DW         ?  ;File System Information Sector Num
+                                       ;  FFFFh = None
+    BPBXBkupBootSect     DW         ?  ;Backup Boot Sector Number
+                                       ;  FFFFh = None
+    BPBXReserved1        DB 12 DUP (0) ;Reserved
+    BPBXDriveNum         DB         ?  ;Logical Drive Number
+    BPBXReserved2        DB         ?  ;Reserved
+    BPBXSignature        DB        29h ;FAT32 Boot Record Signature
+    BPBXSerialNum        DD         ?  ;Volume Serial Number
+    BPBXVolumeName       DB 'NO NAME    ' ;Volume Name (NO NAME if never LABELed)
+    BPBXFileSystem       DB 'FAT32   '    ;ASCII File System Type
+   ENDS ;Total Size = 79 Bytes
+
+  FSISStruc STRUC ;Structure for a FAT32 File System Information Sector
+    FSISSignature1    DD 05252_6141h ;First Signature
+    FSISReserved1     DB 480 DUP (?) ;Unknown (Always 0?)
+    FSISSignature2    DD 07272_4161h ;Second Signature
+    FSISFreeClusters  DD          ?  ;Number of Free Clusters (-1 = Unknown)
+    FSISRecentCluster DD          ?  ;Most recently allocated Cluster
+    FSISReserved2     DB  12 DUP (?) ;Reserved
+    FSISReserved3     DW          ?  ;Unknown always null?)
+    FSISSignature3    DW      0AA55h ;MBR/VBR/FSIS Signature
+    ENDS ;Total size = 512 bytes (1 Sector)
+
+  ;----------------------------------------------------------------------------
+  ;Structure returned by DOS Function 52h (Get List of Lists) in ES:[BX]
+  ;This is the first several bytes of the Structure (not the entire thing),
+  ;  and only applies to DOS 3.1+.  Previous DOS versions are different.
+  ;ES returned is the DOS Data Segment.
+  ;Not all DOS Clones use all fields here.  Verify they are not 0:0 or -1:-1
+  ;  before using the Pointers.
+  ;---------------------------------------------------------------------------
+  ListOfListsStruc STRUC
+    ;-2 = Segment of First Memory Control Block
+    LOLDPBPtr        DD ? ;Pointer to first Drive Parameter Block
+    LOLSFTPtr        DD ? ;*Pointer to first (current?) System File Table
+    LOLClockPtr      DD ? ;Pointer to CLOCK$ Device Header
+    LOLCONPtr        DD ? ;Pointer to CON (STDIN) Device Header
+    LOLBytesPerSect  DW ? ;Maximum Bytes per Sector of ANY Block Device
+    LOLDiskBuffPtr   DD ? ;Pointer to first Disk Buffer
+    LOLCDSPtr        DD ? ;Pointer to first Current Directory Structure
+    LOLSysFCBPtr     DD ? ;Pointer to first System File Control Block
+    LOLNumProtFCB    DW ? ;Number of Protected FCBs (y in CONFIG.SYS FCBS=x,y)
+    LOLNumBlockDvc   DB ? ;Number of Block Devices installed
+    LOLNumAvailDrv   DB ? ;Number of Available Drive Letters (LASTDRIVE)
+                          ;Is also the number of CDS entries
+                          ;Is 32 in Windows 9x if no LASTDRIVE in CONFIG.SYS
+    LOLNULDvcHdr     DB 18 DUP (?) ;NUL Device Header (NOT POINTER to Header)
+                                   ;NUL is always first Device
+    LOLNumJoinDrv    DB ? ;Number of JOINed Drives
+    ;DOS 4+ are different from each other from here down, and we don't need
+    ;  any of this for our program, so we won't include it
+   ENDS
+
+  ;----------------------------------------------------------------------------
+  ;Current Directory Structure (CDS).  Defined by DOS.
+  ;Contiguous Array, LASTRIVE number of entries in the Array
+  ;----------------------------------------------------------------------------
+  CurrentDirStruc  STRUC
+    CDSPathName       DB  67 DUP (0) ;ASCIIZ Path Name (Current Path)
+                                     ;  (X:\Path or \\Server\Path)
+                                     ;Is REAL Path Name (Not SUBST or JOIN)
+    CDSDriveAttr      DW          ?  ;Drive Attributes (Flags)
+      DAttrNetRedir  EQU       8000h ;Uses Network Redirector
+      DAttrPhysical  EQU       4000h ;Is a Physical Drive
+      DAttrJOIN      EQU       2000h ;Drive is JOINed
+      DAttrSUBST     EQU       1000h ;Drive is SUBSTituted
+      DAttrRemovable EQU       0800h ;Removable Media (NT 4.0)
+      DAttrHardDrive EQU       0400h ;Hard Drive?? (NT 4.0)
+      DAttrNetHide   EQU       0080h ;Hidden from Net Redirectors Assign-list
+    CDSDPBPtr         DD          ?  ;Pointer to Drive Parameter Block
+    CDSCurrDirClust   DW          ?  ;Starting Cluster of Current Directory
+    CDSUnknown1       DD         -1  ;Always seems to be -1 for Local Drives
+      ;For Network Drives (including CD-ROMs)
+      CDSRedirPtr    EQU OFFSET CDSCurrDirClust[0] ;Pointer to REDIR Record (DW)
+      CDSInt5F03Data EQU OFFSET CDSCurrDirClust[4] ;User Data from Func 5F03h (W)
+    CDSRootOffset     DW          ?  ;Offset in Path Name of Root Directory
+                                     ;  (Normally 2, after the X:)
+                                     ;  Offsets in the CDS File Name (SHSUCDX)
+                                     ;   %ifdef CDROOT
+                                     ;    %define DriveOff       2
+                                     ;    %define RootSlashOff   7
+                                     ;   %else
+                                     ;    %define DriveOff       0
+                                     ;    %define RootSlashOff   2
+                                     ;   %endif
+    ;DOS 4+ beyond this point
+    CDSDeviceType     DB          ?  ;Device Type: 04h if Network Drive
+    CDSRedirBlockPtr  DD          ?  ;Pointer to Redirector/IFS Block
+                                     ;  0000_0000h if Native DOS
+    CDSIFSScratch     DW          ?  ;Used by IFS Driver
+   ENDS
+  CDSSize4 EQU (TYPE CurrentDirStruc)     ;Size of Structure (DOS 4+)
+  CDSSize3 EQU ((TYPE CurrentDirStruc)-7) ;Size of Structure (DOS 3.1-3.3)
+
+  ;----------------------------------------------------------------------------
+  ;Drive Parameter Block (DPB).  Defined by DOS.
+  ;This particular Structure only applies to DOS 4+?
+  ;Some parts of the structure are different in previous DOS versions.
+  ;DRVEXCH simply swaps DPB's to swap drive letters.
+  ;----------------------------------------------------------------------------
+  DriveParamBlockStruc STRUC
+    DPBDriveNum         DB -1 ;Drive Number (0=A, 1=B, ...) -1 = Unused
+    DPBUnitNum          DB  ? ;Unit Number within Device Driver
+    DPBBytesPerSector   DW  ? ;Bytes per Sector
+    DPBHiSectInCluster  DB  ? ;Highest Sector Number within a Cluster
+                              ;  (sectors Per Cluster - 1)
+    DPBSectorShift      DB  ? ;Shift count needed to convert Clusters to Sectors
+    DPBReservedSectors  DW  ? ;Number of Reserved Sectors at beginning of Drive
+                              ;  (Boot Sectors)
+    DPBNumFATs          DB  ? ;Number of FATs
+    DPBRootEntries      DW  ? ;Number of Root Directory Entries (0 if FAT32)
+    DPBFirstUserSector  DW  ? ;First Sector Number that contains "real" data
+    DPBHighestCluster   DW  ? ;Highest Cluster Number
+                              ;  (Number of Data Clusters + 1)
+                              ;  If <= 0FF6h, FAT12, else FAT16
+    ;For DOS 3-, Sectors per FAT is a Byte (not a Word) and things following
+    ;  this are offset by 1 byte
+    DPBSectorsPerFAT    DW  ? ;Number of Sectors per FAT
+                              ;  Prior to DOS 4, this was a Byte
+    DPBRootSector       DW  ? ;Sector Number of First (Root) Directory
+    DPBDvcDriverPtr     DD  ? ;Device Driver Header Pointer (#1646)
+    DPBMediaID          DB  ? ;Media ID
+    DPBAccessed         DB  ? ;Has the Drive been accessed?
+      AccessedYes      EQU  0 ;The Drive has been Accessed
+      AccessedNo       EQU -1 ;The Drive has NOT been accessed
+    DPBNextDPBPtr       DD  ? ;Pointer to next Drive Parameter Block
+                              ;  (-1 = end of list)
+    ;Different DOS versions are different from here down, but we don't use
+    ;  this anyway
+    DPBStartCluster     DW  ? ;Cluster at which to start search for free space
+                              ;  when writing (usually last cluster allocated)
+                              ;  (for DOS 3+)
+                              ;In DOS 2, = Start Cluster of Current Directory
+                              ;  (0 = Root, -1 = Unknown)
+    DPBFreeClusters     DW  ? ;Number of Free Clusters left (-1 = Unknown)
+                              ;  For DOS 3+
+                              ;In DOS 2, is 64-byte ASCIIZ Current Directory
+   ENDS
+  DPBSize EQU (TYPE DriveParamBlockStruc) ;33 bytes
+
+
+;==============================================================================
+;Device Driver Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Device Driver Header (Standard Block Devices)
+  ;This is the format of the first several bytes (offset 0) of a standard
+  ;  Block Device Driver file, as loaded via CONFIG.SYS.
+  ;----------------------------------------------------------------------------
+  DvcHdrStruc         STRUC
+    DHNextHeader         DD    ?  ;Point to the Next Device Header
+                                  ;  Offset = -1 if this is Last Device Header
+    DHAttribs            DW    ?  ;Device Attributes
+     ;Block Devices
+      DHAttrCharDvc     EQU 8000h ;Is a Character Device (must be clear!)
+      DHAttrIOCtl       EQU 4000h ;IOCTL supported
+      DHAttrIBMFormat   EQU 2000h ;IBM Format (non-FAT?)
+      ;Bit 12 = Reserved (0)
+      DHAttrNoOpenClose EQU 0800h ;Open/Close/RemovableMedia calls NOT supported
+      ;Bits 10-8 = Reserved
+      DHAttrGenIOCtlCk  EQU 0080h ;Generic IOCTL check supported (DOS 5.0+)
+                                  ;  (Driver Command 25)
+      DHAttrGenIOCtl    EQU 0040h ;Generic IOCTL supported (DOS 3.2+)
+                                  ;  (Driver Command 19)
+                                  ;  Also supports Get/Set Logical Device
+      ;Bit 5 = Reserved (0)
+      ;Bits 2-4 only apply to Character Devices (0)
+      DHAttr32BitSector EQU 0002h ;Can handle 32-bit Sector Numbers (DOS 4+)
+      ;Bit 1 only applies to Character Devices (0)
+    DHStrategyOffset     DW    ?  ;Offset of Strategy Code Entry Point
+                                  ;  Called with ES:[BX] = Request Header
+    DHInterruptOffset    DW    ?  ;Offset of Interrupt Code Entry Point
+    DHNumDrives          DB    ?  ;# of Logical Drive Letters - 1
+    DHDvcName            DB 7 DUP ' ' ;Device Name
+                                      ; Technically, this is not used for
+                                      ;  anything, but we'll use it as a
+                                      ;  Driver Name
+   ENDS
+  DvcHdrStrucSize EQU (TYPE DvcHdrStruc) ;Should be 18 bytes
+
+
+;==============================================================================
+;Disk Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Structure for a Partition Record
+  ;There are four of these in each Partition Record (the first being the
+  ;  Master Boot Record on the first Sector of a Hard Disk).  There are also
+  ;  four in each Extended Partition Record, if any exist.
+  ;----------------------------------------------------------------------------
+  PartRecordStruc STRUC      ;Structure for a Partition Record
+    PartPrimary      DB   ?  ;Primary (Active) Partition Indicator
+      PPrimaryNo    EQU  00h ;Is not the Primary (Bootable) Partition
+      PPrimaryYes   EQU  80h ;Is the Primary (Bootable) Partition
+                             ;There can only be one Primary Partition!
+    PartStartHead    DB   ?  ;Partition Starting Head
+    PartStartSect    DB   ?  ;Partition Starting Sector
+      PSectSector   EQU  3Fh ;Sector is only in bits 0-5
+      PSectCyl89    EQU 0C0h ;Bits 8-9 of Starting Cylinder/Track
+    PartStartCyl     DB   ?  ;Partition Starting Cylinder/Track
+                             ;  (bits 8-9 come from PartStartSect)
+    PartOpSys        DB   ?  ;Operating System Indicator
+      POSNone       EQU  00h ;None (Empty Parition Entry)
+      POSFAT12      EQU  01h ;DOS 12-bit FAT
+      POSXenixRoot  EQU  02h ;XENIX root file system
+      POSXenixUsr   EQU  03h ;XENIX /usr file system (obsolete)
+      POSFAT16      EQU  04h ;FAT16 (max 32M)
+      POSDOSExt     EQU  05h ;DOS Extended
+      POSFAT16H     EQU  06h ;FAT16 (32M+)
+      POSQNX        EQU  07h ;QNX, HPFS, NTFS, Advanced Unix, maybe others
+      POSZIXBoot    EQU  08h ;OS/2 (v1.0-1.3 only), AIX Bootable, SplitDrive,
+                             ;  Commodore DOS,
+                             ;  DELL Partition Spanning Multiple Drives
+      POSAIXData    EQU  09h ;AIX Data, Coherent
+      POSOS2        EQU  0Ah ;OS/2 Boot Manager, OPUS, Coherent Swap
+      POSFAT32      EQU  0Bh ;FAT32
+      POSFAT32LBA   EQU  0Ch ;FAT32 w/ LBA extensions
+      POSLBAVFAT16H EQU  0Eh ;LBA VFAT (same as 06h but using LBA-mode INT 13)
+      POSLBAVFATExt EQU  0Fh ;LBA VFAT (same as 05h but using LBA-mode INT 13)
+      POSOpus       EQU  10h ;OPUS
+      POSOS2FAT12H  EQU  11h ;OS/2 Boot Manager Hidden FAT12
+      POSCompaqDiag EQU  12h ;Compaq Diagnostics
+      POSOS2FAT16H  EQU  14h ;OS/2 Boot Manager Hidden FAT16 (max 32M)
+      POSOS2FAT16HH EQU  16h ;OS/2 Boot Manager Hidden FAT16 (32M+)
+      POSOS2HPFSH   EQU  17h ;OS/2 Boot Manager Hidden HPFS, Hidden NTFS
+      POSASTSwap    EQU  18h ;AST Special Windows Swap File (Zero-Volt Suspend)
+      POSPhoton     EQU  19h ;Willowtech Photon coS
+      POSFAT32H     EQU  1Bh ;FAT32 Hidden
+      POSFAT32HH    EQU  1Ch ;FAT32 Hidden w/ LBA extensions
+      POSLBAVFATH   EQU  1Eh ;LBA VFAT Hidden
+      POSOFS1       EQU  20h ;OFS1 (Willowsoft Overture File System)
+      POSReserv21   EQU  21h ;Reserved, FSo2
+      POSReserv23   EQU  23h ;Reserved
+      POSNECDOS     EQU  24h ;NEC MS-DOS 3.x
+      POSReserv26   EQU  26h ;Reserved
+      POSReserv31   EQU  31h ;Reserved
+      POSReserv33   EQU  33h ;Reserved
+      POSReserv34   EQU  34h ;Reserved
+      POSReserv36   EQU  36h ;Reserved
+      POSTheos      EQU  38h ;Theos
+      POSPartMagic  EQU  3Ch ;PowerQuest PartitionMagic Recovery
+      POSVenix      EQU  40h ;VENIX 80286
+      POSPersRISC   EQU  41h ;Personal RISC Boot, PowerPC Boot
+      POSSFS        EQU  42h ;SFS (Secure File System)
+      POSEumel1     EQU  45h ;EUMEL/Elan
+      POSEumel2     EQU  46h ;EUMEL/Elan
+      POSEumel3     EQU  47h ;EUMEL/Elan
+      POSEumel4     EQU  48h ;EUMEL/Elan
+      POSOberon     EQU  4Fh ;Oberon Boot/Data
+      POSOnTrack1   EQU  50h ;OnTrack Disk Manager Read-only
+      POSOnTrack2   EQU  51h ;OnTrack Disk Manager Read/write, NOVELL
+      POSCPM1       EQU  52h ;CP/M, Microport System V/386
+      POSOnTrack3   EQU  53h ;OnTrack Disk Manager Write-only?
+      POSOnTrack4   EQU  54h ;OnTrack Disk Manager (DDO)
+      POSEZDrive    EQU  55h ;EZ-Drive
+      POSGoldenBow  EQU  56h ;GoldenBow VFeature
+      POSPriam      EQU  5Ch ;Priam EDISK
+      POSSpeedSto1  EQU  61h ;SpeedStor
+      POS386IX      EQU  63h ;Unix SysV/386, 386/ix, Mach, MtXinu BSD 4.3 on Mach, GNU HURD
+      POSNovell1    EQU  64h ;Novell NetWare 286, SpeedStore
+      POSNovell2    EQU  65h ;Novell NetWare 3.11
+      POSNovell3    EQU  67h ;Novell
+      POSNovell4    EQU  68h ;Novell
+      POSNovell5    EQU  69h ;Novell
+      POSDiskSecur  EQU  70h ;DiskSecure Multi-Boot
+      POSReserv71   EQU  71h ;Reserved
+      POSReserv73   EQU  73h ;Reserved
+      POSReserv74   EQU  74h ;Reserved
+      POSPCIX       EQU  75h ;PC/IX
+      POSReserv76   EQU  76h ;Reserved
+      POSFIX        EQU  7Eh ;F.I.X.
+      POSMinix1     EQU  80h ;Minix v1.1 - 1.4a
+      POSMinix2     EQU  81h ;Minix v1.4b+, Linux, Mitac Advanced Disk Manager
+      POSLinuxSwap  EQU  82h ;Linux Swap, Prime, Solaris
+      POSLinuxNFS   EQU  83h ;Linux Native File System (ext2fs/xiafs)
+      POSOS2Renum   EQU  84h ;OS/2-renumbered type 04h (related to hiding DOS C: drive)
+      POSLinuxExt   EQU  85h ;Linux EXT
+      POSFAT16Str   EQU  86h ;FAT16 Volume/Stripe (Windows NT)
+      POSHPFSMir    EQU  87h ;HPFS Fault-Tolerant Mirror, NTFS Volume/Stripe
+      POSAmoebaFS   EQU  93h ;Amoeba File System
+      POSAmoebaBad  EQU  94h ;Amoeba Bad Block Table
+      POSDataLight  EQU  98h ;Datalight ROM-DOS SuperBoot
+      POSMylex      EQU  99h ;Mylex EISA SCSI
+      POSNoteBIOS   EQU 0A0h ;Phoenix NoteBIOS Power Management "Save-to-Disk"
+      POSReservA1   EQU 0A1h ;Reserved
+      POSReservA3   EQU 0A3h ;Reserved
+      POSReservA4   EQU 0A4h ;Reserved
+      POSFreeBSD    EQU 0A5h ;FreeBSD, BSD/386
+      POSOpenBSD    EQU 0A6h ;OpenBSD
+      POSNetBSD     EQU 0A9h ;NetBSD
+      POSReservB1   EQU 0B1h ;Reserved
+      POSReservB3   EQU 0B3h ;Reserved
+      POSReservB4   EQU 0B4h ;Reserved
+      POSReservB6   EQU 0B6h ;Reserved, Windows NT Mirror Master, FAT16
+      POSBSDI       EQU 0B7h ;BSDI File System, Windows NT Mirror Master, NTFS
+      POSBSDISwap   EQU 0B8h ;BSDI Swap (Secondarily File System)
+      POSSolarisBt  EQU 0BEh ;Solaris Boot
+      POSCTOS       EQU 0C0h ;DR DOS/DR-DOS/Novell DOS Secured, CTOS
+      POSFAT12Log   EQU 0C1h ;FAT12 DR DOS 6.0 LOGIN.EXE-Secured
+      POSFAT16Log   EQU 0C4h ;FAT16 DR DOS 6.0 LOGIN.EXE-Secured
+      POSDDLogin    EQU 0C6h ;DR DOS 6.0 LOGIN.EXE-Secured Huge,
+                             ;  Windows NT Corrupted FAT16 Volume/Stripe,
+                             ;  Windows NT Mirror Slave, FAT16
+      POSSyrinx     EQU 0C7h ;Syrinx Boot, Corrupted NTFS Volume/Stripe,
+                             ;  Windows NT Mirror Slave, NTFS
+      POSReservCB   EQU 0CBh ;FAT32 Reserved for DR DOS/DR-DOS/OpenDOS Secured
+      POSReservCC   EQU 0CCh ;FAT32 LBA Reserved for DR DOS/DR-DOS Ssecured
+      POSReservCE   EQU 0CEh ;FAT16 LBA Reserved for DR DOS/DR-DOS Secured
+      POSFAT12SMU   EQU 0D0h ;FAT12 Multiuser DOS Secured
+      POSFAT12MU    EQU 0D1h ;FAT12 Old Multiuser DOS Secured
+      POSFAT16MU    EQU 0D4h ;FAT16 Old Multiuser DOS secured (max 32M)
+      POSMUSecExt   EQU 0D5h ;Old Multiuser DOS Secured Extended
+      POSFAT16HMU   EQU 0D6h ;FAT16 Old Multiuser DOS Secured (32M+)
+      POSCPM2       EQU 0D8h ;CP/M-86
+      POSCPM3       EQU 0DBh ;CP/M, Concurrent CP/M, Concurrent DOS, CTOS
+      POSFAT12XSS   EQU 0E1h ;FAT12 SpeedStor Extended
+      POSPainke     EQU 0E2h ;DOS Read-only (Florian Painke's XFDISK 1.0.4)
+      POSDOSROSD    EQU 0E3h ;DOS Read-only, Storage Dimensions
+      POSFAT16XSS   EQU 0E4h ;FAT16 SpeedStor Extended
+      POSReservE5   EQU 0E5h ;Reserved
+      POSReservE6   EQU 0E6h ;Reserved
+      POSBeOS       EQU 0EBh ;BeOS BFS (BFS1)
+      POSStorDim    EQU 0F1h ;Storage Dimensions
+      POSDOS33Sec   EQU 0F2h ;DOS 3.3+ Secondary
+      POSReservF3   EQU 0F3h ;Reserved
+      POSSpeedSto2  EQU 0F4h ;SpeedStor, Storage Dimensions
+      POSPrologue   EQU 0F5h ;Prologue
+      POSReservF6   EQU 0F6h ;Reserved
+      POSLANStep    EQU 0FEh ;LANstep, IBM PS/2 IML
+      POSXenixBad   EQU 0FFh ;Xenix Bad Block Table
+    PartEndHead      DB   ?  ;Partition Ending Head
+    PartEndSect      DB   ?  ;Partition Ending Sector (bits 0-5)
+    PartEndCyl       DB   ?  ;Partition Ending Cylinder/Track
+                             ;  (bits 8-9 come from PartEndSect)
+    PartLBASector    DD   ?  ;LBA Starting Sector (number of sectors
+                             ;  preceding the partition)
+    PartLBALength    DD   ?  ;Length of Partition (Sectors)
+   ENDS ;16 bytes
+
+  ;----------------------------------------------------------------------------
+  ;Structure for a Master Boot Record or Extended Partition Record
+  ;----------------------------------------------------------------------------
+  MasterBootStruc STRUC
+   MBRCode      DB 446 DUP (?) ;446 bytes of unknown data
+                               ;For MBR, this is the boot code
+                               ;For Extended Partition Record, this is zeroes
+   MBRPart1     DB (TYPE PartRecordStruc) DUP (?) ;Partition 1 Record
+   MBRPart2     DB (TYPE PartRecordStruc) DUP (?) ;Partition 2 Record
+   MBRPart3     DB (TYPE PartRecordStruc) DUP (?) ;Partition 3 Record
+   MBRPart4     DB (TYPE PartRecordStruc) DUP (?) ;Partition 4 Record
+   MBRSignature DW 0AA55h ;Signature indicating an MBR or Partition Boot Record
+   ENDS ;512 Bytes (1 standard sector)
+
+  ;----------------------------------------------------------------------------
+  ;Structure for INT 25h & INT 26h Extended Functions (Disks <= 2GB)
+  ;Also for INT 21h/AX=7305h FAT32 Function
+  ;----------------------------------------------------------------------------
+  Int25PktStruc STRUC
+    I25PktSectNum  DD ? ;Sector Number
+    I25PktNumSects DW ? ;Number of Sectors to Read/Write
+    I25PktXferAddr DD ? ;Transfer Address
+   ENDS
+
+  ;----------------------------------------------------------------------------
+  ;Int 21h FAT32 Extended Absolute Disk Read/Write Mode Flags
+  ;  (in SI on INT 21h, Function 7305h Call)
+  ;----------------------------------------------------------------------------
+  I21XRWWrite     EQU 0001h ;Write (Output) (0 = Read/Input)
+  ;Bits 1-12 = Reserved (0)
+  I21XRWWrType    EQU 6000h ;Write Type (Reads should be 0)
+    I21XRWUnknown EQU 0000h ;Unknown Data
+    I21XRWFAT     EQU 2000h ;FAT Data
+    I21XRWDir     EQU 4000h ;Directory Data
+    I21XRWFile    EQU 6000h ;File Data
+  ;Bit 15 = Reserved (0)
+
+
+;ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
+;DATA
+;ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
+
+;==============================================================================
+;Miscellaneous Strings we need to write to the screen
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Help Message to write on Errors.
+  ;This MUST also be the first Data at the top of the File.  If it is, the user
+  ;  can simply do a "TYPE DRIVES.COM" and get this Screen, without even
+  ;  needing to execute the Program.
+  ;------------------------------------------------------------------------------
+  Copyright:
+    DB CR
+    DB 'DRIVES 0.01, (C) 2008-2009, Bret E. Johnson.',CR,LF
+    DB "Shows details about all available disk drives in DOS.",CR,LF
+    DB LF,0
+
+  HelpMsg:
+    DB CR
+    DB 'This program displays the information about all of the disk drives it can',CR,LF
+    DB '  find and lets you know some technical information about them.',CR,LF
+    DB LF
+    DB 'The information includes things like important memory addresses related to',CR,LF
+    DB '  the disk drivers, whether or not the drive has been accessed yet,',CR,LF
+    DB '  and the capacity of the drive.'
+    DB 0,EOF
+
+
+;==============================================================================
+;Miscellaneous
+;==============================================================================
+
+;  ;----------------------------------------------------------------------------
+;  ;Miscellaneous Yes/No flags (individual bits)
+;  ;----------------------------------------------------------------------------
+;  ProgFlags        DB 00h ;Yes/No Test bits #1
+;    Help          EQU 01h ;User wants help?
+
+  ;----------------------------------------------------------------------------
+  ;Miscellaneous Strings we need to write to the screen
+  ;----------------------------------------------------------------------------
+  HexString: DB '0000',0
+  CrLfMsg:   DB CR,LF,0
+  SingleMsg: DB ' '
+  NoMsg:     DB 0
+;  Space4Msg: DB ' '
+;  Space3Msg: DB ' '
+;  Space2Msg: DB ' '
+  SpaceMsg:  DB ' ',0
+
+
+;==============================================================================
+;Pause Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Strings and Data needed to Pause the screen
+  ;----------------------------------------------------------------------------
+  PauseMsg:
+    DB CR,LF
+    DB ' MORE   (Esc stops Pausing, Ctrl-C stops Completely, any other Continues)',CR,0
+  PauseNMsg:
+    DB ' MORE                                                                    ',CR,LF,0
+  PauseDMsg:
+    DB '                                                                               ',CR,0
+  PauseRows       DW ? ;Number of rows per screen
+  PauseHeaderPtr  DW 1 ;Pointer to Header Message (start with a fake one <> 0)
+  PauseHeaderSize DW 2 ;Number of lines in the Header Message
+  PauseRowCount   DW 2 ;Current Row Counter
+
+
+;==============================================================================
+;Strings to write Drive Details
+;==============================================================================
+
+  HeaderMsg0:
+
+    DB '   ATTRIBS',CR,LF
+    DB '  ÕÕÕÕÕÕÕÕÕ    MEMORY ADDRESSES     A',CR,LF
+    DB 'D N N     S ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ C FAT ATTRIBUTES    PHYSICAL ATTRIBUTES',CR,LF
+    DB 'r e e P J U                 DRIVE   C ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ ÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕÕ',CR,LF
+    DB 'i t t h O B  DEVICE DRVR  PARAMETER E     NUM         BYTES',CR,LF
+    DB 'v H w y I S ÕÕÕÕÕÕÕÕÕÕÕÕÕ   BLOCK   S FAT ROOT   NUM  PER      NUM     APPROX',CR,LF
+    DB 'e d k s N T  ADDRESS  UNT  ADDRESS  d TYP ENTRY CLUST SECT   SECTORS  CAPACITY',CR,LF
+    DB 'Õ ÕÕÕÕÕÕÕÕÕ ÕÕÕÕÕÕÕÕÕ ÕÕÕ ÕÕÕÕÕÕÕÕÕ Õ ÕÕÕ ÕÕÕÕÕ ÕÕÕÕÕ ÕÕÕÕÕ ÕÕÕÕÕÕÕÕÕ ÕÕÕÕÕÕÕÕ',CR,LF,0
+    ;   A . . Y . . 1234:5678 0   1234:5678 Y F16   256 65500   512 12345678h 63999 MB
+  NoDriveMsg1:
+    DB             '......... ... ',0
+  NoDriveMsg2:
+    DB                                    ' . ... ..... ..... ..... ......... ........',0
+  UnknownMsg:
+    DB                                                             'Unknown   Unknown',0
+
+  UnknMsg:
+    DB '???',0
+
+  Prefixes:
+    DB 'kMGTPEZY' ;kilo, mega, giga, tera, peta, exa, zetta, yotta
+
+  NextCDSPtr DD ? ;Pointer to first Current Directory Structure
+  NumDrives  DB ? ;Number of Available Drives (LASTDRV)
+
+  ErLvlDOSVer EQU 1 ;DOS Version too old
+  ErLvlWinNT  EQU 2 ;Running underneath Windows NT
+  DOSVerMsg:
+    DB "DOS must be at least version 3.10.",0
+  WinNTMsg:
+    DB "This program does not work correctly underneath Windows NT.",0
+
+  DOSVersion DW ? ;Current DOS Version
+
+  ;----------------------------------------------------------------------------
+  ;Strings needed to test for WINDOWS
+  ;----------------------------------------------------------------------------
+  WinTestMsg:    DB 'windir='
+  WinTestSz     EQU $-WinTestMsg
+  WinNTTestMsg:  DB 'OS=Windows_NT'
+  WinNTTestSz   EQU $-WinNTTestMsg
+
+  ;----------------------------------------------------------------------------
+  ;Packet needed to download sectors from large Drives (> 32MB)
+  ;----------------------------------------------------------------------------
+  Int25Packet DB (TYPE Int25PktStruc) DUP (?)
+  DriveNum    DB ? ;Drive number data is being downloaded from
+
+
+;ﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂﬂ
+;CODE
+;‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹‹
+
+;------------------------------------------------------------------------------
+;INITIALIZE/UPDATE THE PROGRAM
+;Inputs:
+;Outputs: Lots of Stuff
+;Changes: Everything
+;------------------------------------------------------------------------------
+Main:
+  CALL SetupPauseNoHdr              ;Set up the Pause
+  MOV  DX,Copyright                 ;Write the
+  CALL WriteZPause                  ;  Copyright message
+  CALL ParseCmdLine                 ;Parse Command Line (Quits if Appropriate)
+  CALL TestCompatibility            ;Test Compatibility (Quit if Error)
+  MOV  DX,HeaderMsg0                ;Set up
+  CALL SetupPause                   ;  the Header
+  MOV  AH,52h                       ;Function 52h (Get List of Lists)
+  INT  21h                          ;Do it (returns ES:[BX])
+  MOV  AL,ES:[BX].LOLNumAvailDrv    ;Store Number of
+  MOV  NumDrives,AL                 ;  Drive Letters
+  XOR  CL,CL                        ;Start with Drive 0 (A:)
+  MOV  AX,W ES:[BX].LOLCDSPtr[0]    ;Store
+  MOV  W NextCDSPtr[0],AX           ;  the
+  MOV  AX,W ES:[BX].LOLCDSPtr[2]    ;  First CDS
+  MOV  W NextCDSPtr[2],AX           ;  Address
+  XOR  BP,BP                        ;Assume
+  MOV  SI,CDSSize4                  ;  DOS 4+
+  CMP  B DOSVersion[1],4            ;Is it DOS 4+?
+  JAE >M10                          ;If so, continue
+  DEC  BP                           ;If not, some DPB data is offset by 1
+  MOV  SI,CDSSize3                  ;CDS Size is different also
+M10:                                ;Loop to here for each Drive Letter
+  LES  DI,NextCDSPtr                ;ES:[BX] = Next CDS
+  CALL WriteDriveLetter             ;Write the Drive Letter
+  CALL WriteCDSAttrs                ;Write the Attributes
+  LES  DI,ES:[DI].CDSDPBPtr         ;ES:[DI] = Drive Parameter Block
+  CALL WritePtrs                    ;Write the Pointers
+  JC  >M50                          ;If invalid pointers, done
+  CALL WriteAccessed                ;If OK, write Accessed Status
+  CALL WriteFATType                 ;Write the FAT Type
+  MOV  AX,ES:[DI].DPBRootEntries    ;Write the
+  CALL WordToString                 ;  Number of Root Entries
+  CALL WriteSpace                   ;Move over
+  MOV  AX,ES:[DI].DPBHighestCluster ;Write the
+  INC  AX                           ;  number of
+  CALL WordToString                 ;  Clusters
+  CALL WriteSpace                   ;Move over
+  CALL WriteDriveSize               ;Write the Number of Sectors & Drive Size
+M50:                                ;Done with this Drive
+  ADD  W NextCDSPtr[0],SI           ;Point at the next CDS
+  INC  CL                           ;Increment Drive Letter
+  CMP  CL,NumDrives                 ;Done all of them yet?
+  JAE >M90                          ;If so, quit
+  CALL WriteCrLfPause               ;If not done, move down
+  JMP  M10                          ;Keep writing
+M90:                                ;Done
+  XOR  AL,AL                        ;ErrorLevel = 0
+  MOV  DX,NoMsg                     ;Write Nothing
+  ;JMP  Exit
+
+;------------------------------------------------------------------------------
+;PRINT MESSAGE IN DX AND QUIT WITH ERRORLEVEL IN AL
+;Inputs:  AL = Errorlevel to exit program with
+;         [DX] = Message to Print (to ERR if AL != 0)
+;Outputs:
+;Changes: Quits program
+;------------------------------------------------------------------------------
+Exit:
+  OR   AL,AL           ;Was there an Error?
+  JZ  >X80             ;If not, jump to handle a normal termination
+  CALL BeepErr         ;If error, Beep Once
+  CALL WriteZErr       ;Write message to ERR
+  CALL WriteCrLfErr    ;Move down
+  JMP >X90             ;Jump to quit
+X80:                   ;No Error - Write to CON
+  CALL WriteZPause     ;Write the message to CON
+  CALL WriteCrLfPause  ;Write a New Line
+X90:                   ;We're done!!
+  MOV  AH,4Ch          ;Service 4Ch (terminate program)
+  INT  21h             ;Do it
+
+;------------------------------------------------------------------------------
+;PARSE THE COMMAND LINE
+;Inputs:  DS = Local Data Area
+;         CLD already issued
+;Outputs: If anything is found on the command-line, this just quits
+;           with the Help Message
+;Changes:
+;------------------------------------------------------------------------------
+ParseCmdLine:
+  PUSH AX,SI      ;Save used registers
+  MOV  SI,81h     ;[SI] = Command-line tail
+P10:              ;Loop to here for each character
+  LODSB           ;Get the next character
+  CMP  AL,' '     ;Space?
+  JE   P10        ;If so, keep looking
+  CMP  AL,CR      ;End of command-line?
+  JE  >P90        ;If so, we're done
+  XOR  AL,AL      ;If not, Errorlevel = 0
+  MOV  DX,HelpMsg ;Write the Help message
+  JMP  Exit       ;Quit
+P90:              ;Done
+  POP  SI,AX      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE DRIVE LETTER (FIRST TWO CHARACTERS OF THE CDS PATH NAME)
+;Inputs:  CL = Drive Number (0= A:, etc.)
+;Outputs: To Screen
+;           Drive Letter followed by a space
+;Changes:
+;------------------------------------------------------------------------------
+WriteDriveLetter:
+  PUSH AX         ;Save used registers
+  MOV  AL,CL      ;Write
+  ADD  AL,'A'     ;  the
+  CALL WriteAL    ;  Drive Letter
+  CALL WriteSpace ;Move over
+  POP  AX         ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE CDS ATTRIBUTES
+;Inputs:  ES:[DI] = CDS Entry to write
+;Outputs: To Screen, all appropriate bit masks
+;         Writes a Space at the Beginning of the Attributes
+;Changes:
+;------------------------------------------------------------------------------
+WriteCDSAttrs:
+  PUSH AX,BX                   ;Save used registers
+  MOV  BX,ES:[DI].CDSDriveAttr ;BX = Attributes
+  MOV  AX,DAttrNetHide         ;Write the
+  CALL WriteYOrDot             ;  Network Hide Status
+  MOV  AX,DAttrNetRedir        ;Write the
+  CALL WriteYOrDot             ;  Network Redirector Status
+  MOV  AX,DAttrPhysical        ;Write the
+  CALL WriteYOrDot             ;  Physical Drive Status
+  MOV  AX,DAttrJOIN            ;Write the
+  CALL WriteYOrDot             ;  JOIN Status
+  MOV  AX,DAttrSUBST           ;Write the
+  CALL WriteYOrDot             ;  SUBST Status
+  POP  BX,AX                   ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE DEVICE DRIVE & DPB POINTER ADDRESSES
+;Inputs:  ES:[DI] = DPB Address
+;         BP = 0 or -1 (Appropriate Offset for DOS version)
+;Outputs: To Screen
+;         Writes a Space at the End, if appropriate
+;         CF = Clear if OK (DPB Address is legitimate)
+;            = Set if Error (DPB Address is illegitimate)
+;                NoDriveMsg is written
+;Changes:
+;------------------------------------------------------------------------------
+WritePtrs:
+  PUSH AX                    ;Save used registers
+  MOV  AX,ES                 ;Is it a valid
+  OR   AX,AX                 ;  DPB Address?
+  JZ  >P70                   ;If not, handle it
+P10:                         ;DPB appears to be legitimate
+  PUSH DI,ES                 ;Save DPB Address
+  LES  DI,ES:[DI+BP].DPBDvcDriverPtr ;ES:[DI] = Device Drive Pointer
+  CALL WriteSegmentOffset    ;Write the Device Driver Address
+  POP  ES,DI                 ;Restore DPB Address
+  CALL WriteSpace            ;Move over
+  MOV  AL,ES:[DI].DPBUnitNum ;Write the
+  CALL ByteToString          ;  Device Driver Unit Number
+  CALL WriteSpace            ;Move over
+  CALL WriteSegmentOffset    ;Write the DPB Address
+  CALL WriteSpace            ;Move over
+  JMP >P80                   ;Done
+P70:                         ;Error (Illegitimate DPB Pointer)
+  MOV  DX,NoDriveMsg1        ;Write dots for the
+  CALL WriteZPause           ;  Device Driver
+  CALL WriteSegmentOffset    ;Write the DPB Address
+  MOV  DX,NoDriveMsg2        ;Write dots for the
+  CALL WriteZPause           ;  rest of the Data
+  STC                        ;Set return flag
+  JMP >P90                   ;Done
+P80:                         ;OK
+  CLC                        ;Set return flag
+P90:                         ;Done
+  POP  AX                    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE ACCESSED STATUS
+;Inputs:  ES:[DI] = DPB Address
+;         BP = Offset to use (for different DOS versions)
+;Outputs: To Screen
+;           Y if Drive has been Accessed
+;           . if not
+;Changes:
+;------------------------------------------------------------------------------
+WriteAccessed:
+  PUSH AX         ;Save used registers
+  MOV  AL,'.'     ;Assume Not Accessed
+  CMP  ES:[DI+BP].DPBAccessed,0 ;Has the Drive been Accessed?
+  JNE >A50        ;If not, write it
+  MOV  AL,'Y'     ;If so, write a Y
+A50:              ;AL = Character to Write
+  CALL WriteAL    ;Write the Accessed Status
+  CALL WriteSpace ;Move over
+  POP  AX         ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE FAT TYPE
+;Inputs:  ES:[DI] = DPB Address
+;Outputs: To Screen
+;           FAT TYPE (F12, F16, or F32)
+;         Writes a Space after the FAT Type
+;Changes:
+;------------------------------------------------------------------------------
+WriteFATType:
+  PUSH AX,DX                           ;Save used registers
+  MOV  AX,ES:[DI].DPBBytesPerSector    ;AX = Bytes Per Sector
+  CALL TestSectorSize                  ;Is it legitimate?
+  JNC >F20                             ;If OK, continue
+F10:                                   ;Invalid data
+  MOV  DX,UnknMsg                      ;Write
+  CALL WriteZPause                     ;  "Unkn"
+  JMP >F90                             ;Done
+F20:                                   ;Calculate FAT Type
+  MOV  AL,'F'                          ;Write
+  CALL WriteAL                         ;  "F"
+  MOV  AL,32                           ;Assume FAT32
+  CMP  ES:[DI].DPBRootEntries,0        ;Is it FAT32?
+  JE  >F50                             ;If so, write it
+  MOV  AL,12                           ;Assume FAT12
+  CMP  ES:[DI].DPBHighestCluster,0FF6h ;Is it FAT12?
+  JBE >F50                             ;If so, write it
+  MOV  AL,16                           ;If not, it's FAT16
+F50:                                   ;AL= FAT Type Number
+  CALL WriteByteMin                    ;Write the FAT Type Number
+F90:                                   ;Done
+  CALL WriteSpace                      ;Move over
+  POP  DX,AX                           ;Restore used registers
+  RET
+
+
+  ;AccessType DB ?
+  ;Locked     DB ?
+
+
+;------------------------------------------------------------------------------
+;WRITE THE DRIVE SIZE (KB/MB/GB/TB)
+;Inputs:  ES:[DI] = DPB Entry to write
+;         CL = 0-based Drive Number we're writing
+;Outputs: To Screen:
+;           Number of Sectors & Approx Size of Drive
+;Changes:
+;------------------------------------------------------------------------------
+WriteDriveSize:
+  PUSH AX,BX,CX,DX     ;Save used registers
+  PUSH SI,BP           ;Save used registers
+  MOV  SI,ES:[DI].DPBBytesPerSector  ;SI = Bytes Per Sector
+  MOV  AX,SI           ;Write the
+  CALL WordToString    ;  Bytes per Sector
+  CALL WriteSpace      ;Move over
+  CALL TestSectorSize  ;Is the Sector Size legitimate?
+  JC  >Z70             ;If not, error
+  CALL GetNumSectors   ;If OK, get the Number of Sectors (DX:AX)
+  JC  >Z70             ;If Error, handle it
+  XCHG AX,DX           ;Write
+  CALL WriteWordHex    ;  the
+  XCHG AX,DX           ;  Number
+  CALL WriteWordHex    ;  of
+  CALL WriteHexEnd     ;  Sectors
+  CALL WriteSpace      ;Move over
+  MOV  BX,DX           ;Convert to
+  XOR  CX,CX           ;  a 64-bit number
+  XOR  DX,DX           ;DX:CX:BX:AX
+Z10:                   ;Loop to here to calculate total bytes
+  SHR  SI,1            ;Are we done multiplying yet?
+  JZ  >Z20             ;If so, continue
+  CALL Mul64x2         ;If not, multiply by 2
+  JMP  Z10             ;Keep going until we're done
+Z20:                   ;DX:CX:BX:AX = Number of Bytes
+  XOR  SI,SI           ;Starting Prefix Index = 0
+Z25:                   ;Loop to here to calculate kiB
+  CALL Div64x1024      ;Divide Bytes by 1024
+  CALL TestBXCXDX0     ;Will XiB fit in a Single Word yet?
+  JNC >Z30             ;If so, continue
+  INC  SI              ;If not, update Prefix Index
+  JMP  Z25             ;Keep dividing
+Z30:                   ;XiB Size will fit in a single word
+  CALL ConvertXiB2XB   ;Convert XiB Size to XB Size
+Z50:                   ;Size is calculated!
+  CALL WordToString    ;Write the Size
+  CALL WriteSpace      ;Move over
+  MOV  AL,Prefixes[SI] ;Write the
+  CALL WriteAL         ;  Size Prefix
+  MOV  AL,'B'          ;Write the
+  CALL WriteAL         ;  B (Bytes)
+
+;call WriteSpace
+;mov  al,AccessType
+;call WriteByteMin
+;call WriteSpace
+;mov  al,Locked
+;call WriteByteMin
+
+  JMP >Z90             ;Done
+Z70:                   ;Error (Invalid Numbers)
+  MOV  DX,UnknownMsg   ;Write the
+  CALL WriteZPause     ;  Unknown Message
+Z90:                   ;Done
+  POP  BP,SI           ;Restore used registers
+  POP  DX,CX,BX,AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST THE BYTES PER SECTOR VALUE FOR VALIDITY
+;Inputs:  AX = Bytes Per Sector Value to test
+;Outputs: CF = Clear if OK
+;            = Set if Error
+;Changes:
+;NOTES: This tests the value to make sure it is neither too large or small to
+;         be legitimate (what DOS will accept), and also makes sure only one
+;         bit is set.  It must be an exponent of 2 between 32 and 4096.
+;------------------------------------------------------------------------------
+TestSectorSize:
+  CMP  AX,MinSectorSize ;Too small to be valid?
+  JB  >B70              ;If so, error
+  CMP  AX,MaxSectorSize ;Too big to be valid?
+  JA  >B70              ;If so, error
+  CALL TestAXBitsSet    ;Is just one bit set?
+  JZ  >B80              ;If so, it's OK
+B70:                    ;Error
+  STC                   ;Set return flag
+  JMP >B90              ;Done
+B80:                    ;OK
+  CLC                   ;Set return flag
+B90:                    ;Done
+  RET
+
+;--------------------------------------------------------------
+;TEST THE TOTAL NUMBER OF BITS THAT ARE SET IN AX OR SI
+;Inputs:  AX or SI = Word to Test
+;Outputs: ZF = Set if Number of Bits = 1
+;            = Clear if Number of Bits != 1
+;Changes:
+;--------------------------------------------------------------
+;TestSIBitsSet:
+;  PUSH AX            ;Save used registers
+;  MOV  AX,SI         ;Put word to test in AX
+;  CALL TestAXBitsSet ;Do the test
+;  POP  AX            ;Restore used registers
+;  RET
+
+TestAXBitsSet:
+  PUSH CX             ;Save used registers
+  CALL CountAXBitsSet ;Test it
+  CMP  CL,1           ;Set the return flag
+  POP  CX             ;Restore used registers
+  RET
+
+;--------------------------------------------------------------
+;COUNT THE TOTAL NUMBER OF BITS THAT ARE SET IN A WORD
+;Inputs:  AX = DWord to Test
+;Outputs:  CL = Number of Bits set in the Dword
+;               ZF = Set if CL = 0
+;                  = Clear if CL != 0
+;Changes:
+;--------------------------------------------------------------
+CountAXBitsSet:
+  PUSH AX,BX ;Save used registers
+  XOR  CL,CL ;Initialize Counter
+  OR   AX,AX ;Are there any bits set?
+  JZ  >S90   ;If not, we're done
+S10:         ;Loop to here for each bits set
+  INC  CL    ;Increment Bit Counter
+  MOV  BX,AX ;Subtract 1 from the
+  DEC  BX    ;  current value
+  AND  AX,BX ;Mask out the smallest set bit
+  JNZ  S10   ;If there are still bits set, keep going
+S90:         ;Done
+  OR   CL,CL ;Set return flag
+  POP  BX,AX ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT A 2^N (XiB) SIZE TO A 10^N (XB) SIZE
+;Inputs:  AX = XiB Size
+;         SI = Index in Prefix String to use
+;Outputs: AX = XB Size
+;         SI = Index in Prefix String to use (may or may not change)
+;Changes:
+;------------------------------------------------------------------------------
+ConvertXiB2XB:
+  PUSH BX,CX    ;Save used registers
+  PUSH DX,BP    ;Save used registers
+  MOV  CX,SI    ;CX = Number of
+  INC  CX       ;  Divisions to perform
+  MOV  BX,1024  ;Will be working with
+  MOV  BP,1000  ;  1024 & 1000
+X10:            ;Loop to here for each Adjustment
+  CMP  AX,63999 ;AX too big for an adjustment?
+  JBE >X20      ;If not, continue
+  INC  SI       ;Bump the Prefix up by 1
+  XOR  DX,DX    ;Divide the Size
+  DIV  BX       ;  by 1024
+  INC  CX       ;Increment the number of times to loop
+X20:            ;AX is OK
+  MUL  BX       ;Multiply by 1024
+  DIV  BP       ;Divide by 1000
+  LOOP X10      ;Keep going until we're done
+  POP  BP,DX    ;Restore used registers
+  POP  CX,BX    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST TO SEE IF BX, CX, AND DX ARE 0, AND AX <= 63999
+;Inputs:
+;Outputs: CF = Clear if all four registers are OK
+;            = Set if at least one of the three registers is not OK
+;Changes:
+;------------------------------------------------------------------------------
+TestBXCXDX0:
+  OR   BX,BX    ;BX = 0?
+  JNZ >X70      ;If not, error
+  OR   CX,CX    ;CX = 0?
+  JNZ >X70      ;If not, error
+  OR   DX,DX    ;DX = 0?
+  JNZ >X70      ;If not, error
+  CMP  AX,63999 ;AX OK?
+  JBE >X80      ;If so, everything's OK
+X70:            ;Error
+  STC           ;Set return flag
+  JMP >X90      ;Done
+X80:            ;OK
+  CLC           ;Set return flag
+X90:            ;Done
+  RET
+
+;------------------------------------------------------------------------------
+;MULTIPLY A 64-BIT NUMBER BY 2
+;Inputs:  DX:CX:BX:AX = 64 Bit Number to Multiply
+;Outputs: DX:CX:BX:AX = Number Multiplied by 2
+;         CF = Set if Error (Overflow)
+;            = Clear if OK (No Error)
+;Changes:
+;------------------------------------------------------------------------------
+Mul64x2:
+  PUSH BP    ;Save used registers
+  XOR  BP,BP ;BP = Overflow Flag
+  SHL  DX,1  ;Shift the High Word
+  JNC >M10   ;If no Overflow, continue
+  DEC  BP    ;If Overflow, set the Flag
+M10:         ;Overflow handled, if appropriate
+  SHL  CX,1  ;Shift the second highest word
+  ADC  DX,0  ;If overflow, increment the high word
+  SHL  BX,1  ;Shift the third highest word
+  ADC  CX,0  ;If overflow, increment the second highest word
+  SHL  AX,1  ;Shift the low word
+  ADC  BX,0  ;If overflow, increment the third highest word
+  OR   BP,BP ;Was there an overflow?
+  JZ  >M80   ;If not, it's OK
+M70:         ;Error (Overflow)
+  STC        ;Set return flag
+  JMP >M90   ;Done
+M80:         ;OK (No Overflow)
+  CLC        ;Set return flag
+M90:         ;Done
+  POP  BP    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;DIVIDE A 64-BIT NUMBER BY 1024
+;Inputs:  DX:CX:BX:AX = 64 Bit Number to Divide
+;Outputs: DX:CX:BX:AX = Number Divided by 2
+;Changes:
+;------------------------------------------------------------------------------
+Div64x1024:
+  PUSH BP      ;Save used registers
+  MOV  BP,10   ;Divide by 2 10 times (1024)
+T10:           ;Loop to here for each Division
+  CALL Div64x2 ;Divide by 2
+  DEC  BP      ;Decrerment Loop Counter
+  JNZ  T10     ;If not done yet, keep dividing
+  POP  BP      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;DIVIDE A 64-BIT NUMBER BY 2
+;Inputs:  DX:CX:BX:AX = 64 Bit Number to Divide
+;Outputs: DX:CX:BX:AX = Number Divided by 2
+;Changes:
+;------------------------------------------------------------------------------
+Div64x2:
+  SHR  AX,1   ;Divide Low Word by 2
+  SHR  BX,1   ;Divide Third Highest Word by 2
+  JNC >D10    ;If no Overflow, continue
+  OR   AH,80h ;If Overflow, set the high bit of the Low Word
+D10:          ;Low Word Handled
+  SHR  CX,1   ;Divide Second Highest word by 2
+  JNC >D20    ;If no Overflow, continue
+  OR   BH,80h ;If Overflow, set the high bit of the Second Highest Word
+D20:          ;Third Highest Word Handled
+  SHR  DX,1   ;Divide Highest word by 2
+  JNC >D30    ;If no Overflow, continue
+  OR   CH,80h ;If Overflow, set the high bit of the second Highest Word
+D30:          ;Second Highest Word Handled
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE NUMBER OF SECTORS ON THE DRIVE
+;Inputs:  DS = Local Data Area
+;         CL = Drive Number to test (0=A:, etc.)
+;         ES:[DI] = DPB of Drive
+;Outputs: CF = Clear if OK
+;              DX:AX = Number of Sectors on Disk
+;            = Set if Error
+;              DX:AX = Undefined
+;Changes:
+;------------------------------------------------------------------------------
+GetNumSectors:
+  PUSH BX,CX,BP                           ;Save used registers
+  XOR  BP,BP                              ;Mark as no need to Lock Drive
+
+;mov  Locked,0
+;mov  AccessType,0
+
+  CMP  ES:[DI].DPBRootEntries,0           ;Is it FAT 32?
+  JE  >S20                                ;If so, we need to read the Drive
+S10:                                      ;Can calculate with data from DPB
+  MOV  AX,ES:[DI].DPBHighestCluster       ;AX = Highest Cluster Number
+  XOR  DX,DX                              ;DX =
+  MOV  DL,ES:[DI].DPBHiSectInCluster      ;  Number of Sectors
+  INC  DX                                 ;  per Cluster
+  MOV  BX,DX                              ;Save it for a moment
+  MUL  DX                                 ;DX:AX = Number of Sectors - 1 Cluster
+  ADD  AX,BX                              ;Add in the
+  ADC  DX,0                               ;  Last Cluster
+  JMP >S80                                ;Done
+S20:                                      ;Need to read Sector 0 from the Drive
+  CMP  B DOSVersion[1],7                  ;Are we DOS 7+?
+  JB  >S35                                ;If not, no need to Lock
+  CALL TestWindows                        ;Are we under Windows (9x or Me)?
+  JC  >S35                                ;If not, no need to lock the drive
+S30:                                      ;Need to Lock the Drive
+  DEC  BP                                 ;Mark as needing to Lock Drive
+
+;inc  Locked
+
+  CALL LockDrive                          ;Attempt to Lock the Drive
+  JC  >S70                                ;If it didn't work, error
+S35:                                      ;Drive Locked, if necessary
+  CALL ReadSector0                        ;Attempt to Read Sector 0
+  JNC >S40                                ;If it worked, continue
+  OR   BP,BP                              ;If not, did we Lock the Drive?
+  JZ  >S70                                ;If not, no need to Unlock it
+  CALL UnlockDrive                        ;If so, Unlock it
+  JMP >S70                                ;Done
+S40:                                      ;We have Sector 0
+  XOR  DX,DX                              ;Assume Parition <= 32MB
+  MOV  AX,SectorBuff.BPBNumSects16[11]    ;AX = Number of Sectors
+  OR   AX,AX                              ;Valid?
+  JNZ >S50                                ;If so, continue
+  MOV  DX,SectorBuff.BPBNumSects32[11][2] ;DX:AX =
+  MOV  AX,SectorBuff.BPBNumSects32[11][0] ;  Number of Sectors
+S50:                                      ;DX:AX = Number of Sectors
+  OR   BP,BP                              ;If not, did we Lock the Drive?
+  JZ  >S80                                ;If not, no need to Unlock it
+  CALL UnlockDrive                        ;If so, Unlock it
+  JMP >S80                                ;Done
+S70:                                      ;Error
+  STC                                     ;Set return flag
+  JMP >S90                                ;Done
+S80:                                      ;OK
+  CLC                                     ;Set return flag
+S90:                                      ;Done
+  POP  BP,CX,BX                           ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;LOCK A LOGICAL DRIVE (UNDER WINDOWS 9x/Me)
+;Inputs:  CL = Drive Number to Lock (0 = A:, etc.)
+;Outputs: CF = Clear if OK (Drive is Locked)
+;            = Set if Error (Drive is not Locked)
+;Changes:
+;NOTES: This simply performs the LOCK call through DOS functions.
+;       Testing for a compatible version of Windows should already
+;         be done prior to calling this, since real DOS, older versions
+;         of Windows (pre-95), and NT do not support these calls.
+;       According to Ralf Brown's Interrupt List, Windows 98 will only
+;         accept Lock Leves 0 & 4.  This is not true, at least for 98SE.
+;         The only Lock Level that seems to work at all in 98SE is Level 1.
+
+;Did 4, then 0, then 1, and it finally worked!
+
+;------------------------------------------------------------------------------
+LockDrive:
+  PUSH AX,BX    ;Save used registers
+  PUSH CX,DX    ;Save used registers
+  MOV  BL,CL    ;BL = 1-based
+  INC  BL       ;  Drive Number
+  XOR  DX,DX    ;Permissions = Allow everything (we just Read)
+  MOV  CX,484Ah ;CX = Subfunction (Lock Logical FAT32 Volume)
+  MOV  BH,4     ;BH = Lock Level (start with 4)
+L10:            ;Loop to here for each attempt
+  MOV  AX,440Dh ;Function 440Dh (Generic IOCTL)
+  INT  21h      ;Do it (returns CF, AX)
+  JNC >L80      ;If it worked, we're done
+  INC  BH       ;Increment the Lock Level
+  CMP  BH,5     ;Is it too big?
+  JB  >L30      ;If not, handle it
+L20:            ;We just tried Lock Level 4
+  XOR  BH,BH    ;Try Lock level 0 next
+  JMP >L50      ;Jump to do it
+L30:            ;Not just Lock Level 4
+  CMP  BH,4     ;Did we just try Lock Level 3?
+  JE  >L70      ;If so, we're done
+L50:            ;BH contains new Lock level to Set
+  JMP  L10      ;Keep going
+L70:            ;Error
+  STC           ;Set return flag
+  JMP >L90      ;Done
+L80:            ;OK
+  CLC           ;Set return flag
+L90:            ;Done
+  POP  DX,CX    ;Restore used registers
+  POP  BX,AX    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;UNLOCK A LOGICAL DRIVE (UNDER WINDOWS 9x/Me)
+;Inputs:  CL = Drive Number to (Un)Lock (0 = A:, etc.)
+;Outputs: CF = Clear if OK (Drive is Unlocked)
+;            = Set if Error (Drive is not Unlocked)
+;Changes:
+;------------------------------------------------------------------------------
+UnlockDrive:
+  PUSH AX,BX,CX ;Save used registers
+  MOV  AX,440Dh ;Function 440Dh (Generic IOCTL)
+  MOV  BL,CL    ;BL = 1-based
+  INC  BL       ;  Drive Number
+  MOV  CX,486Ah ;CX = Subfunction (Unlock Logical FAT32 Volume)
+  INT  21h      ;Do it (returns CF, AX)
+  POP  CX,BX,AX ;Restore used registers
+  RET
+
+;--------D-21440DCX084A-----------------------
+;INT 21 - MS-DOS 7.0+ - GENERIC IOCTL - LOCK LOGICAL VOLUME
+;        AX = 440Dh
+;        CX = 084Ah / 484Ah
+;            (category code 08h for FAT12/16, 48h for FAT32; minor code 4Ah)
+;        BL = drive number (01h=A:,02h=B:,etc)
+;        BH = lock level (00h-04h)
+;        DX = drive permissions (see #01575) for Level 1 lock or second
+;            Level 0 lock when formatting
+;Return: CF set on error
+;            AX = error code (01h,02h,etc.) (see #01680 at AH=59h/BX=0000h)
+;        CF clear if successful
+;Notes:  the logical volume must be locked before direct disk accesses are
+;          permitted by Windows95/98
+;        the commandline LOCK issues a level 4 lock
+;        Windows98 only permits lock levels 0 and 4
+;BUG:    Windows98 will return an error (invalid function) if the specified
+;          drive number is zero or more than 32, but only allocated 26 bytes
+;          for recording locks, so BL=1Bh..20h will trash internal data
+;          structures
+;SeeAlso: AX=440Dh"DOS 3.2+",AX=440Dh/CX=084Bh,AX=440Dh/CX=086Ah
+;SeeAlso: AX=440Dh/CX=086Ch
+;
+;Bitfields for drive permissions:
+;Bit(s)  Description     (Table 01575)
+; 0      allow writes
+; 1      disallow new file mappings
+; 2      volume locked for formatting
+
+;--------D-21440DCX0870-----------------------
+;INT 21 - MS-DOS 7.0+ - GENERIC IOCTL - GET CURRENT LOCK STATE
+;        AX = 440Dh
+;        CX = 0870h / 4870h
+;            (category code 08h for FAT12/16, 48h for FAT32; minor code 70h)
+;        BL = drive number (00h=default,01h=A:,etc)
+;Return: CF set on error
+;            AX = error code (01h,02h,etc.) (see #01680 at AH=59h/BX=0000h)
+;        CF clear if successful
+;            AX = current lock level (0-3) or FFFFh if not locked
+;            CX = lock permissions if AX<>FFFFh (see #01575)
+;SeeAlso: AX=440Dh"DOS 3.2+",AX=440Dh/CX=086Ch
+
+
+
+
+;------------------------------------------------------------------------------
+;READ SECTOR 0 (the PBR) OF A LOGICAL DRIVE
+;Inputs:  DS = Local Data Area
+;         CL = Drive Number to Read (0 = A:, etc.)
+;Outputs: CF = Clear if OK (Data Read)
+;              SectorBuff Filled with Data
+;            = Set if Error (No Data Read, or Invalid Data)
+;              SectorBuff cleared, or contains invalid data
+;Changes:
+;------------------------------------------------------------------------------
+ReadSector0:
+  PUSH AX,BX,CX,DX               ;Save used registers
+  PUSH DI,SI,BP,ES               ;Save used registers
+  MOV  ES,DS                     ;ES = Local Data Area
+  MOV  DriveNum,CL               ;Store Drive Number
+Z10:                             ;Clear out the Buffer
+  MOV  CX,(MaxSectorSize/2)      ;CX = Number of Words to Write
+  MOV  DI,SectorBuff             ;ES:[DI] = Buffer to Clear
+  XOR  AX,AX                     ;Write Zeroes
+  REP  STOSW                     ;Clear out the Buffer
+Z20:                             ;Attempt call for Drives <= 32MB
+
+;inc  AccessType
+
+  MOV  AL,DriveNum               ;AL = Drive Number
+  MOV  CX,1                      ;Read 1 Sector
+  XOR  DX,DX                     ;DX = Sector Number to Read
+  MOV  BX,SectorBuff             ;DS:[BX] = Where to put data
+  INT  25h                       ;Do it (this call only works on Drives <= 32MB)
+  POP  BP                        ;Call leaves original flags on the Stack
+  JNC >Z50                       ;If successful, continue
+  CMP  AX,0207h                  ;If not, do we need to use the new-style call?
+  JNE >Z70                       ;If not, error
+Z30:                             ;Attempt call for Drives <= 2GB
+
+;inc  AccessType
+
+  MOV  BX,OFFSET Int25Packet     ;[BX] = Packet to Use
+  MOV  W [BX].I25PktSectNum[0],0 ;Read
+  MOV  W [BX].I25PktSectNum[2],0 ;  Sector 0
+  MOV  [BX].I25PktNumSects,1     ;Read 1 Sector
+  MOV  W [BX].I25PktXferAddr[0],SectorBuff ;Store Buffer
+  MOV  W [BX].I25PktXferAddr[2],DS         ;  Address
+  MOV  AL,DriveNum               ;AL = Drive Number
+  MOV  CX,-1                     ;CX = -1
+  INT  25h                       ;Do it (this call only works on Drives <= 2GB)
+  POP  BP                        ;Call leaves original flags on the Stack
+  JNC >Z50                       ;If successful, continue
+  CMP  AX,0207h                  ;If not, do we need to use the FAT32 call?
+  JNE >Z70                       ;If not, error
+Z40:                             ;Attempt FAT32/Win9x Call
+
+;inc  AccessType
+
+  MOV  AX,7305h                  ;Function 7305h (Extended Absolute Read/Write)
+  MOV  BX,OFFSET Int25Packet     ;DS:[BX] = Packet to Use
+  MOV  CX,-1                     ;CX = -1
+  MOV  DL,DriveNum               ;DL = 1-based
+  INC  DL                        ;  Drive Number
+  XOR  SI,SI                     ;SI = Flags (Read, Unknown Data Type)
+  INT  21h                       ;Do it
+  JC  >Z70                       ;If it didn't work, we're done
+Z50:                             ;Buffer data was downloaded successfully
+  CALL TestSectorBuff            ;Is the data valid?
+  JNC >Z80                       ;If so, we're done
+Z70:                             ;Error
+  STC                            ;Set return flag
+  JMP >Z90                       ;Done
+Z80:                             ;OK
+  CLC                            ;Set return flag
+Z90:                             ;Done
+  POP  ES,BP,SI,DI               ;Restore used registers
+  POP  DX,CX,BX,AX               ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST THE DATA DOWNLOADED FROM SECTOR 0 TO SEE IF IT'S A VALID PBR
+;Inputs:  DS = Local data Area
+;         SectorBuff
+;Outputs: CF = Clear if OK (Appears to be a valid PBR)
+;            = Set if Error
+;Changes:
+;------------------------------------------------------------------------------
+TestSectorBuff:
+  PUSH AX                 ;Save used registers
+  CMP  SectorBuff.MBRSignature,BootRecSig ;Valid MBR or PBR Sector?
+  JNE >P70                ;If not, error
+  MOV  AL,B SectorBuff[0] ;Get the first OpCode Byte in the Sector
+  CMP  AL,OpCodeJmpShort  ;Is it a PBR?
+  JE  >P80                ;If so, we're done
+  CMP  AL,OpCodeJmpNear   ;Is it a PBR?
+  JE  >P80                ;If so, we're done
+P70:                      ;Error
+  STC                     ;Set return flag
+  JMP >P90                ;Done
+P80:                      ;OK
+  CLC                     ;Set return flag
+P90:                      ;Done
+  POP  AX                 ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO TEST AND SEE IF THE COMPUTER IS COMPATIBLE OR NOT.
+;TESTS DOS VERSION, HARDWARE INSTALLED, ETC. AS APPROPRIATE TO MAKE SURE
+;  WE DON'T DO SOMETHING THAT COULD CRASH THE COMPUTER.
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;TEST THE COMPUTER TO SEE IF IT'S COMPATIBLE (CPU, DOS VERSION, WHATEVER)
+;Inputs:  InMemory
+;Outputs: Quits the program if Computer is Incompatible
+;         Returns if Computer is OK
+;         Stores all kinds of values in memory variables
+;Changes:
+;------------------------------------------------------------------------------
+TestCompatibility:
+  PUSH AX,DX          ;Save used registers
+  MOV  AL,ErLvlDOSVer ;Assume incorrect
+  MOV  DX,DOSVerMsg   ;  DOS Version
+  CALL TestDOSVer     ;Is DOS new enough?
+  JC  >C70            ;If not, quit
+  MOV  AL,ErLvlWinNT  ;Assume running under
+  MOV  DX,WinNTMsg    ;  Windows NT
+  CALL TestWinNT      ;Are we running underneath Windows NT?
+  JC  >C90            ;If not, we're OK
+C70:                  ;The computer is incompatible for some reason
+  JMP  Exit           ;Quit!
+C90:                  ;The computer is compatible!
+  POP  DX,AX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST THE CURRENT DOS VERSION
+;Inputs:  DS = Local Data Area
+;         ES = TSR Data Area
+;         MinDOSVer (EQUate)
+;Outputs: CF = Clear if DOS version >= MinDOSVer
+;         CF = Set if DOS version < MinDOSVer
+;         Stores DOSVer in TSR Segment
+;Changes:
+;------------------------------------------------------------------------------
+TestDOSVer:
+  PUSH AX,BX,CX      ;Save used registers
+  MOV  AX,3000h      ;Service 30h (get DOS version number)
+                     ;  DOS 5.0 requires AL = 00h, may change BX and CX
+  INT  21h           ;Do it (Returns AL= Major, AH = Minor)
+  XCHG AL,AH         ;Swap Major and Minor versions for testing
+  CMP  AX,MinDOSVer  ;Is the version new enough?
+  JAE >D80           ;If so, it's OK
+D70:                 ;DOS is older than the minimum
+  STC                ;Set the "too old" flag
+  JMP >D90           ;We're done
+D80:                 ;DOS is >= the minimum
+  MOV  DOSVersion,AX ;Store the DOS Version
+  CLC                ;Set the OK flag
+D90:                 ;We're done
+  POP  CX,BX,AX      ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AND SEE IF WINDOWS NT IS LOADED
+;Inputs:
+;Outputs: CF = Clear if loaded
+;            = Set if not loaded
+;Changes:
+;NOTES: This performs a "GET TRUE DOS VERSION" call to the OS.  DOS boxes
+;         all versions of NT, at least up through XP, all return the same
+;         value.  This test will probably not be valid unless using the
+;         COMMAND or CMD shell that comes with NT.
+;------------------------------------------------------------------------------
+TestWinNT:
+  PUSH AX,BX,CX,DX     ;Save used registers
+  PUSH DI,SI,ES        ;Save used registers
+N10:                   ;Test using a DOS Call
+  MOV  AX,3306h        ;Function 3306h (Get True DOS version)
+  XOR  BX,BX           ;Preset Error code
+  INT  21h             ;Do it (returns AX, BX, DX)
+  CMP  BX,3205h        ;Is it version 5.50 (NT DOS Box)?
+  JE  >N80             ;If so, Windows NT is installed
+N20:                   ;Test using an environment variable
+  MOV  AX,[2Ch]        ;Point ES:[DI]
+  MOV  ES,AX           ;  at the
+  XOR  DI,DI           ;  environment
+  XOR  AL,AL           ;We'll need to look for zeroes
+N30:                   ;Loop to here for each environment variable
+  MOV  SI,WinNTTestMsg ;Point at the first test message
+  MOV  CX,WinNTTestSz  ;Get the size of the test string
+  REPE CMPSB           ;See if the string matches
+  JNZ >N40             ;If no match, Windows NT isn't installed
+  CMP  B ES:[DI],0     ;Is it an exact match?
+  JE  >N80             ;If so, assume Windows NT is installed
+N40:                   ;Environment string does not match
+  MOV  CX,-1           ;If not, look for the end
+  REPNE SCASB          ;  of the environment variable
+  CMP  B ES:[DI],0     ;Is the end of the entire environment?
+  JNE  N30             ;If not, test the next environment variable
+N70:                   ;Windows NT is not installed
+  STC                  ;If not, set the not installed flag
+  JMP >N90             ;We're done
+N80:                   ;Windows NT is installed
+  CLC                  ;Set the installed flag
+N90:                   ;We're done
+  POP  ES,SI,DI        ;Restore used registers
+  POP  DX,CX,BX,AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AND SEE IF A DOS-BASED VERSION OF WINDOWS IS LOADED
+;Inputs:
+;Outputs: CF = Clear if loaded
+;            = Set if not loaded
+;Changes:
+;NOTES: These tests are not definitive, but should work for what we're
+;         trying to accomplish (I hope).
+;------------------------------------------------------------------------------
+TestWindows:
+  PUSH AX,CX,DI,SI   ;Save used registers
+  PUSH ES            ;Save used registers
+  MOV  AX,[2Ch]      ;Point ES:[DI]
+  MOV  ES,AX         ;  at the
+  XOR  DI,DI         ;  environment
+  XOR  AL,AL         ;We'll need to look for zeroes
+W10:                 ;Loop to here for each environment variable
+                     ;This will find many DOS-based versions of Windows
+  MOV  SI,WinTestMsg ;Point at the first test message
+  MOV  CX,WinTestSz  ;Get the size of the test string
+  REPE CMPSB         ;See if the string matches
+  JZ  >W80           ;If it matches, Windows is installed
+  MOV  CX,-1         ;If not, look for the end
+  REPNE SCASB        ;  of the environment variable
+  CMP  B ES:[DI],0   ;Is the end of the entire environment?
+  JNE  W10           ;If not, test the next environment variable
+W30:                 ;Do a late-version check of Windows
+  MOV  AX,1600h      ;Function 1600h (Windows Enhanced Mode Install Check)
+  INT  2Fh           ;Do it
+  OR   AL,AL         ;Is it installed?
+  JZ  >W70           ;If not, it's not installed
+  CMP  AL,80h        ;Is it XMS version 1 (instad of Windows)?
+  JNE >W80           ;If not, it's really Windows
+W70:                 ;Windows is not installed
+  STC                ;If not, set the not installed flag
+  JMP >W90           ;We're done
+W80:                 ;Windows is installed
+  CLC                ;Set the installed flag
+W90:                 ;We're done
+  POP  ES            ;Restore used registers
+  POP  SI,DI,CX,AX   ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE TO WRITE VARIOUS THINGS TO THE SCREEN
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;WRITE A SEGMENT:OFFSET TO THE SCREEN
+;Inputs:  ES:DI = Segment:Offset to Write
+;Outputs: To Screen
+;Changes:
+;------------------------------------------------------------------------------
+WriteSegmentOffset:
+  PUSH AX            ;Save used registers
+  MOV  AX,ES         ;Write the
+  CALL WriteWordHex  ;  Segment
+  CALL WriteColon    ;Write a Colon
+  MOV  AX,DI         ;Write the
+  CALL WriteWordHex  ;  Offset
+  POP  AX            ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT NIBBLE, BYTE, OR WORD TO HEX CHARACTER STRING, AND WRITE IT
+;Inputs:  AL/AX = Nibble/Byte/Word to be written
+;         CLD must be set already!
+;Outputs: Writes to the Screen
+;Changes: HexString
+;------------------------------------------------------------------------------
+;WriteNibbleHex:
+;  PUSH BX             ;Save used registers
+;  MOV  BX,3           ;Need to start of offset 3 in string
+;  JMP >H00            ;Jump to do it
+;WriteByteHex:
+;  PUSH BX             ;Save used registers
+;  MOV  BX,2           ;Need to start of offset 2 in string
+;  JMP >H00            ;Jump to do it
+WriteWordHex:
+  PUSH BX             ;Save used registers
+  XOR  BX,BX          ;Need to start of offset 0 in string
+;  JMP >H00            ;Jump to do it
+;H00:                  ;Start converting the strings
+  PUSH DX,DI          ;Save used registers
+  MOV  DI,HexString   ;Point DS:[DI] at HexString
+  MOV  DX,DI          ;Point DS:[DX] at HexString
+  CALL Word2HexString ;Convert the entire Word to a String
+  ADD  DX,BX          ;Point DX at the beginning of where we write
+  CALL WriteZPause    ;Write it
+  POP  DI,DX          ;Restore used registers
+  POP  BX             ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CONVERT A BYTE OR WORD TO A HEXADECIMAL STRING (2 OR 4 CHARACTERS)
+;Inputs:  AX = Word to Convert to a Hex String
+;         DS = Local Data Area
+;         CLD already issued
+;Outputs: DS:[DI]
+;Changes: DI
+;------------------------------------------------------------------------------
+;Byte2HexString:
+;  PUSH AX,ES            ;Save used registers
+;  MOV  ES,DS            ;Point ES:[DI] at the String
+;  CALL Word2HexString10 ;Convert it
+;  POP  ES,AX            ;Restore used registers
+;  RET
+
+Word2HexString:
+  PUSH AX,BX,ES         ;Save used registers
+  MOV  BX,AX            ;Save original Word
+  MOV  ES,DS            ;Point ES:[DI] at
+  CALL Word2HexString00 ;Convert it
+  POP  ES,BX,AX         ;Restore used registers
+  RET
+
+Word2HexString00:
+  MOV  AL,BH            ;Convert High Byte
+  CALL Word2HexString10 ;  to ASCII
+  MOV  AL,BL            ;Work with Low Byte
+Word2HexString10:       ;Convert Byte to ASCII
+  AAM  10h              ;Separate Low & High Nibbles
+  XCHG AH,AL            ;Put High Nibble in AL
+  CALL Word2HexString20 ;Convert High Nibble to ASCII
+  XCHG AH,AL            ;Work with Low Nibble
+Word2HexString20:       ;Convert Nibble to ASCII
+  ADD  AL,90h           ;Convert BCD
+  DAA                   ;  to Decimal
+  ADC  AL,40h           ;Convert Decimal
+  DAA                   ;  to ASCII
+  STOSB                 ;Store the Nibble
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE A BYTE OR WORD TO THE SCREEN AS A DECIMAL
+;Inputs:  AL/AX = Byte/Word to Write
+;Outputs:
+;Changes:
+;------------------------------------------------------------------------------
+WriteByteMin:
+  PUSH AX,BX         ;Save used registers
+  XOR  AH,AH         ;Make sure high byte is 0
+  MOV  BH,1          ;Mark as doing minimum
+  JMP >W00           ;Do it
+;WriteWordMin:
+;  PUSH AX,BX         ;Save used registers
+;  MOV  BH,1          ;Mark as doing minimum
+;  JMP >W00           ;Do it
+ByteToString:
+  PUSH AX,BX         ;Save the original word & BP
+  XOR  AH,AH         ;Make sure high byte is 0
+  XOR  BH,BH         ;BH = No Minimum, Byte
+  JMP >W00           ;Jump to start the loop
+WordToString:
+  PUSH AX,BX         ;Save the original word
+  MOV  BH,2          ;BP = No Minimum, Word
+W00:                 ;Do a word or a byte
+  PUSH CX,DX,SI      ;Save used registers
+  MOV  SI,SingleMsg  ;Point at the single character message
+  XOR  BL,BL         ;Test for first non-zero character is false
+  MOV  CX,10000      ;First divisor is 10,000
+W20:                 ;Loop to here for each character
+  XOR  DX,DX         ;High word of Dividend = 0
+  DIV  CX            ;Divide DX:AX by current divisor
+  OR   AX,AX         ;Is this a non-zero character?
+  JNZ >W30           ;If so, we need to write it
+  OR   BL,BL         ;Has there already been a non-zero character?
+  JNZ >W30           ;If so, we need to write it
+  CMP  CX,1          ;Is this the last character?
+  JE  >W30           ;If so, we need to write it
+  TEST BH,1          ;Are we doing a minimum?
+  JNZ >W40           ;If not, don't write anything
+  MOV  AL,' '        ;Assume a space
+  TEST BH,2          ;Doing a word?
+  JNZ >W35           ;If so, write the space
+  CMP  CX,100        ;If not, doing the hundreds character?
+  JBE >W35           ;If so, write the space
+  JMP >W40           ;If not, don't write anything
+W30:                 ;We need to write this character
+  INC  BL            ;Test for first non-zero character is true
+  ADD  AL,'0'        ;Convert the Number to ASCII
+W35:                 ;Write the character
+  MOV  [SI],AL       ;Write the
+  CALL WriteZPauseSI ;  character
+W40:                 ;Skip this character - just make it a space
+  CMP  CX,1          ;Was this the last division to do?
+  JE  >W90           ;If so, we're done
+  MOV  AX,DX         ;If not, start next loop with remainder of division
+  PUSH AX            ;Save register for a second
+  XOR  DX,DX         ;So dividend won't be messed up
+  MOV  AX,CX         ;Want to divide divisor in CX
+  MOV  CX,10         ;Want to divide by 10
+  DIV  CX            ;Divide it
+  MOV  CX,AX         ;Store it back in CX
+  POP  AX            ;Restore register
+  JMP  W20           ;And do it again
+W90:                 ;We're done
+  POP  SI,DX,CX      ;Restore used registers
+  POP  BX,AX         ;Restore original word & BP
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE A YES OR NO BITMAP TEST
+;Inputs:  BX = Memory Value to test
+;         AX = Mask to test with
+;Outputs: To Screen (Dot if Bit is not set, Y if bit is set)
+;         Dot or Y is followed by a Space
+;Changes:
+;------------------------------------------------------------------------------
+WriteYOrDot:
+  PUSH CX          ;Save used registers
+  MOV  CX,WriteDot ;Assume Bit is Not Set
+  TEST AX,BX       ;Is the Bit Set?
+  JZ  >Y50         ;If not, continue
+  MOV  CX,WriteY   ;Write a Y
+Y50:               ;[CX] = Subroutine to call
+  CALL CX          ;Write it
+  CALL WriteSpace  ;Move over
+  POP  CX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE A SPECIFIC CHARACTER OR SET OF CHARACTERS TO THE SCREEN
+;Inputs:
+;Outputs: To screen
+;Changes:
+;------------------------------------------------------------------------------
+WriteAL:
+  PUSH DX              ;Save used registers
+  MOV  DL,AL           ;Write what's in AL
+  JMP >C00             ;Do it
+;WriteBlock:
+;  PUSH DX              ;Save used registers
+;  MOV  DL,'±'          ;Write a Block Character
+;  JMP >C00             ;Do it
+WriteColon:
+  PUSH DX              ;Save used registers
+  MOV  DL,':'          ;Write a Colon
+  JMP >C00             ;Do it
+WriteDot:
+  PUSH DX              ;Save used registers
+  MOV  DL,'.'          ;Write a Dot
+  JMP >C00             ;Do it
+WriteHexEnd:
+  PUSH DX              ;Save used registers
+  MOV  DL,'h'          ;Write an h
+  JMP >C00             ;Do it
+WriteSpace:
+  PUSH DX              ;Save used registers
+  MOV  DX,SpaceMsg     ;Point at Message
+  JMP >C10             ;Do it
+;Write2Spaces:
+;  PUSH DX              ;Save used registers
+;  MOV  DX,Space2Msg    ;Point at Message
+;  JMP >C10             ;Do it
+;Write3Spaces:
+;  PUSH DX              ;Save used registers
+;  MOV  DX,Space3Msg    ;Point at Message
+;  JMP >C10             ;Do it
+;Write4Spaces:
+;  PUSH DX              ;Save used registers
+;  MOV  DX,Space4Msg    ;Point at Message
+;  JMP >C10             ;Do it
+WriteY:
+  PUSH DX              ;Save used registers
+  MOV  DL,'Y'          ;Write a Y
+  JMP >C00             ;Do it
+C00:
+  MOV  SingleMsg[0],DL ;Put the character in the Single Character String
+  MOV  DX,SingleMsg    ;Point at Single Character String
+C10:                   ;DX is pointed at String
+  CALL WriteZPause     ;Write the String
+  POP  DX              ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE AN ASCIIZ STRING, POINTED AT BY SI, TO PAUSE
+;Inputs:  DS:[SI] = ASCIIZ String to Write
+;Outputs: To Screen (CON)
+;Changes:
+;------------------------------------------------------------------------------
+WriteZPauseSI:
+  PUSH DX          ;Save used registers
+  MOV  DX,SI       ;Write the
+  CALL WriteZPause ;  string
+  POP  DX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING TO CON OR TO ERR
+;Inputs:  DS:[DX] = Pointer to string
+;         CS = Local Data Area
+;Outputs: Writes the string to CON or ERR
+;Changes:
+;------------------------------------------------------------------------------
+WriteZCon:                  ;Write to CON
+  PUSH BX                   ;Save used register
+  MOV  BX,StdOutHandle      ;Write to STDOUT
+  JMP >Z00                  ;Jump to do it
+WriteZErr:                  ;Write to ERR
+  PUSH BX                   ;Save used register
+  MOV  BX,StdErrHandle      ;Write to STDERR
+Z00:
+  PUSH AX,CX                ;Save used registers
+  CALL CalcStrSizeDX        ;Calculate the size of the string (returns CX)
+  JZ  >Z80                  ;If nothing to write, just quit
+  MOV  AH,40h               ;Function 40h (Write to Device)
+  INT  21h                  ;Do it
+Z80:                        ;We're done
+  POP  CX,AX                ;Restore used registers
+  POP  BX                   ;Restore used register
+Z90:                        ;We're done
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE LENGTH OF AN ASCIIZ STRING
+;Inputs:  DS:[DX] = Pointer to the string
+;Outputs: CX = Length of the string
+;         ZF = Set if string is 0 length
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+CalcStrSizeDX:
+  PUSH AX,DI  ;Save used registers
+  PUSH ES     ;Save used registers
+  MOV  ES,DS  ;Point ES:[DI]
+  MOV  DI,DX  ; at the string
+  XOR  AL,AL  ;Look for a 0
+  MOV  CX,-1  ;Start with max count for REPNE
+  REPNE SCASB ;Find the end of the string
+  NOT  CX     ;Calculate the size
+  DEC  CX     ;  of the string (sets ZF)
+  POP  ES     ;Restore used registers
+  POP  DI,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;BEEP THE SPEAKER
+;Inputs:
+;Outputs: Beeps the speaker
+;Changes:
+;------------------------------------------------------------------------------
+BeepErr:
+  PUSH AX,BX    ;Save used registers
+  XOR  BX,BX    ;BH = Video page = 0
+  MOV  AX,0E07h ;AH = 0Eh = Function = Write TTY
+                ;AL = 07h = Character to write = BEL
+  INT  10h      ;Do it
+  POP  BX,AX    ;Restore used registers
+  RET
+
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;CODE NEEDED TO SET UP AND DO SCREEN PAUSES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;------------------------------------------------------------------------------
+;SETUP PARAMETERS FOR DOING A SCREEN PAUSE (FOR PRINTING A LARGE TABLE)
+;Inputs:  DS = Local Data Area
+;         DS:[DX] = ASCIIZ Header to Print at top of each screen
+;                   Last character of the Header MUST be an LF
+;                   If SetupPauseNoHdr, we "inject" NoMsg as the Header
+;Outputs: Pauses the screen with a MORE message every time it gets full
+;NOTES:   If a Screen Header is really large (almost taking up the whole
+;           screen itself, with little room for data), this procedure
+;           may not work correctly.  This procedure does not validate
+;           the size of the Header -- it simply assumes that it is a
+;           "reasonable" size compared to the size of the screen.  Most
+;           anything that needs a Screen Header (a long data table) will
+;           only have a few lines of Header, so this should be OK as a
+;           general purpose procedure.
+;         After this Setup is complete (which should be near the beginning
+;           of MAIN, before anything is sent to the screen), WriteZPause
+;           must be called for ALL screen writing to CON:, not WriteZCon!
+;         The Pausing occurs in "real time", meaning we can send things
+;           to the Pause routine a byte, line, or several screens at a
+;           time for processing.  Because we do it in "real time",
+;           we can end up with extra MORE's and screen Headers appearing
+;           on screen than are actually needed.  During a screen
+;           transition (or a transition to a new Header) whether we
+;           actually need to write anything or not depends on if there
+;           is actually any real data coming afterward (in time), which
+;           of course we don't know (since it hasn't happened yet).
+;           So, we must assume there is more data to come and process the
+;           MORE's and Screen Headers accordingly.  This only causes problems
+;           (in the form of extraneous MORE's and Screen Headers)
+;           when things happen near the bottom of the screen.
+;           DOS's MORE utiltiy (and other programs of similar ilk) do not
+;           process in "real time", but rather store things in a Temporary
+;           File and then process the file.
+;------------------------------------------------------------------------------
+SetupPauseNoHdr:
+  PUSH DX         ;Save used registers
+  MOV  DX,NoMsg   ;Point at 0-length Message
+  CALL SetupPause ;Setup the Pause
+  POP  DX         ;Restore used registers
+  RET
+
+SetupPause:
+  PUSH AX,BX,CX,DI,SI     ;Save used registers
+  MOV  SI,OFFSET PauseHeaderPtr ;Point [SI] at PauseHeaderPtr
+  CMP  W [SI],-1          ;Has the user already cancelled us?
+  JE  >S90                ;If so, just quit
+  CMP  W [SI],0           ;Has the user stopped pausing already?
+  JE  >S85                ;If so, just write the header
+  CALL TestRedir          ;Is our output redirected?
+  JNC >S10                ;If not, setup our Headers
+  MOV  W [SI],0           ;Mark as Redirected or Pausing Stopped/Disabled
+  JMP >S85                ;Jump to write the Header and Quit
+S10:                      ;Output not redirected
+  CALL GetScreenRows      ;Store the number of rows
+  MOV  PauseRows,AX       ;  on the screen
+  CALL CountZLinesCX      ;Calculate the number of lines
+  INC  CX,2               ;  in the new Header
+  MOV  DI,PauseRowCount   ;Get the Current Row count
+  ADD  DI,CX              ;Add the size of the new header
+  SUB  DI,3               ;Adjust for Headers
+  DEC  AX                 ;Will writing the new Header
+  CMP  DI,AX              ;  cause a Pause event?
+  JB  >S50                ;If not, handle it
+S20:                      ;New Header is too big to fit on screen
+  MOV  W [SI],NoMsg       ;Point Header for second page at nothing
+  MOV  PauseHeaderSize,2  ;Set Pause Header Size
+  PUSH CX                 ;Save New Header Size
+  SUB  AX,PauseRowCount   ;Calculate how many rows to fill up the screen
+  MOV  CX,AX              ;Put number of rows in CX
+  INC  CX                 ;Adjust it
+S30:                      ;Loop to here to fill up the screen
+  CALL WriteCrLfPause     ;Write a new line
+  LOOP S30                ;Keep going until we're done
+  POP  CX                 ;Restore New Header Size
+  CMP  W [SI],-1          ;Did the user cancel during the header transition?
+  JE  >S90                ;If so, we're done
+  CMP  W [SI],0           ;Did the user stop Pausing during the transition?
+  JE  >S85                ;If so, just write the Header
+S50:                      ;Need to adjust current Row Count
+  SUB  PauseRowCount,2    ;Adjust things for the previous Header
+S80:                      ;Store new Header Info
+  MOV  [SI],DX            ;Store the Header Address
+  MOV  PauseHeaderSize,CX ;Store the Header Size
+  ADD  PauseRowCount,CX   ;Add the Header Size to the Row Count
+  MOV  AX,PauseRows       ;Compensate if
+  CMP  AX,PauseRowCount   ;  the new header
+  JAE >S85                ;  put us past
+  DEC  AX                 ;  the end
+  MOV  PauseRowCount,AX   ;  of hte screen
+S85:                      ;Write Header
+  CALL WriteZCon          ;Write the Header
+S90:                      ;We're done
+  POP  SI,DI,CX,BX,AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CHECK TO SEE IF STDOUT HAS BEEN REDIRECTED
+;Inputs:
+;Outputs: CF = Clear if STDOUT is normal (usually the screen)
+;            = Set if STDOUT been redirected
+;Changes:
+;------------------------------------------------------------------------------
+TestRedir:
+  PUSH AX,BX,DX        ;Save used registers
+  MOV  AX,4400h        ;Function 4400h (Get Device Info)
+  MOV  BX,StdOutHandle ;Device = STDOUT
+  INT  21h             ;Do it (returns DX, changes AX)
+  JC  >R80             ;If error, assume not Redirected
+  AND  DL,(DvcInfoIsDevice+DvcInfoIsStdOut) ;Mask out unwanted bits
+  CMP  DL,(DvcInfoIsDevice+DvcInfoIsStdOut) ;Is it still the STDOUT Device?
+  JE  >R80             ;If so, it's not Redirected
+R70:                   ;STDOUT has been Redirected
+  STC                  ;Set the Redirected flag
+  JMP >R90             ;Done
+R80:                   ;STDOUT is not Redirected
+  CLC                  ;Set the Not-Redirected flag
+R90:                   ;Done
+  POP  DX,BX,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;GET THE NUMBER OF VIDEO ROWS ON THE SCREEN
+;Inputs:
+;Outputs: AX = Number of text rows on the screen
+;                (usually 25, 43, or 50)
+;Changes:
+;------------------------------------------------------------------------------
+GetScreenRows:
+  PUSH BX,CX,DS  ;Save used registers
+  MOV  AX,40h    ;Point ES to
+  MOV  DS,AX     ;  BIOS data area
+  MOV  AH,12h    ;Function 12h (EGA Alternate Select)
+  MOV  BX,0FF10h ;Subfunction (BL) 10h (Return EGA information)
+                 ;  Preset unrealistic return value (BH)
+  INT  10h       ;Do it (returns AX, BX, CX)
+  CMP  BL,10h    ;Is the function supported (EGA or better)?
+  JE  >R50       ;If not, jump to handle MDA/CGA
+  CMP  BH,0FFh   ;Is the return value valid?
+  JE  >R50       ;If not, jump to handle MDA/CGA
+  TEST B [87h],8 ;If so, is bit 3 of the EGA information byte set?
+  JNZ >R50       ;If so, EGA is not the active display
+  XOR  AX,AX     ;Get # of
+  MOV  AL,[84h]  ;  rows - 1
+  JMP >R90       ;We're done
+R50:             ;Video card is less than EGA (MDA or CGA)
+  MOV  AX,24     ;Number of rows must be 25
+R90:             ;We're done
+  INC  AX        ;Bump the number of rows by 1
+  POP  DS,CX,BX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING(s) TO THE SCREEN, PAUSING WHEN IF NECESSARY
+;Inputs:  DS:[DX] = String to write
+;         PauseRows, PauseHeaderPtr, PauseHeaderSize, PauseRowCount
+;         CS = Local Data Area
+;Outputs: PauseRowCount
+;Changes: Pauses the screen and waits for user input, if necessary
+;NOTES: This should be called instead of WriteZCon every time something
+;         is written during the Pausing.
+;       A string can be written by WriteZCon during the pausing, as long
+;         as the string does not contain a Line Feed.  Any line containing
+;         a Line Feed must come through here or the Line Count will get
+;         screwed up!
+;------------------------------------------------------------------------------
+;WriteZPauseFar:
+;  CALL WriteZPause
+;  RETF
+
+WriteZPause:
+  PUSH AX,BX,CX,DX          ;Save used registers
+  MOV  AX,CS:PauseHeaderPtr ;Put Header Pointer in AX
+  CMP  AX,-1                ;Has the Output been cancelled by the user?
+  JE  >P90                  ;If so, don't write anything at all
+  OR   AX,AX                ;Is STDOUT Redirected?
+  JZ  >P80                  ;If so, just write it with no Pausing
+  CALL CountZLinesCX        ;Count how many Lines are in the string
+  MOV  AX,CS:PauseRowCount  ;Add the new lines
+  ADD  AX,CX                ;  to the current lines
+  CMP  AX,CS:PauseRows      ;Will we be at or past the end of the screen?
+  JB  >P70                  ;If not, just write it
+  JE  >P20                  ;If at the end of the screen, handle it
+  SUB  AX,CS:PauseRows      ;If not, find
+  SUB  CX,AX                ;  the end of the String
+  CALL FindEndOfLines       ;  we need to write ([BX])
+  MOV  AL,[BX]              ;Save the character that's there now
+  MOV  B [BX],0             ;Replace it with a 0
+  CALL WriteZPause          ;Write it (will Pause correctly)
+  MOV  [BX],AL              ;Restore original character
+  MOV  DX,BX                ;Use the new string pointer
+  CALL WriteZPause          ;Write it (Pausing if necessary)
+  JMP >P90                  ;Done
+P20:                        ;At end of screen
+  CALL WriteZCon            ;Write the String
+  CALL HandlePause          ;Handle the Pause (may change Pointers/Counters)
+  JMP >P90                  ;We're done for now
+P70:                        ;Store new Row Count
+  MOV  CS:PauseRowCount,AX  ;Save the new Row Count
+P80:                        ;Write the String
+  CALL WriteZCon            ;Write the string
+P90:                        ;Done
+  POP  DX,CX,BX,AX          ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE THE PAUSE LINE, AND WAIT FOR A KEYSTROKE
+;Inputs:  CS = Local Data Area
+;         PauseRows, PauseHeaderPtr, PauseHeaderSize, PauseRowCount
+;Outputs: PauseRowCount, PauseHeaderPtr
+;Changes: Pauses the screen and waits for user input, if necessary
+;------------------------------------------------------------------------------
+HandlePause:
+  PUSH AX,BX,DX,DS        ;Save String Segment
+  MOV  DS,CS              ;Point DS at our Data Segment
+  MOV  BX,OFFSET PauseHeaderPtr ;Point [BX] at the Pause Header
+  MOV  DX,PauseMsg        ;Write the
+  CALL WriteZCon          ;  Enter a Keystroke message
+  CALL FlushKbdBuff       ;Clear the keyboard buffer
+L10:                      ;Loop to here to wait for a keystroke
+  CALL GetKey             ;Is there a key in the keystroke buffer?
+  JZ   L10                ;If not, keep waiting until there is
+  MOV  DX,PauseDMsg       ;Delete the
+  CALL WriteZCon          ;  MORE Message
+  CMP  AL,CtrlC           ;Was the keystroke a Control-C?
+  JE  >L40                ;If so, jump to handle it
+  CMP  AL,Escape          ;Was the keystroke an Escape?
+  JNE >L20                ;If not, just keep going
+  MOV  W [BX],0           ;If so, mark us as redirected (stop Pausing)
+  JMP >L90                ;And quit
+L20:                      ;Continue with the Pause
+  MOV  DX,PauseNMsg       ;Write the
+  CALL WriteZCon          ;  MORE Replacement Line
+  MOV  DX,[BX]            ;Point DX at the Header
+  CALL WriteZCon          ;Write it
+  MOV  AX,PauseHeaderSize ;Reset the Row Count
+  MOV  PauseRowCount,AX   ;Store the new Row Count
+  JMP >L90                ;We're done for now
+L40:                      ;Ctrl-C (stop altogether)
+  MOV  W [BX],-1          ;Mark as stopped
+L90:                      ;Done
+  POP  DS,DX,BX,AX        ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE NUMBER OF LINES IN AN ASCIIZ STRING (COUNT CR/LF COMBINATIONS)
+;Inputs:  DS:[DX] = Pointer to String to measure
+;         CLD already issued
+;Outputs: CX = Number of LF's in the String (may be 0)
+;         ZF = Set if CX = 0
+;            = Clear if CX > 0
+;Changes:
+;------------------------------------------------------------------------------
+CountZLinesCX:
+  PUSH AX,SI ;Save used registers
+  MOV  SI,DX ;Put the pointer in DI
+  XOR  CX,CX ;Initialize Lines Counter
+Z10:         ;Loop to here for each character
+  LODSB      ;Get the next character
+  OR   AL,AL ;Is it the end of the string?
+  JZ  >Z90   ;If so, we're done
+  CMP  AL,LF ;Is it a Line Feed?
+  JNE  Z10   ;If not, it's not a new line
+  INC  CX    ;If so, Increment the Line Counter
+  JMP  Z10   ;Keep looking
+Z90:         ;We're done
+  OR   CX,CX ;Set return flag
+  POP  SI,AX ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;FIND THE POINTER AFTER THE FIRST SEVERAL LINES OF A STRING
+;Inputs:  DS:[DX] = String to use
+;         CX = Number of lines to "skip"
+;         CLD already issued
+;Outputs: DS:[BX] = "New" String Pointer (after the last line written)
+;Changes:
+;NOTES: This assumes that the string actually has MORE than the number of
+;         lines in AX (it does not look for the end of an ASCIIZ string).
+;------------------------------------------------------------------------------
+FindEndOfLines:
+  PUSH AX,CX  ;Save used registers
+  PUSH DI,ES  ;Save used registers
+  MOV  BX,CX  ;BX = Line Counter
+  MOV  ES,DS  ;Point ES:[DI] at
+  MOV  DI,DX  ;  the string
+  MOV  AL,LF  ;Look for Line Feeds
+  MOV  CX,-1  ;Maximize counter
+L10:          ;Loop to here for each new line
+  REPNE SCASB ;Look for the end-of-line character
+  DEC  BX     ;Decrement the Line Counter
+  JNZ  L10    ;If not 0 yet, keep looking
+  MOV  BX,DI  ;Store the new string beginning
+L90:          ;Done
+  POP  ES,DI  ;Restore used registers
+  POP  CX,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;FLUSH KEYBOARD BUFFER
+;Inputs:
+;Outputs:
+;Changes: Flushes the Keyboard Buffer
+;------------------------------------------------------------------------------
+FlushKbdBuff:
+  PUSH AX     ;Save used registers
+F10:          ;Loop to here for each key
+  CALL GetKey ;Get a key from the keyboard buffer
+  JNZ  F10    ;If there was one, get another
+  POP  AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;READ CHARACTER FROM THE KEYBOARD BUFFER
+;Inputs:
+;Outputs: AH = Keyboard scan code
+;         AL = ASCII value of keypress (0 if extended ASCII)
+;         AX = 0 if no key is waiting
+;Changes: ZF = Set if no key in buffer (AX = 0)
+;            = Clear if a key was found (AX = key)
+;------------------------------------------------------------------------------
+GetKey:
+  MOV  AH,1  ;Service 1 (Keystroke waiting?)
+  INT  16h   ;Do It
+  JZ  >K10   ;If no key waiting, we're done
+  XOR  AH,AH ;If a key is waiting, service 0 (Get keystroke)
+  INT  16h   ;Do It
+  JMP >K90   ;We're done
+K10:         ;No keystroke waiting
+  XOR  AX,AX ;Make sure AX=0
+K90:         ;We're done
+  OR   AX,AX ;Set the found/not found flag
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE A CR/LF TO THE CONSOLE WITH A PAUSE
+;Inputs:
+;Outputs: To Screen, Updates Pause Counters
+;Changes:
+;------------------------------------------------------------------------------
+WriteCrLfPause:
+  PUSH DX          ;Save used registers
+  MOV  DX,CrLfMsg  ;Write a Cr/Lf to
+  CALL WriteZPause ;  the Pause Device
+  POP  DX          ;Restore used registers
+  RET
+
+;WriteCrLfPause2:
+;  CALL WriteCrLfPause ;Move down
+;  CALL WriteCrLfPause ;  2 lines
+;  RET
+
+WriteCrLfErr:
+  PUSH DX         ;Save used registers
+  MOV  DX,CrLfMsg ;Write a Cr/Lf to
+  CALL WriteZErr  ;  the ERR Device
+  POP  DX         ;Restore used registers
+  RET
+
+EVEN 2
+LastProgByte:
+SectorBuff:

@@ -1,4 +1,0 @@
-freedos
-=======
-
-SDC FDUM environment

@@ -1,0 +1,129 @@
+[Notes accompanying first beta of the MVS port; still mostly applicable
+ to the UnZip 5.2 release.  Somebody with an MVS system will have to
+ update this file.]
+
+Thank you for trying this first port of UNZIP for VM/CMS and MVS!
+
+This is the first beta so there might be some bugs in it.
+
+                        Using under MVS:
+                    -------------------------
+
+1. To use the Info-Zip's UNZIP under MVS you need:
+
+   - C/370 ver 2.1 compiler or another compatible compiler supporting
+     long names for function/variable names.
+
+2. To compile the program under MVS do :
+
+   - unzip all the files from unz52vm.zip file. They are stored as
+     ASCII format so you have to unzip them first on PC or other
+     system that already have UNZIP, and then upload them to the
+     mainframe with ASCII to EBCDIC conversion.
+
+   - Copy all the .C files in the PDS called youruserid.UNZIP.C
+
+   - Copy all the .H files in the PDS called youruserid.UNZIP.H
+
+   - adjust the job UNZMVSC.JOB to work on your size. Change my
+     userid - C888090 to yours
+
+   - execute the job UNZMVSC to compile and link all the sources.
+
+   - maybe you have to preallocate PDS datasets named:
+     youruserid.UNZIP.OBJ and youruserid.UNZIP.LOAD
+
+   - if everything is ok you will get an UNZIP MODULE
+
+3. Using UNZIP
+
+   - Just read the UNZIP.DOC
+
+   - A few exceptions concerning MVS
+
+     3.0. There are different ways to invoke UNZIP.
+
+        - allocating UNZIP.LOAD dataset to your ISPLLIB if you
+          want to invoke UNZIP under ISPF.
+          Then just type UNZIP ...parms... to get it work
+
+        - You can also call it directly with :
+             TSO CALL 'userid.UNZIP.LOAD(UNZIP)' '...parms...'
+             (notice to quotes!)
+
+        - You can even call it from a batch job like:
+
+          //MYZIP    JOB  (account)
+          //STEP1    EXEC PGM=UNZIP,PARM='-l mytestz.zip *.c'
+          //STEPLIB  DD DSN=userid.UNZIP.LOAD,DISP=SHR
+          //SYSPRINT DD SYSOUT=*
+
+          This will list all the .c files from the zip file mytestz.zip
+
+     3.1. If the ZIP file has been zipped on an ASCII based system
+          it will be automatically translated to EBCDIC
+          ( I hope I got all those translation tables OK :-)
+
+     3.2. The date/time of the output files is set to the
+          current system date/time - not according the date/time in
+          the zip file.
+
+     3.3. You can even unzip using TSO/E PIPELINES
+          so unzip can be used as pipeline filter:
+
+          'pipe cms unzip -p test.zip george.test | count lines | cons'
+          ( we do also a lot of pipethinking here ;-)
+
+     3.4. If you got also the ZIP program (see ZIP21VM.ZIP) you can
+          do zipping and unzipping without translating to ASCII
+          the ZIP also preserves the file informations (LRECL,BLKSIZE..)
+          So when you UNZIP a file zipped with ZIP under MVS it
+          restores the file info.
+
+          There currently some problems with file with RECFM=V*
+          I don't save the length of each record yet :-)
+
+     3.5. No wildcards are supported in the input zip name you have
+          to give the real name (.zip is not necessary)
+
+          So you CAN'T use things like: unzip -t *.zip
+
+     3.6. But you CAN use wildcards as filename selection like:
+          unzip -t myzip *.c  - OK or even
+          unzip -t myzip *.c -x z*.c  - to exclude all files matching
+                                        z*.c
+
+     3.7. You can unzip to a PDS using the -d parameter after the zip name
+          for example:
+
+           UNZIP myzip *.c -dmyzip
+
+          This will unzip all .c files that are in the zip file in a
+          PDS directory called MYZIP.C
+
+          BE AWARE that the extension of every files is being placed as
+          last identifier on the PDS name, so if you have a file
+          in the zipfile called 'testp.doc' and you use '-d mypds'
+          the PDS name will become 'mypds.doc(testp)'
+
+      3.8. All text files under MVS are created with record length 133.
+          This is due to a bug in the fopen that makes it always 1028
+
+      3.9. All '+','_' or '-' signs are skipped from the filenames
+
+
+Please rapport all bugs and problems to :
+     Info-ZIP@WKUVX1.WKU.EDU
+
+That's all for now.
+
+Have fun!
+
+
+George Petrov
+e-mail: c888090@nlevdpsb.snads.philips.nl
+tel: +31-40-781155
+
+Philips C&P
+Eindhoven
+The Netherlands

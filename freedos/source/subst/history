@@ -1,0 +1,23 @@
+bugfix: SUBST/JOIN: bad handling of command line arguments
+chg: adjustment for SUPPL v2.7
+chg: external command names starting with '_' now start with '-'
+chg: If SWSUBST is invoked without the '/A' option and the CDS table is
+	printed, only used and the last entries will be displayed
+fix: Novell Netware adds 6 phantom drives to LASTDRIVE
+chg: rename file ERROR.C into YERROR.C
+version3:
+chg: better detection of local paths in "swsubst dr path"
+bugfix: calling format "swsubst dr -" or "swsubst dr /d"
+add: unit swapping, to enable the swapping of floppies
+add: disk cache flushing for SMARTDRV v3 and v4,& HyperDisk v4.56
+bugifx: "subst /d" emits help screen
+
+version2:
+add: search/display the driver chain
+add: search/display the MCB chains
+bugfix: "/w" command
+add: German NROFF doc files
+add: '/x=' option to exclude drives from being searched while ::label:
+
+version1:
+intial revision

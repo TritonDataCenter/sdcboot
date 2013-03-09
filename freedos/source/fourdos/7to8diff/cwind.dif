@@ -1,0 +1,152 @@
+diff -u oldsrc/cwt.h source/cwt.h
+--- oldsrc/cwt.h	1995-07-07 17:43:22.000000000 +0200
++++ source/cwt.h	2008-05-17 13:26:10.000000000 +0200
+@@ -14,7 +14,7 @@
+ /*--- Define method used to read keyboard as KB_MSDOS or KB_BIOS     ---*/
+ #define  KB_MSDOS
+ /*--- Check validity of arguments to window functions ---*/
+-#define  CHECKARGS  1
++#define  CHECKARGS  0
+ 
+    /*----------------------------------------------------------------
+      --- SECTION 2 - Compiler Dependant Parameters                ---
+@@ -61,6 +61,15 @@
+ #define ZERO_REGISTERS(r)
+ #endif
+ 
++#if defined (__WATCOMC__)
++#pragma pack (1)
++#pragma off (check_stack)
++#endif
++
++#if defined (_MSC_VER)
++#pragma check_stack (off)
++#endif
++
+ /* define 32 bit registers for int86 */
+ #if defined(__DPMI32__) && !defined(__386__)
+    #define __386__
+diff -u oldsrc/wc09.c source/wc09.c
+--- oldsrc/wc09.c	1995-10-19 11:35:52.000000000 +0200
++++ source/wc09.c	2008-05-17 11:58:12.000000000 +0200
+@@ -354,13 +354,20 @@
+ 
+    /* create the list box */
+    if (drop) {
+-      cdata->window = _wnewopen(winfo->view_x + col,
+-         winfo->view_y + row + edborder + 1, width,
+-         height - ht, width, height - ht, NULL, ctl->colors[DATACOLOR], 0, 0);
++      if (title) {
++         twidth -= strchr(title, ex_defaults.hotkeycode) ? 2 : 1;
++         fwidth += 2;
++      } else {
++         twidth = 0;
++         fwidth = width;
++      }
++      cdata->window = _wnewopen(winfo->view_x + col + twidth,
++         winfo->view_y + row + edborder + 1, fwidth,
++         height - ht, fwidth, height - ht, NULL, ctl->colors[DATACOLOR], 0, 0);
+       if (cdata->window == NULL) {c_delete(ctl); return NULL;}
+       w_add_subwindow(ctl->window, cdata->window, NULL);
+       cdata->listbox = c_add_listbox(cdata->window, NULL, 0, 0,
+-         width, height-ht, listflags);
++         fwidth, height-ht, listflags);
+       }
+    else {
+       cdata->listbox = c_add_listbox(wd, NULL, col, row+1+edborder,
+@@ -494,7 +501,7 @@
+    }
+ 
+ /* ------------------------------------------------------------ */
+-/* Message handler for listbox controls */
++/* Message handler for combobox controls */
+ 
+ int  _c_cb_handler(Control ctl, int eventcode, Mouse_State *mstate)
+ {
+@@ -713,7 +720,7 @@
+    field = cb->field;
+    if (field == NULL) return -1;
+    if ((ctl->data[0] & CB_NOEDIT) == CB_NOEDIT)
+-      return _c_cb_dolist(ctl, mstate);
++      return mstate->event_code == CTL_SELECT ? 0 : _c_cb_dolist(ctl, mstate);
+ 
+    field->maskcolor = ctl->colors[SDATACOLOR];
+    row = ctl->row;
+diff -u oldsrc/wh02.c source/wh02.c
+--- oldsrc/wh02.c	1995-06-12 16:46:06.000000000 +0200
++++ source/wh02.c	2008-05-15 16:54:32.000000000 +0200
+@@ -44,7 +44,7 @@
+ /*----------------*/
+ int  h_loadfile(char *filename)
+ {
+-    char       inline[81];
++    char       inline_[81];
+     File_Help  *newnode = NULL, node;
+     int        count=0, status, len;
+     int        base = sizeof(node) - sizeof(node.name);
+@@ -60,20 +60,20 @@
+ 
+     /* Open new help file and build file directory list */
+     if ((ex_helpfp = fopen(filename,"r")) == NULL) ERROR(39,-1)
+-    status = _fileread(inline);
++    status = _fileread(inline_);
+     if (status != 2){
+        _closefilehelp();
+        ERROR(40, -1)
+        }
+     fseek(ex_helpfp, 0L, 0);
+     while (filename != NULL){       /* while (1) */
+-        status = _fileread(inline);
++        status = _fileread(inline_);
+         switch (status){
+            case -1: _closefilehelp();
+                     ERROR(40, -1)
+            case  1: return(0);
+            case  2:
+-               len = strlen(inline);
++               len = strlen(inline_);
+                newnode = (File_Help *) malloc(base + len + 1);
+                if (newnode == NULL){
+                   _closefilehelp();
+@@ -81,7 +81,7 @@
+                   }
+                if (ex_filehead == NULL) ex_filehead = newnode;
+                else ex_filetail->next =  newnode;
+-               strcpy(newnode->name,inline);
++               strcpy(newnode->name,inline_);
+                newnode->filepos = ftell(ex_helpfp);
+                newnode->next = NULL;
+                newnode->maxcols = 0;
+@@ -94,7 +94,7 @@
+                   _closefilehelp();
+                   ERROR(40, -1)
+                   }
+-               len = strlen(inline);
++               len = strlen(inline_);
+                if (newnode->maxcols < len) newnode->maxcols = len;
+                newnode->rows++;
+         }
+diff -u oldsrc/wm09.c source/wm09.c
+--- oldsrc/wm09.c	1994-06-16 13:32:58.000000000 +0200
++++ source/wm09.c	2008-05-18 21:31:36.000000000 +0200
+@@ -553,7 +553,7 @@
+       if ((subkey = _pullselect(menu,itemptr,&subflag,help)) == NOKEY)
+          return(-1);
+       if (itemptr->call != NULL){
+-          if (help != NULL) _offwindow(help);
++          /* if (help != NULL) _offwindow(help); -> _putsavearea() crashes! */
+           (*itemptr->call)();
+           if (help != NULL) _onwindow(help);
+       }
+diff -u oldsrc/ww20.c source/ww20.c
+--- oldsrc/ww20.c	1993-06-10 16:05:54.000000000 +0200
++++ source/ww20.c	2008-05-18 11:23:08.000000000 +0200
+@@ -256,6 +256,8 @@
+       next = sub->sibling;
+       if (sub->winfo->note_sub != NULL)
+          status = (*sub->winfo->note_sub)(sub, change_id, check, x, y, w, h);
++      else if (change_id == _CHG_ON && sub->control && !sub->control->selected)
++         status = -1;
+       else status = 0;
+       if (status == 0) {
+          switch (change_id) {

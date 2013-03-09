@@ -1,0 +1,54 @@
+If you are still interested, I thought that I should inform you of a
+few things.
+
+Although I have not updated the distributed code in almost a year, I do
+have
+some more code, such as FAT32 support, and a few improvements (I
+think).
+I can supply the latest versions (I have more than one incarnation of
+disk I/O
+code) if you would like. I have been meaning to update them anyway.
+
+I am very familiar with the GPL and I will tell you straight out that I
+will not
+use the GPL for this code. I do, however, agree whole heartedly with
+the   
+spirit of the GPL and with Free Software in general. In fact, I tend to
+think
+that I want my code to be _more free_ than GNU code. (I can elaborate
+if
+you happen to be interested in that concept.) If my license does not
+pass
+the Open Source test it will be due to vagueness not intent.
+
+I am a professional programmer working at Communica, Inc.
+(www.communica.com -- an extremely boring and useless website!). I am
+best suited for embedded programming. I know next to nothing about
+Windows GUI programming (and I despise MFC with reason).
+
+I wrote DISKLIB _for myself_ and nothing else. That it may be useful to
+others is solely why I allow it to be distributed. That FreeDOS people
+are
+not only aware of but are interested in it is, well, cool. I hope. I
+will be
+silently glad if FreeDOS finds it useful as well.
+
+If I had just one thing to say to FreeDOS it would be: Take it and run!
+
+
+>Hi,   
+>
+>I hope that i am still in the right place. A few weeks ago someone
+pointed
+>me out to a very good disk management library by Gregg Jennings.
+>
+>Since we at the FreeDOS project are very interested in this library we
+>were wondering if you could grant us the right license for the library
+so
+>that we could use it for our projects.
+>
+>For the license i would suggest GNU GPL (see http://www.GNU.org for
+>details).
+>
+>Imre   
+              

@@ -1,0 +1,5 @@
+mem
+mem /c
+mem /d
+mem /a
+

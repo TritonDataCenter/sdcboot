@@ -1,0 +1,189 @@
+
+       ----------------------------------------------------------------
+       DELTREE.COM   v1.02c  04-24-2000   C. Dye   raster@highfiber.com
+          Freeware.  Copyright 1998-2000, Charles Dye.  No warranty!
+       ----------------------------------------------------------------
+
+DELTREE.COM is a freeware clone of Microsoft's DELTREE.EXE, a utility for
+quickly deleting files and subdirectories.  This is a dangerous program --
+it can delete many things very quickly!  USE IT AT YOUR OWN RISK.  I will
+not be responsible for any loss of data or damage to hardware, whether
+caused by program error, programmer error, user error, or act of God.
+
+DELTREE.COM is meant to be freely distributed, for the benefit of DOS users
+everywhere.  See the section "Distribution" below for the legalities.
+
+
+                               --------------
+                               GENERAL SYNTAX
+                               --------------
+
+DELTREE [switches] filespec [filespec...]
+
+  /Y    Delete specified items without prompting
+  /V    Report counts and totals when finished
+  /D    Display debug info
+
+Switches may be uppercase or lowercase, and may begin with a slash or a minus
+sign.  There must be at least one filespec, and there may be more than one.
+Switches come before filespecs -- not after, as in most MS-DOS utilities.
+
+Filespecs may name files, directories, or DR DOS-type list files.  You may
+use wildcards; all matching files and directories will be targeted.
+
+Files will be deleted regardless of their attributes.  Directories will be
+deleted with all their contents.
+
+A "file list" is a text file containing filespecs, one per line.  If you have
+a list of items to be deleted in a file VICTIM.TXT, type DELTREE @VICTIM.TXT
+(Note that the @-sign is not part of the filename, just a flag to indicate a
+file list.)
+
+Unless /Y is specified, DELTREE will prompt you before deleting each item
+specified on the command line.  Press Y to delete the item indicated, N to
+let it live, or Q to quit from DELTREE.  /Y prevents the prompt -- use this
+switch with caution!
+
+If /V is specified, DELTREE will report the total number of files deleted and
+subdirectories removed when it finishes.  If any files were deleted, the
+total of the files' sizes will also be reported in bytes and in kilobytes or
+megabytes.  The fractional part of the kilobytes or megabytes may be off by
+plus-or-minus one in the least significant digit.  The total size does not
+take cluster size into account; the amount of disk space freed may be greater
+than the size reported.
+
+
+                             ------------------
+                             ERRORLEVEL RETURNS
+                             ------------------
+
+               00   Success
+               01   Something could not be deleted
+               03   User abort (Q, control-C)
+               16   General syntax, buffer overflow
+               17   Not enough memory
+               18   DOS 3.0 or better required
+               19   Problem with list file
+               20   Internal buffer overflow
+               21   Error resolving directory name (dots_fix)
+
+
+               ----------------------------------------------
+               INCOMPATIBILITIES WITH MICROSOFT'S DELTREE.EXE
+               ----------------------------------------------
+
+This section contains technical trivia.  Most users can ignore it.
+
+These are the known differences between Microsoft's DELTREE.EXE (I'll just
+call it MS's) and my own DELTREE.COM (which I'll call "mine") :
+
+Mine will offer an additional safety prompt if items in the root directory of
+a non-removable drive are to be deleted and /Y was specified.  This is a
+deliberate incompatibility with Microsoft's, inspired by a loser who posts
+destructive batch files on the Internet.  There is no switch to disable this
+check; you must reassemble the program if you wish to remove it.
+
+MS's DELTREE, as far as I can tell, does no error checking at all!  According
+to HELP, DELTREE returns Errorlevel 0 for success -- and there are no other
+return codes.  Even if you do totally foolish things like DELTREE CLOCK$ or
+removing the current directory, MS's utility reports success.  Mine will
+check for failures, and print an error message if something doesn't work.
+Mine also returns different documented Errorlevels.
+
+MS's will sometimes call a directory a file.  Specifically, this happens when
+you delete a directory with any attributes set.  MS's utility will still
+delete the directory correctly, but this bug may confuse users.  The error
+appears to have been fixed in the Win95 version of DELTREE, and I don't
+emulate it in mine.
+
+MS's does not deal gracefully with I/O redirection when /Y is not specified.
+Redirecting STDOUT makes the prompts invisible, and redirecting STDIN keeps
+them from working altogether.  Mine disallows I/O redirection if /Y is not
+specified (maps STDIN and STDOUT back to the console for user interaction.)
+
+Mine accepts DR DOS-style file lists.  MS's does not.  If you want to delete
+a file or directory beginning with an at-sign, enclose the name in quotes:
+DELTREE "@ODDNAME"  -- this syntax is legal for both MS's and mine.
+
+MS's will try to delete character devices, and happily assume success.  Mine
+will ignore device names.
+
+MS's may display relative filenames (like "foo" or "..\subdir")  Mine will
+always display absolute filenames ("c:\junk\a86\foo" or "a:\subdir")
+
+MS's allows you to enclose switches in quotes (huh?)  So DELTREE "-Y" FOO
+will delete FOO without prompting.  Mine interprets anything inside quotes as
+a filename, so DELTREE "-Y" FOO will prompt you before deleting -Y and FOO.
+
+MS's does not support /V or /D.
+
+Mine is smaller, and has a different filename (.COM versus .EXE)  If you keep
+both utilities in the same directory, typing the command DELTREE (with no
+extension) will start my DELTREE instead of Microsoft's.
+
+If you're writing a batch file that needs to be compatible with MS-DOS
+DELTREE, check the following:  Don't use file lists, /V or /D.  Don't rely on
+Errorlevel.  Don't redirect output unless you specify /Y.  Don't redirect
+input at all.
+
+
+                               --------------
+                               SUNDRY CREDITS
+                               --------------
+
+This program was originally created using Eric Isaacson's shareware assembler
+A86.
+
+Tom Dalton suggested including a "defanged" version (DELTREE2.COM) in the
+archive.
+
+
+                                -----------
+                                WHAT'S NEW?
+                                -----------
+
+1.02c   04-24-2000    4,210 bytes                              8B60E5F5  CF56
+
+Expanded the filespec buffers to 260 bytes to handle the super-long pathnames
+allowed under Windows 95/98.
+
+1.02b   07-27-1999    4,220 bytes                              6228F0D7  5149
+
+This release has been rewritten for NASM.  A86 is good, but it's shareware.
+This change allows anybody to modify the program -- not just registered A86
+users.  Fixed a trivial bug (incorrect Errorlevel when no filenames specified
+on command line.)  Minor bumming.  Also, starting with this version, I will
+include two binaries in the archive:  DELTREE.COM, with /Y for Microsoft
+compatibility; and DELTREE2.COM, which ignores any /Y.  If you like, delete
+DELTREE.COM and rename DELTREE2.COM.
+
+1.02a   05-23-1999    4,250 bytes                              3E1DFD07  3EFE
+
+Removes the root-safety check on removable drives.
+
+1.02    05-19-1999    4,220 bytes                              EB86016F  FE99
+
+Fixes a problem involving redirection of stdin under FreeDOS which could lock
+the computer solid.  Some code bumming.  Renamed this documentation file from
+DELTREE.DOC to DELTREE.TXT.
+
+
+For a complete history, see the end of the source file DELTREE.S.
+
+
+                                ------------
+                                DISTRIBUTION
+                                ------------
+
+This program is licensed under the terms of the Free Software Foundation's
+GNU General Public license.  You may freely distribute it under the terms of
+version 2 of that License, or at your option, any later version thereof.
+
+You should have received a copy of the GNU General Public License with this
+program, as a file named COPYING.  If you did not receive a copy of the
+License, one is available from:
+
+     Free Software Foundation, Inc.
+     59 Temple Place - Suite 330
+     Boston, MA  02111-1307, USA
+

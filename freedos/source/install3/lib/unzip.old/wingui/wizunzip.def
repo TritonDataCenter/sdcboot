@@ -1,0 +1,24 @@
+;module-definition file for Windows Unzip-- used by link.exe
+
+NAME    WizUnZip       ; application's module name
+
+DESCRIPTION 'Windows Info-ZIP Unzip 3.0 by Info-ZIP, Mike White 1995'
+
+EXETYPE      WINDOWS
+
+STUB    'WINSTUB.EXE' ; Generates error message if application
+                      ; is run without Windows
+
+;CODE can be moved in memory and discarded/reloaded
+CODE  MOVEABLE
+
+;DATA must be MULTIPLE if program can be invoked more than once
+DATA  MOVEABLE MULTIPLE
+
+HEAPSIZE  14000 ; need heap for buffers
+STACKSIZE 10000 ; need plenty of stack
+; WizUnzip walks a fine line between keeping heap+stack
+; and automatics under <64K and not. Change HEAPSIZE and STACKSIZE
+; only if you have the time to experiment.
+
+

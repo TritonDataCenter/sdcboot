@@ -1,0 +1,579 @@
+.TH SWSUBST 1 "22 May 1995"
+.\"
+.\"    This is the documentation for the SWSUBST package, a SUBST/JOIN & more
+.\"    Copyright (C) 1995  Steffen Kaiser
+.\"
+.\"    This program is free software; you can redistribute it and/or modify
+.\"    it under the terms of the GNU General Public License as published by
+.\"    the Free Software Foundation; either version 2 of the License, or
+.\"    (at your option) any later version.
+.\"
+.\"    This program is distributed in the hope that it will be useful,
+.\"    but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"    GNU General Public License for more details.
+.\"
+.\"    You should have received a copy of the GNU General Public License
+.\"    along with this program; if not, write to the Free Software
+.\"    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"  $Id: swsubst.1 1.4 1995/06/30 04:12:38 ska Exp ska $
+.SH NAME
+swsubst \- CDS manipulator
+.SH SYNOPSIS
+\fBswsubst\fP { \fBoption\fP | \fBcommand\fP } [ \fBarguments\fP ]
+
+Valid \fIoptions\fP are: \fB/h\fP, \fB/?\fP, \fB/#\fP, \fB/!\fP,
+\fB/a\fP, \fB/f\fP, \fB/k\fP, \fB/t\fP, \fB/_\fP, \fB/d\fP, \fB/x\fP=??,
+and \fB/o\fP=#.
+
+Valid \fIcommands\fP are: \fB/m\fP, \fB/c\fP, \fB/j\fP, \fB/u\fP,
+\fB/q\fP, \fB/s\fP, \fB/r\fP, \fB/l\fP, \fB/n\fP, and \fB/w\fP.
+
+Instead of the name \fIswsubst\fP the following names alter the default
+setting of \fIswsubst\fP: \fIjoin\fP, \fIsubst\fP, \fImkdir\fP,
+\fIchdir\fP, \fIquery\fP, \fIswap\fP, \fIwhich\fP, \fI-join\fP,
+\fI-mkdir\fP, \fI-chdir\fP, \fI-query\fP, \fI-swap\fP, \fIdrvlist\fP, 
+\fImcblist\fP, and \fI-which\fP.
+.SH DESCRIPTION
+\fIswsubst\fP is designed to manipulate the CDS (\fBC\fPurrent
+\fBD\fPirectory \fBS\fPtructure), nearly any information within the CDS
+is accessable. By renaming or by copying of the executable
+\fBswsubst.exe\fP to one of the above mentioned file names one command
+switch is automatically inserted right after the executable's name, e.g.
+"query /a c:+net" is equal to "swsubst /q /a c:+net". Only \fIjoin\fP
+and \fIsubst\fP have an additional meaning by restricting \fIswsubst\fP
+to conform to the DOS standard tools with the same name.
+
+Unnecessary options, or options which has no meaning with the invoked
+command, are scanned and ignored.
+
+A path specification can be logical or physical. The drive specification
+of a physical drive means that drive, which got that letter while
+booting. The logical drive specfication is the one typed on the command
+line, e.g.  after the command "SUBST C: E:\FREEDOS", the logical drive
+specification "C:" is the physical "E:", that means, if the DOS Prompt
+says: "C:\>", that is the "original" directory "E:\FREEDOS". The
+"original" drive "C" is no longer available.
+
+In order to remove that limitation a leading dash '-' indicates a physical
+path. So after "SUBST D: C:\SOURCE" the logical drive "D:" will point into
+"E:\FREEDOS\SOURCE", whereas after "SWSUBST D: -C:\SOURCE" drive "D:"
+points into "C:\SOURCE". \fINote:\fP If a physical path is not fully
+qualified, it will be qualifed according to the logical current working
+directory. 
+
+Drive specifications are also enhanced:
+.br
+Where only a drive specification is expected, a single letter acts a
+drive letter as well as a full-qualified path.
+.br
+Besides these methods, it is possible to specify a drive specification
+by the name of its driver or its volume label. Driver names are
+specified with ":*:", where "*" stands for the up to eight characters
+long name. Because one driver may handle several drives, a number can be
+specified, like ":#:*:", where "#" stands for the zero-based number and
+"*" for the driver name. \fINote:\fP Not all drivers have a name.
+.br
+The search for a volume label is activated by using "::*:" or ":-:*:", where
+"*" stands for the volume label and the optional dash '-' causes to
+temporarily release SUBST and JOIN relations.
+.br
+While scanning, the drives are searched in the order: A:, B:, ...
+If one drive does not respond, it is ignored.
+.br
+The names are case-insensitive and are matched, that the characters
+specified with "*" must lead the name, e.g.: ":1:stac:\dos" means: The
+path "\DOS" on the second drive, which driver name starts with "STAC".
+.br
+And "-:-:hd_c:\\foo\bar" means: the path "\FOO\BAR" on the physical
+drive, which volume label starts with "HD_C". \fINote:\fP The dash '-'
+within the colons ":-:" stands for: "retrieve the physical drive
+letter", whereas the dash '-' before the first colon stands for "treat
+the following path as a physical one".
+
+
+.SH OPTIONS
+.IP "special names"
+\fIjoin\fP: restricts \fIswsubst\fP to act like the standard JOIN. 
+See the help page for join.
+.br
+\fIsubst\fP: restricts \fIswsubst\fP to act like the standard SUBST. 
+See the help page for subst.
+.br
+\fImkdir\fP and \fI-mkdir\fP add the \fB/m\fP command.
+.br
+\fIchdir\fP and \fI-chdir\fP add the \fB/c\fP command.
+.br
+\fIquery\fP and \fI-query\fP add the \fB/q\fP command.
+.br
+\fIswap\fP and \fI-swap\fP add the \fB/s\fP command.
+.br
+\fIwhich\fP and \fI-which\fP add the \fB/w\fP command.
+.br
+\fI-join\fP adds the \fB/j\fP command.
+.br
+\fIdrvlist\fP adds the \fB/r\fP command.
+.br
+\fImcblist\fP adds the \fB/l\fP command.
+.br
+Any other name defaults to the \fB/u\fP command.
+
+.IP "\fB/?\fP and \fB/h\fP"
+Display a help screen.
+.IP \fB/#\fP
+Causes \fIswsubst\fP to display the statistic about JOIN'ed drives,
+when it dumps the CDS table.
+It displays the number of JOIN'ed drives according to the CDS and
+the number retrieved fromout DOS internal data structures. When these
+differ, it's possible, that the system will not work correctly.
+.br
+If this option is used twice, it cancels the effect of the previous one.
+It also cancels the effect of \fB/!\fP.
+.IP \fB/!\fP
+This option displays the JOIN'ed drive statistic under the CDS table and
+updates the internal number, if both differ.
+.br
+When this option is given twice, the second is ignored.
+.IP \fB/a\fP
+After the given command has been processed successfully, the CDS table
+should be printed. If the command itself orders to dump the CDS table,
+it is displayed only once.
+.br
+This switch also causes that all, even unused entries are displayed.
+.br
+A second \fB/a\fP option cancels the effect of the previous one.
+.IP \fB/f\fP
+There is a little space within the device drivers, where their names can
+be stored. Normally the part of the name from the frist available byte
+up to the first non-printable charchater forms the name.  If this option
+is given, the whole name is displayed, non-printable characters are
+displayed in a hexadecimal manner, like \x??, where ?? are the two
+hexadecimal numbers for that value.
+.br
+A second \fB/f\fP option cancels the effect of the previous one.
+.IP \fB/_\fP
+Normally only a subset of the 16 available flags are displayed. This
+option enables a little map, where the named flags: Networked, Physical,
+Joined, Substed, and Hidden are marked with their capital letter, if
+they are set; the others will be displayed as a plus '+'. If a flag is
+not set, its positions is overwritten by a dash '-'.
+.br
+A second \fB/_\fP cancels the effect of the previous one.
+.IP \fB/k\fP
+Causes \fIswsubst\fP to create the path if necessary, e.g. when
+invoking the command "swsubst /k f: c:\\foo\bar". \fINote:\fP This
+feature is disabled by default!
+.br
+This option cancels the effect of a previous \fB/t\fP and \fB/k\fP.
+.IP \fB/t\fP
+Causes \fIswsubst\fP to test, if the desired paths are available,
+if not the command is aborted.
+.br
+This option cancels the effect of a previous \fB/t\fP and \fB/k\fP.
+.IP \fB/d\fP
+This is not really a options and is for use only with the commands \fB/j\fP
+and \fB/u\fP and acts like a \fB/d\fP as the second argument.
+.br
+The second \fB/d\fP cancels the effect of a previous one.
+.IP \fB/o\fP=#
+This option is also for the commands \fB/u\fP and \fB/j\fP only and
+overwrites the fromout the path-argument determined backslash offset.
+\fBUse with caution!\fP
+.br
+A second option will overwrite a previous one.
+.br
+The number \fB#\fP must be within the range 0..66 and can be given in C
+notation. That means, if the number starts with either "0x" or "0X", the
+rest will be treated hexadecimal, if the number starts with "0", the
+rest will be treated octal, and if the number starts with a number from
+"1" to "9", it's treated decimal.  When \fB#\fP is zero, this option is
+disabled and the backslash offset is determined fromout the path
+argument.
+.br
+This option is needed to use network paths, which normally do not
+conform to the DOS path specifiaction.
+.br
+.IP \fB/x\fP=??
+This option specifies the drives, which are excluded while searching for
+the drive of a volume label via the enhanced "::*:" drive specification.
+.br
+Each Option cancels the effect of a previous one and \fB/x=\fP excludes
+no drive.
+.br
+This option is very useful to exclude the floppy drives, because
+scanning them with no floppy loaded uses an huge amount of time.
+.IP \fB/m\fP
+This command accepts any number of arguments, which are treated as path
+specifications. Those will be created along with the full path to them.
+.IP \fB/c\fP
+This command accepts exactly one argument. This argument is treated as a
+path specification, which is made with the \fB/k\fP command. If this was
+successful, the current working directory and the current disk will be
+set to that path.
+.IP \fB/j\fP
+This acts like \fIJOIN\fP without the restrictions.
+.br
+There are two formats:
+.br
+1) \fBdr\fP ( \fB/d\fP | \fB-\fP )
+.br
+which will release any existing SUBST or JOIN relation of the logical
+drive \fBdr\fP and is equal to "\fBdr\fP -\fBdr\fP:". In this process
+\fIswsubst\fP tries to determine the settings of this physical drive
+while boot time.
+.br
+2) \fBdr1\fP [\fB\-\fP]\fBdr2\fP:\fBpath\fP
+.br
+which will release any exising SUBST or JOIN relation of the logical
+drive \fBdr1\fP and joins it into the \fBpath\fP of drive \fBdr2\fP. The
+optional dash indicates a physical path. A logical path will be
+transformed into a physical by the DOS call \fItruename\fP. A physical
+path is only upper-cased and fully qualified. To omit this, too, a
+second dash must be placed in front the optional one. \fINote:\fP Drives
+starting with two backslashes "\\\\" are treated as networked drives and 
+preceed the path with one dash automatically.
+.br
+When DOS displays a path, it can skip some characters. This is called
+\fBbackslash offset\fP.  Because this backslash offset cannot determined
+for networked paths by \fIswsubst\fP for sure, the \fB/o\fP is offered
+and the offset can be altered manually.
+.IP \fB/u\fP
+Is equal to \fB/j\fP, except that the drive is not JOIN'ed, but SUBST'ed.
+.IP \fB/q\fP
+This command test the drive flags, if they are set according to the
+specified flags. The syntax is equal to \fBset drive flags\fP, except that the
+mode '=' and the flags "ON" and "OFF" are not allowed.
+.br
+\fIswsubst\fP returns the result to the calling process via the
+errorlevel.  An errorlevel of zero indicates, that the flags are set
+equally; an errorlevel greater than zero indicates, that they arn't.
+.IP \fB/r\fP
+This command accept up to one argument. It enables to display and search in
+the device driver chain. The chain is displayed, when the command has no
+additional argument, or when the argument is either '+' or '-'.
+.br
+The output looks like:
+.br
+NUL     
+.br
+CON      <<D>> ANSI    
+.br
+MSCD001  <<D>> SGCDU   
+.br
+EMMXXXX0 <<D>> EMM386  
+.br
+CON     
+.br
+AUX     
+.br
+PRN     
+.br
+CLOCK$  
+.br
+COM1    
+.br
+LPT1    
+.br
+LPT2    
+
+.br
+The names left of the "<< >>" are the driver names, the character within
+the "<< >>" is the MCB type, and the names right of the "<< >>" are the
+names of the file. Latter is a favour of the routine, which has been
+loaded the driver, so it might be missed. The MCB type itself was
+invented with DOS version 4.
+.br
+
+The search is activated, when the additional argument is neither '+' nor
+'-'. If the first letter is an '+', the names right of the "<< >>" are
+searched, too. For matching an leading '+' or '-' is stripped.
+.br
+The errorlevel is set to zero, if the search was successful, otherwise
+to a value greater than zero.
+.IP \fB/l\fP
+This command accept up to one argument. It enables to display and search
+in the MCB (\fBM\fPemory \fBC\fPontrol \fBB\fPlock) chain. The chain is
+displayed, when the command has no additional argument, or when the
+argument is either '+' or '-'.
+.br
+The output looks like:
+.br
+0x0264 M 0x01e4 nam=SD sys:data
+.br
+    0x0265 D 0x0048 nam=HIMEM drv=XMSXXXX0 sys:device_driver
+.br
+    0x02ae D 0x00c3 nam=EMM386 drv=EMMXXXX0 sys:device_driver
+.br
+    0x0372 F 0x0082 nam=ilegiert sys:FILES
+.br
+    0x03f5 X 0x0005 sys:FCBS
+.br
+    0x03fb B 0x0020 sys:BUFFERS
+.br
+    0x041c L 0x002c sys:LASTDRIVE
+.br
+        0x041d A 0x0000 own#0x5c3a
+.br
+0x0449 M 0x0004 nam=SC sys:code
+.br
+0x044e M 0x0003 own=COMMAND
+.br
+0x0452 M 0x00bc nam=COMMAND
+.br
+0x050f M 0x0040 nam=arameter env=COMMAND
+.br
+0x0550 M 0x001d env=SWSUBST
+.br
+0x056e M 0x020f nam=sgcdu
+.br
+0x077e M 0x03de nam=MSCDEX
+.br
+0x0b5d M 0x1aa3 nam=SWSUBST
+.br
+0x2601 Z 0x79fd sys:free sys:end_of_chain
+.br
+0x9fff M 0x1159 nam=SC sys:code
+.br
+0xb159 M 0x0107 nam=SD sys:data
+.br
+    0xb15a D 0x0106 nam=ANSI drv=CON sys:device_driver
+.br
+0xb261 M 0x0003 sys:free
+.br
+0xb265 M 0x0598 sys:free
+.br
+0xb7fe M 0x2002 nam=SC sys:code
+.br
+    0xb7ff M 0x2000 nam=SM sys:memory
+.br
+0xd801 M 0x07d5 nam=SMARTDRV
+.br
+0xdfd7 Z 0x1028 sys:free sys:end_of_chain
+.br
+
+The elements have the following meaning, from left to right:
+.br
++ The address of the MCB. It's hexadezimal, and always preceeded by
+"0x".
+.br
++ The type of the MCB. It might be a space.
+.br
++ The number of associated paragraphs. It's also always hexadecimal
+and preceeded by "0x". This number will be displayed only, if the
+argument "+" has been given.
+.br
++ A *guess*, what this MCB is for. This can be any combination of the
+following items:
+.br
+++ nam=???. The name of the loaded program, which is read directly out
+of this MCB.
+.br
+++ env=???. The name of the program, which owns this MCB as its environment.
+.br
+++ drv=???. The name of the driver, which owns this MCB.
+.br
+++ own=???. The name of the program, which owns this MCB.
+.br
+++ sys:???. This is memory controlled by the system. "???" stands for
+the type of data stored there. A special meaning has "sys:end_of_chain",
+what indicates the last MCB in the chain.
+.br
+The names need not be stored within the MCB; if there should be a name,
+these items are substituted by an item of the format: "*#0x????", where
+"*" stands for the item type (the first three characters), and "????"
+stands for the 4-digit hexadezimal value of the owner's MCB.
+.br
+The output is designed as input for programs. Therefore the elements
+contains no spaces itselfs and each MCB is printed on its own line.
+Because \fIswsubst\fP tries to determine a sub-chain within a MCB, these
+sub-chains are indented. But this can lead into false entries. This is
+shown at the beginning of the above example (s. 0x041d).
+.br
+The above example contains two MCBs marked with "sys:end_of_chain".
+This behaviour bases on the way later DOS versions manage the memory
+by dividing into two chains; one in the conventional memory, the other
+in the UMBs.
+.br
+
+The search is activated, when the additional argument is neither '+' nor
+'-'. The additional name is matched case-insensitive. Unless the first
+character is an '+', the name determined fromout the MCBs (which follows
+the "nam=" item in the MCB chain display) must only start with the
+argument. For matching an leading '+' or '-' is stripped.
+.br
+The errorlevel is set to zero, if the search was successful, otherwise
+to a value greater than zero.
+.IP \fB/s\fP
+This command requires two arguments. Both are logical drive specifications,
+which are simply swapped.
+.IP \fB/n\fP
+This command is closely related to \fB/s\fP, but it does not swap the
+entries within the CDS, but tries to swap their unit number of the 
+device driver. This requires, that both drives share the same 
+device driver. That is the only way to swap the floppies, for some
+reason.
+.br
+If there is no argument to this command, it tries to identify both
+floppies and swaps them; otherwise two arguments must be specified,
+which are to be swapped. \fICaution:\fP Better do not use this command
+on hard disks.
+.br
+This swap will not be resetted, neither by the commands \fB-\fP, \fB-\-\fP,
+and \fB/d\fP nor by directly manipulating the drive flags, e.g. "X:=OFF" or
+"X:=ON". Them must be swapped again or the computer must be rebooted.
+.IP \fB/w\fP
+This command requires one argument, treats it as a drive specification
+and translates it into the drive letter. This will returned via the
+errorlevel.
+.br
+An errorlevel between 65 (ASCII 'A') and 90 (ASCII 'Z') indicates OK and
+the drive letter itself; whereas a errorlevel of zero indicates, that
+there is no such drive; and other errorlevels indicate an error.
+
+.IP "\fBwithout any command switch\fP"
+In that case the arguments decide, what command is invoked:
+.IP "\fBwithout arguments\fP"
+This will dump the CDS table onto screen:
+
+.br
+H 0000:0000 NET .... PHYS ..... HIDDEN \\H.\A."\BC4
+.br
+        ==>.MSCD001 .<==        _NP------H-------_
+.br
+Number of JOIN'ed drives per CDS 0  per flag: 0 => seems OK
+
+.br
+Line 1 from left to right:
+.br
++ logical drive letter
+.br
++ far address of DPB
+.br
++ NETWORKED flag set
+.br
++ JOINED flag not set
+.br
++ PHYSICAL flag set
+.br
++ SUBST flag not set
+.br
++ HIDDEN flag set
+.br
++ physical path. The double quote marks the \fIbackslash offset\fP, all
+characters to the left are not visible. If the path points to "A:" or
+"B:" and the unit number has been changed, for example by command \fB/n\fP,
+the string " => X:" is appended, where 'X' stands for the possible drive
+letter this path points to.
+
+.br
+Line 2:
+.br
++ driver name. The "==>..<==" are not part of the name.
+.br
++ full set of flags. Caused by the \fB/_\fP options. The "_" surrounding
+the flags does not effect the values.
+
+.br
+Line 3:
+.br
+JOIN'ed drives statistic: both numbers are equal, so there schould be no
+error.
+
+.br
+Unless the \fB/a\fP switch is enabled, only used and the last entries are displayed.
+.IP "one argument: either \fB-\fP or \fB--\fP"
+\fB-\fP will remove all SUBST and JOIN relations by invoking the 
+command "/u dr: /d" on all such drives;
+.br
+\fB-\-\fP does the same but for all not networked drives.
+.IP "\fBset drive flags\fP"
+This requires exacly one argument in the syntax:
+\fBdr\fP:{(\fB\-+=\fP)\fBflag\fP}, where the mode \fB-\fP means: unset or
+is not set; \fB+\fP: set or is set; and \fB=\fP: set this and unset all
+other flags.
+.br
+The following flags are available: \fBOFF\fP switch the drive OFF, it is
+no more accessable; \fBON\fP switch a drive ON (This is \fINOT\fP the
+reversal of OFF, but the invoking of the command "/u dr: /d".);
+\fBPHYSICAL\fP, \fBJOIN\fP, \fBNETWORK\fP, \fBSUBST\fP, and \fBHIDDEN\fP
+refer to the associated flag; and a number between 0 and 15 refers to
+the bit.
+.br
+All flags but ON can be abbreviate down to a single letter.
+.IP "\fBin all other cases\fP"
+is the command \fB/u\fP assumed.
+.SH "SEE ALSO"
+subst, join.
+.SH "KNOWN BUGS"
+.IP \(bu
+A relative physical path is qualified by logical components.
+.IP \(bu
+Sometimes the manipulation by the non-standard possibilities fails; then
+either the system locks up or a harmless 'Cannot find *.*' error message
+beeps up.
+.IP \(bu
+To turn ON a drive is the opposit of turning it OFF. For local hard disks
+this works; for device driver driven drives sometimes; and for CD-ROMs
+seldom.
+.IP \(bu
+Works on MS-DOS compatibles only, but doesn't check, if it is.
+.IP \(bu
+This program does some error checking, but much could be valid, but locks
+the system in several cases.
+.IP \(bu
+Several commands, like  \fB/s\fP, \fB/u\fP, and \fB/j\fP, cancel the
+32 bit access and the ability to hold the permanent swap file of Microsoft
+Windows 3+ on the used drives.
+.SH EXAMPLES
+.IP "\fIswsubst /w ::HD_e:\fP"
+Checks, if an hard disk with a label starting with "HD_E" is currently
+available via a logical drive letter. The result can be checked with:
+
+.br
+swsubst /w ::hd_e:
+.br
+if errorlevel 91 goto error
+.br
+if errorlevel 90 echo Drive Z:
+.br
+if errorlevel 89 echo Drive Y:
+.br
+ ...
+.br
+if errorlevel 65 echo Drive A:
+.br
+if errorlevel 1 goto error
+.br
+if not errorlevel 1 echo No volume with label HD_E found!
+.br
+
+With 4DOS e.g.:
+
+.br
+iff %? .LE. 90 .AND. %? .GE. 65 then
+.br
+	echo Drive %@char[%?]
+.br
+elseiff errorlevel 1 then
+.br
+	echo error
+.br
+else
+.br
+	echo There is no volume with label HD_E
+.br
+endiff
+.IP "\fBswsubst /s e ::HD_e:\fP"
+Swap the drive currently accessable via the logical drive letter E: and the
+drive with the label "HD_E". Doing so can ensure, that the drive "HD_E"
+is always accessable via the drive letter E:. \fINote:\fP Have a look at the
+\fBKnown Bugs\fP section!
+.SH CONTRIBUTERS
+    Steffen Kaiser
+.br
+Ernst-Th\("almann-Stra\("se 2
+.br
+     D-09126 Iden
+.br
+ Deutschland - Germany

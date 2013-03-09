@@ -1,0 +1,80 @@
+          ; Translated by Fritz 04-14-92  corr. 10.9.1992
+
+
+          title     SERVERRS - 4DOS high-memory server error messages
+          ;
+          page      ,132                ;make wide listing
+          ;
+          comment   }
+
+          Copyright 1989, 1990, J.P. Software, All Rights Reserved
+
+          Author:  Tom Rawson  04/14/89
+
+          This module includes only an error message table.  Routines for
+          accessing this table are in ERRORMSG.ASM.
+
+          ******************************************************************
+          NOTE:  This text has been compressed and copied from SERVERRS.TXT.
+          Any changes should be made there, not here!
+          ******************************************************************
+
+          } end description
+
+          ;
+          ; Includes
+          ;
+          include   trmac.asm           ;general macros
+          .cseg     SERV                ;set server segment if not defined
+                                        ;  externally
+          include   model.inc           ;Spontaneous Assembly memory models
+          include   4dlparms.asm        ;loader parameters
+          ;
+          ;
+          .defcode  ,1                  ;set up code segment, no DGROUP
+          ;
+          assume    cs:@curseg, ds:nothing, ss:nothing, es:nothing
+          ;
+          ;
+          ; Fatal errors detected by resident part of loader
+          ;
+          public    ServErrs
+          ;
+ServErrs  label     byte
+          dw        offset ServBad      ;store offset of bad error number msg
+          ;
+          ; Translation table
+          ;
+##
+          ;
+#E_TFREE  Speicherfreigabe fehlgeschlagen
+#E_TALLOC Speicherbelegung fehlgeschlagen
+#E_QROOT  Versuch, die primÑre Shell zu verlassen
+#E_DAEMS  EMS Freigabe fehlgeschlagen 
+#E_DAXMS  XMS Freigabe fehlgeschlagen   
+#E_XMSMOV XMS Verlagerung fehlgeschlagen
+#E_EMSMAP EMS Zuordnungsfehler    
+          ;#E_EMSMSR EMS Tabelle kann nicht gespeichert/gelesen werden
+#E_SWSEEK Swapdatei suchen fehlgeschlagen
+#E_SWWRIT Swapdatei speichern fehlgeschlagen 
+#E_SWREAD Swapdatei lesen fehlgeschlagen 
+#E_SWDBAD Disk Swapdatei zerstîrt    
+#E_NOHDL  Datei Handling nicht verfÅgbar
+          ;
+          ; 4DOS signon messages
+          ;
+#244 Copyright 1988-1992  JP Software Inc. & Computer Solutions Software GmbH
+#245 Alle Rechte vorbehalten.  Vertrieb unter Lizenz von JP Software.
+          ifndef    SECURE
+#248 *** BETA TEST VERSION.  CONFIDENTIAL, NOT FOR DISTRIBUTION. ***
+          endif
+          ;
+          db        0FFh, 0             ;end of table
+          ;
+ServBad   db        BErrLen, "Illegaler Ladefehler"
+BErrLen   equ       $ - ServBad - 1
+          ;
+@curseg   ends
+          ;
+          end
+

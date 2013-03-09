@@ -1,0 +1,92 @@
+:============================================================================
+:
+:  This file builds all 4xxx products.
+:
+:  Call with:
+:
+:     %1  = Base name of make file and EXE file (eg 4DOS), max 8 chars
+:     %2  = Executable file name (.COM or .EXE)
+:     %3  = Compiler environment to load (e.g. MSC7), max 5 chars
+:     %4  = Object directory
+:     %5  = Product family
+:     %6  = Post-build brand flag (Y/N)
+:     %7& = Command line arguments (any order):
+:              R = compile release version
+:
+:============================================================================
+:
+:     Start processing, initialize variables etc.
+:
+timer /1 ON
+setlocal
+alias error = `set _err=%& %+ goto error`
+if %# lt 5 error Bad call to MKPROC
+set _basename=%@upper[%1]
+set _exename=%@upper[%2]
+set _envname=.\%@upper[%3].BTM
+set _objdir=%@upper[%4]
+set _family=%@upper[%5]
+set _pbtype=%@upper[%6]
+set _betatype=Beta
+set _language=ENGLISH
+set _release=Y
+set _beta=N
+:
+:     Set up the environment
+:
+if exist %_envname call %_envname
+:
+:     Parse command line arguments
+:
+:parse
+iff "%7" == "r" then
+:     R -- build for release
+   set _beta=N
+elseiff "%7" != "" then
+:     anything else must be the language
+   set _language=%@upper[%7]
+   echo Compiling for %_language
+else
+:     if no more arguments, quit parsing
+   goto buildit
+endiff
+shift
+goto parse
+:
+:     Do the build; if it fails, make noise and quit
+:
+:buildit
+nmake %_basename _LANGUAGE=%_language _FAMILY=%_family %@if[%_beta == Y,_BETA=Y, ] 
+set _saveerr=%?
+
+iff exist %_objdir\savedate.dat then
+   cd %_objdir
+   call ..\restdate.cmd
+   cd ..
+endiff
+
+if %_saveerr != 0 error %_basename MAKE failed
+:
+:     Do the post-build steps (branding) with pbuild.btm
+:
+
+if %_pbtype != NONE call pbuild %_pbtype %[_basename]%@if[%_family == RT,RT,] * %@if[%_beta == Y,Beta,Release] %_exename %_objdir
+:
+:     All done
+:
+timer /1
+endlocal
+quit %?
+:
+:     Error handling
+:
+:error
+echo.
+echo ERROR:  %_err
+echo.
+timer /1
+beep 1760 3 880 3
+endlocal
+quit 200
+
+

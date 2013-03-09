@@ -1,0 +1,26 @@
+$[CENTER](Improving defragmentation speed)
+$(-)
+
+In order to run defrag as fast as possible, you have to have as much 
+free memory as possible. 
+
+This means:
+- You have to unload all unneeded drivers and TSRs from memory
+- You have to configure all extended memory as XMS
+
+To do this, you can make a boot floppy with the command
+    
+c:\>sys a:
+
+And add a config.sys file with the following content:
+
+device=c:\freedos\bin\himem.sys
+
+For convenience you could add an autoexec.bat with the content:
+
+c:\freedos\bin\defrag
+
+This should ensure that you have as much free memory as possible.
+
+$(-)
+$(go to index)[0]

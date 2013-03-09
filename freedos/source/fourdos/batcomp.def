@@ -1,0 +1,9 @@
+;-------------------------------------
+; BATCOMP.DEF module definition file
+;-------------------------------------
+
+NAME BATCOMP WINDOWCOMPAT NEWFILES
+
+HEAPSIZE 1024
+STACKSIZE 6144
+

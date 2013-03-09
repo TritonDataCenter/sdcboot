@@ -1,0 +1,631 @@
+     The KEY keyboard programming language
+     =====================================
+
+  ===========================================================================
+
+   Description of the KEY keyboard programming language
+
+   Copyright (C) 2004 by Aitor SANTAMARIA_MERINO
+   aitorsm@inicia.es
+
+   Version  : 1.20
+   Last edit: 2004-03-15 (ASM)
+     (thanks to suggestions from T. Kabe)
+
+  ===========================================================================
+
+   DISCLAIMER:
+
+   THIS MATERIAL IS PROVIDED "AS IS"! USE AT YOUR OWN RISK! NO WARRANTIES,
+   NEITHER EXPRESSED NOR IMPLIED! I cannot be held responsible for any
+   problems caused by use or misuse of the software and/or information!
+
+
+
+The KEY language is a high level language for programming PC keyboards. It
+describes a large number of effects that the pressing of keys and key
+combinations of a PC keyboard may produce.
+
+
+DEFINITIONS:
+
+Physical keyboard:
+   Each possible variation of an enhanced AT (MFII) keyboard, where by
+   variation it is understood the labels physically printed in the keys.
+
+Scancode (breakcode, makecode)
+   Each key pressing produces at least one or more scancodes, that is, a byte
+   code that can be read from the keyboard controller by a software. 
+   The sequence of scancodes is used to univocally determine the key that has
+   been pressed.
+   There are two types of scancodes, breakcodes and makecodes. A makecode is
+   produced when a key is pressed, and a breakcode is produced when the key is
+   released. The breakcode and makecode produced by the same key have the lower
+   order 7 bits equal, whereas the makecode has the bit 7 clear, and the
+   breakcode has this bit set to 1. Thus, makecodes range 1-127, whereas
+   breakcodes range 129-255, and the breakcode and makecode for the same key
+   differ in 128.
+   Most keys produce a single scancode (break or make) upon a key pressing or
+   releasing. However, some keys (added in MFII keyboards, respect to the old
+   PC style keyboards) send the scancode E0h (224) before the proper breakcode
+   or makecode. These keys will be called E0-prefixed.
+   Finally, some few keys behave oddly. Exemply gratia, pressing and releasing
+   the PAUSE key produces the scancode E1h (225) before a key combination that
+   simulates the pressing of Control+NumLock.
+
+Character:
+   Pressing a single key may have several effects, being the most usual the
+   production of a (character,scancode) pair that is stored in a character
+   buffer, that may be queried by upper layer applications. We shall use the
+   term character to denote a byte that identifies a character in the
+   current codepage table.
+   
+Command:
+   A key may produce a character. For the contrary, pressing a key may as well
+   trigger other special effects, such as invoking OS calls, modifying the
+   internal status of the software, toggling shifts, which will be
+   called COMMANDS of the given software.
+
+Mode:
+   A family of assignments of scancodes to 1-byte characters or commands of a
+   same physical keyboard, so that a change in mode causes that a single key 
+   may be producing two different character patterns in the screen.
+   For example, the existence of a Cyrillic and Latin mode on Russian layouts.
+
+Codepage awareness:
+   A keyboard driver is a codepage aware device, because upon a change of the
+   display device codepage, the codes for the same character pattern may
+   change.
+
+Submapping:
+   Each of the possibly assignment tables (lookup tables) of scancodes to
+   1-byte characters. Different submappings exist because of the existence of
+   Modes, and because of the codepage awareness of a keyboard driver. Each
+   submapping has an associated codepage number, but it does not need to be
+   unique, and two different submappings may well have the same codepage ID,
+   for example if they belong to two different modes.
+   A submapping is often given as a table, where blank entries mean that the
+   submapping does not define a character or command (see below), that we shall
+   express as 'not found'.
+   This table may usually only cover changes respect to other existing mapping.
+
+Planes:
+   For each submapping, the behaviour of a key may be multiplexed by using
+   different PLANES, so that the number of characters that may be produced is
+   far larger than the number of keys. Planes are differentiated of each other
+   depending of the status of activity of certain other modifier keys, which
+   status is tracked by the driver and/or BIOS. Typical keys of this type are
+   SHIFT or CapsLock.
+
+General and particular submappings:
+   There will be a division between one GENERAL SUBMAPPING, and the rest, a
+   list or PARTICULAR SUBMAPPINGS, of which only one of them will be active at
+   a time. 
+   A new scancode/plane triggered by the keyboard controller is checked against
+   the active particular submapping first. If the scancode/plane is NOT found,
+   then it is checked against the general submapping.
+   If it is neither found there, then the keyboard driver functioning may
+   prescribe how to deal with that.
+   Note that in submapping tables, a particular submapping assignation of a
+   scancode/plane pair OVERRIDES the assignation of the general table.
+
+Diacritic sequence:
+   To enlarge the number of characters that can be produced even more, some of
+   them (often diacritics) may be produced as the result of the pressing of two
+   different keys. The first key is said to trigger the start of an accented
+   sequence command, and it is often called a Dead Key, because it produces not
+   visible character.
+
+string:
+   Some drivers may offer the ability to produce a whole array of
+   (character,scancode) pairs, instead of a single one. Such array will be
+   called a string.
+
+
+
+1.- INTRODUCTION TO A KEYBOARD DESCRIPTION
+
+
+A keyboard description must, roughly speaking, define the effect of the
+pressing or releasing one of the keys of the keyboard, where this effect can
+be the release of a (scancode,character) pair, or the execution of a
+command.
+
+Note however that the effect of that key may be conditioned by several factors:
+
+1) The currently active PLANE (this is, the status of other keys or indicators,
+such as the status of CapsLock or the status of the Control key)
+
+2) The presence of unresolved diacritic sequences
+
+3) the currently active submapping (which depends on the codepage being used
+and the mode of operation)
+
+As a first approximation, the keyboard description defines the effect of each
+possible (PLANE,SCACODE) pair. As the total number of possible planes grows
+exponentially with the number of admissible MODIFIER KEYS, and most of those
+combinations are after all useless, the description must contain a listing of
+the planes that will be effectively used in these combinations (for example, if
+the descriptor defines the behaviour of the single pressing of keys, and of the
+shift+key and control+key combinations).
+
+The effect of such key pressing will be obtained from a KEY LOOKUP TABLE, where
+for every scancode and admissible plane, one can find its effect.
+
+The effect of changing mode (e.g. cyrillic=>latin) or codepage drastically
+alters the behaviour of the keyboard, thus different tables will be used for
+each SUBMAPPINGs.
+
+Finally, there are a couple of particular behaviours to be also collected in
+such description.
+
+(1) Modifier keys (control, shift, capslock,...) are used to define planes, but
+do not produce a visible effect on their own.
+However, there are some keys that have been traditionally assigned behaviour
+modification capabilities, but that have different features from the modifier
+keys mentioned above:
+
+   (1a) The effect is produced after the key is pressed and released (unlike
+        shift or control)
+
+   (1b) The pressing of that key does not alter any LED in the keyboard
+        (unlike CapsLock and NumLock). For this reason, the effect of pressing
+        such keys is not visible at all, and have been called DEADKEYS.
+        (Although in fact keyboard drivers have been tracking it)
+
+   (1c) The behaviour modification lasts only for the next character being
+        pressed, and then vanishes
+
+   (1d) BIOS does not track this effect
+
+These modifier keys are normally used to produce compound characters
+(diacritics), thus will be called Diacritic starters (rather than DeadKeys),
+where the key itself is labelled as an graphic modiphier (such as '), next
+character released is composed (if possible) with this character (for example,
+for 'e' becomes the character 'e' with the accented mark ' over it. For most of
+the rest, the character can't be composed (is not accepted in the current
+character set), and it is said that the sequence is aborted (usually two
+characters are produced, the individual initial character before the the second
+character that couldn't be composed).
+
+Also the amount of characters that can be composed is relatively small, and
+thus this deserves a special treatment by a keyboard descriptor, by giving a
+list of possible composable characters.
+
+
+(2) Sometimes it is desirable that not only a single (scancode,character) pair
+is produced, but rather a finte array of such pairs, that will be called
+STRING.
+
+As the amount of STRINGS is usually smaller, they will be considered as a
+special case, and needing a special consideration.
+
+To sum up, a keyboard description will be formed by a set of different data
+segments, called SECTIONS, that will contain informatino of different kinds:
+
+(a) Key look-up tables
+
+(b) Plane descriptors
+
+(c) Submapping descriptors
+
+(d) Diacritic sequences
+
+(e) Strings
+
+So far the amount of information that a keyboard descriptor will contain has
+been sketched. It is now convenient to separate the information in two
+categories: data sections and logical sections.
+
+DATA SECTIONS have contain information which is codepage dependant, and thus
+the section in use must change upon a codepage (most generally submapping)
+change. For this reason, more than one of these sections may appear on the
+file.
+
+The characters to be produced by a key combination may reside in different
+locations in different character sets (codepages), thus key look-up tables are
+data sections). The same applies for diacritic sequences and strings.
+
+LOGICAL SECTIONS contain static information which remains valid for the whole
+keyboard description. For this reason,  they appear only once (if any) in the
+file.
+
+The layout of the different admissible submappings is clearly static, and for
+simplicity, the same plane definitions will be used for the whole keyboard
+descriptor (thus being static).
+
+A physical keyboard descriptor in KEY lenguage is very closely related to the
+Keyboard Control Block (KeybCB), which is a BINARY descriptor of a physical
+keyboard. In fact, COMPILERS that binaryze a descriptor in the KEY language
+into a KeybCB can be easily designed.
+
+Finally, the data in the descriptor file will be line-oriented. The begining o
+ a new section is marked by a section identifier in sware brackets (as for
+example [PLANES]). 
+
+The sections may appear in any order. 
+
+A line starting with the character ';' is interpretated as a comment, and will
+be ignored.
+
+In fact, each of the sections contains descriptors of different nature, thus we
+may consider that there is a "sublanguage" for each of the sections.
+
+
+
+2.- TOKENS
+
+
+Through all the sections there will be the following three tokens: identifiers,
+numbers and simple characters.
+
+
+2.1.- IDENTIFIER
+
+A identifier is a finite sequence of symbols
+
+a-z
+A-Z
+0-9
+_
+
+that will be used to label the data sequences.
+
+
+2.2.- NUMBERS
+
+By a number we shall mean a sequence of digits 0-9 representing a decimal
+number at most sized one byte (that is, 0 to 255) or one word (that is, 0 to
+65535).
+
+
+2.3.- CHARACTER
+
+A character token is used to represent a single-byte character. Although the
+notion of character is in theory codepage dependent, we are always actually
+more interested in its position in certain codepage. 
+
+Whereas a character is usually represented by its own symbol embedded in the
+descriptor (except characters '#' and '!'), at times we would prefer to
+introduce the character directly by its position number like this:
+
+  #n
+
+where n is a byte number. The characters '#' and '!' are represented by
+
+  ##
+
+and
+
+  #!
+
+respectively.
+
+
+
+3.- THE LOGICAL SECTIONS
+
+There will be three possible logical sections: the GENERAL section, the 
+SUBMAPPING section and the PLANES section. The three of them are started with
+the name of the logical section between brackets.
+
+
+3.1.- The [GENERAL] section
+
+The General section is intended as a list of options that may be used to
+extend the KEY description by the software using the descriptions. For example,
+compilers to KeybCBs may use this section to add compiling specific options.
+The recommended format is
+
+<OptionName>=<OptionValue>
+
+although other forms may be admitted if they are unambiguously defined (e.g.
+they do not start with the '[' character).
+
+The KEY language only defines a single option (that must be unique), which
+syntax is
+
+DecimalChar=<character>
+
+that defines the character that should be used by Shift+WhiteDel (or WhiteDel
+with NumLock active), provided that this key/combination is not remaped.
+
+Example:
+
+[General]
+DecimalChar=,
+
+Replaces the usual decimal char with the , character
+
+
+3.2.- The [PLANES] section
+
+This section is used to describe how to identify the planes that will be used
+in ALL the look-up tables present in the descriptor.
+
+The following are PLANE keywords:
+
+
+Family Left key    Right key    Both keys
+=========================================
+1      LShift      RShift       Shift
+       LAlt        AltGr        Alt
+       LCtrl       RCtrl        Ctrl
+------------------------------------------
+2      ScrollLock
+       NumLock
+       CapsLock
+       KanaLock
+------------------------------------------
+3      E0
+------------------------------------------
+4      UserKey#   (# = 1..16)
+------------------------------------------
+
+A descriptor may define 2 or more planes, where the two first planes are
+mandatory and implicitely defined, and the rest of them are defined in the
+[PLANES] section.
+
+Every line in the [PLANES] section is a plane descriptor, and consists of two
+groups of zero or more plane keywords, separated by a vertical bar (|). The
+keywords before the bar are those modifier keys that must be ACTIVE, and those
+after the bar are modifier keys that must be INACTIVE, for the plane conditions
+to be satisfied. If no keywords are defined after the vertical bar, it can be
+omitted.
+
+Respect to the meaning of 'ACTIVE', for the first family of keywords, ACTIVE
+means pressed, for the second and fourth it means ON, and for the third, it means
+that E0 prefix has been sent by the keyboard driver.
+
+BIOS does not track the UserKeys of family 4, as this is something left to the
+software using the descriptor. The change of status of such keys can be
+introduced using commands.
+
+The first of the two implicit planes is the NO-KEY plane, which is intended for
+when no modifier is active. Exceptionally, if the keywords NumLock, CapsLock or
+ScrollLock are not used to define ANY plane in the [PLANES] section, then the
+status of the key NumLock, CapsLock or ScrollLock, respectively, is ignored
+when determining if this plane is active.
+
+The second of the two implicit planes is exactly equal, except that it requires
+that any of the Shift keys has been pressed, and will be called the shift plane.
+
+Plane computation is sequential from the first two implicit planes, and then
+through the planes in the [PLANES] section downwards. This means that if we
+defined
+
+[PLANES]
+Alt
+Ctrl
+
+then the combination Ctrl+Alt+Key is considered to belong to the third plane
+("Alt"), because the single condition "Alt is pressed" is fullfilled. To make
+it belong to the fourth plane, encode it like
+
+[PLANES]
+Alt | Ctrl
+Ctrl
+
+Example:
+
+[PLANES]
+AltGr | Ctrl
+Ctrl  | Alt
+Alt
+
+Defines 5 planes: the no_key and the shift implicit planes, a plane active when
+AltGr (or AltGr+Alt) is pressed, a fourth one when either Control (but no Alt)
+is pressed, and a last one when either alt is pressed.
+
+
+3.3.- The [SUBMAPPINGS] section
+
+The submappings section defines the different submappings admitted by the
+descriptor.
+
+The general format is
+
+    <codepage>  <keytable_name>  <diacrit_name>   <stringtab_name>
+
+where
+   codepage       codepage (a word number)in which the submapping works
+                  0  means that the submapping can work well under ANY codepage
+
+   keytable_name  identifier of a table look-up data section to be used, or '-'
+                  '-'  means if no table look-up is used
+
+   diacritic_name identifier of a diacritic data section to be used, or '-'
+                  '-'  means if no diacritic sequences are used
+
+   stringtab_name identifier of a string data section to be used, or '-'
+                  '-'  means if no strings are used
+
+trailing '-'s can be removed.
+
+Among the different submappings defined, the first one is called the GENERAL
+submapping, whereas the rest will be called PARTICULAR submappings.
+Only one of the particular submappings will be called the ACTIVE submapping.
+Which one is active at every moment depends on the software using the
+descriptors.
+
+The behaviour respect to the different submappings should be as follows:
+
+(1) When a character is pressed, and the current plane is computed, the table
+look-up table for the ACTIVE submapping is queried. If no character is found
+there, then the look-up table for the GENERAL submapping is queried.
+
+(2) When a Diacritic sequence or String is started, it is sought in the ACTIVE
+submapping first. If the active submapping does not define diacritic sequences
+at all, then those of the GENERAL are sought.
+
+Note that the behaviour is different so that, if the ACTIVE submapping defines
+strings, then the GENERAL submapping will never be checked, even if the
+requested string number was not found in the list of strings of the active
+submapping.
+
+
+Example:
+
+[SUBMAPPINGS]
+0    table1
+437  table1   diac1
+437  table2   diac1
+850  table3   diac2  strings1
+
+
+4.- THE DATA SECTIONS
+
+AS we mentioned above, there are three types of data sections: table look-ups,
+diacritic sequences and strings. Any data section header must also include an
+identifier that labels the section, separated by : from the section name.
+
+Identifiers must be unique across data sections. Two data sections of different
+kind may neither share an identifier.
+
+4.1.- TABLE LOOK-UP
+
+A table look-up must define a way to determine the effect of pressing or
+releasing certain key being certain plane active. The section is started with
+
+[KEYS:<keytable_name>]
+
+The effect of such key pressing can be either a character to be released, or
+certain special effect to happen, which will be called a COMMAND for the
+keyboard driver. Such commands will be defined by
+
+      !number
+
+where number is a byte number.
+
+Thus, we will define a TABLE_CHARACTER as either a character token (as defined
+above) or a command.
+
+Finally, we can consider the case in which a change of scancode is desired as
+well. In order to do this, we define a TABLE_PAIR as a expression with the
+syntax
+
+      number/table_character
+
+where number is the new scancode, and the second component is the desired
+table_character.
+
+At this point we can introduce the table look-up as a set of lines leaded by a
+scancode, and which defines the effect of that scancode for the different
+planes. More precisely, the format is given by
+
+ [R]number[flags]  t1  [t2] ...
+
+where the number is the scancode number. The optional R distinguishes the
+makecode (when absent) from the breakcode (when present). The admissible
+flags are
+
+  Flag   Meaning
+  ======================================================================
+  C      The key is affected by the CapsLock status, and planes 1 and 2
+         are automatically swapped if CapsLock is ON
+  N      The key is affected by the NumLock status, and planes 1 and 2
+         are automatically swapped if NumLock is ON
+  X      THe key must be locked and have no effect at all. t1, t2, ...
+         will be ignored and may be omitted
+  S      Determines wether the effect of pressing the key is given by
+         table_pairs (when present), so that scancodes may be modified,
+         or by table_characters, which scancode will be the same number
+         that leads the line
+  ======================================================================
+
+If a scancode is not specified, then it is considered not present in the table.
+
+Any number of effects t1, t2, ... may be specified, whereas if for a plane the
+effect is not present, then the scancode/plane pair is considered not present
+(undefined) by the table. However, if the flags C or N are used, then at least
+TWO of those effects t1 and t2 are mandatory.
+
+
+Example:
+
+All the look-up tables for all submappins of the Spanish layout should contain
+a line like this:
+
+  39C  ñ   Ñ
+
+that identifies the key with scancode 39 as the key that produces the 'Ñ'
+letter (and that is also affected by the CapsLock status).
+
+
+4.2.- DIACRITIC SECTION
+
+A diacritic section defines a set of diacritic pairs. It starts with
+
+[DIACRITICS:<diacrit_name>]
+
+The section describes the pairs of diacritics ordered by the ortographic sign.
+It is customary that certain scancode/plane pair is devoted to start the
+diacritic sequence, and the software using this descriptor may prescript the
+ussage of certain commands (see section 4.1) to start one of such diacritic
+sequences.
+
+The format of each line is
+
+o  P1 [P2] ...
+
+Where o is the single ortographic sign, and Pi are pairs of character tokens
+(not separated by blanks, but one after the other) that represent the letter
+before and after being affected by the diacritic.
+
+
+4.3.- STRINGS SECTION
+
+A string section declares a list of strings (in different lines) that may be
+output by the software upon certain scancode/plane pair, usually started by
+COMMANDS (see section 4.1). The section must start with
+
+[STRINGS:<stringtab_name>]
+
+A string is a finite sequence of STRING PAIRS, as for every pair one must 
+define both the scancode and character to be used.
+
+The most direct way to write a pair is
+
+\K{S,C}
+
+where S and C are, respectively, the scancode and character. We also have the
+pairs:
+
+\S{s}   equivalent to \K{s,0}
+\C{c}   equivalent to \k{0,c}
+
+A single character different from '\' of order n in the codepage table is
+identified with \C{n}. In other words, ASCII messages (not including \) can be
+introduced as strings, where the scancode output will always be 0 for all of
+them.
+
+The character '\' must be introduced like
+
+\\
+
+And finally, there are a set of other predefined symbols that introduce the
+scancode/character pair that simulates the pressing of a key. Namely, we have
+
+\n         For the carriage return
+\[key]     where key is one of
+
+              HOME      END      PGUP     PGDN      INS
+              UP        DOWN     LEFT     RIGHT     DEL
+
+              Fx        CFx      AFx      SFx
+
+In the last group, x is a number 1-12, and they represent the function keys,
+possibly modified by other key. Thus
+
+\[F2]    stands for the key F2
+\[CF2]   stands for the combination control+F2
+\[AF2]   stands for the combination alt+F2
+\[SF2]   stands for the combination shift+F2
+
+Example:
+
+This is a example of \nmessage in two lines
+
+ _____________________
+ END OF DOCUMENT
+ _____________________

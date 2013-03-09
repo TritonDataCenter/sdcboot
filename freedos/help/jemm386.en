@@ -1,0 +1,66 @@
+JEMM386
+
+JEMM386 is a DOS memory manager, developed by Japheth
+and based on EMM386 ( C't magazine, Tom Ehlert, Michael Devore),
+as well as the FDXMS memory driver by Martin Stromberg.
+
+The driver provides UMBs and EMS to optimize your system
+and provide necessary resources to programs.
+
+
+JEMM386 requires a XMS driver to be loaded first, for example HIMEMX.
+Alternative options are XMGR, HIMEMX, FDXMS or FDXMS286
+
+
+Should you prefer only using a single driver,
+use JEMMEX.EXE in CONFIG.SYS.
+
+
+To check the various amounts of memory provided and used
+by your system, please run MEM /C /P or MEM /C /N
+
+It is recommended to read the documentation coming with this
+driver as it can prevent your DOS from getting to the 
+commandline if used with the wrong options.
+
+
+---------------------------------------------------------
+
+Usage example #1 (config.sys): 
+DEVICE=C:\FDOS\JEMMEX.EXE X=TEST
+DOS=HIGH,UMB
+DOSDATA=UMB  (FreeDOS kernel specific)
+
+Usage example #2 (config.sys):
+DEVICE=C:\FDOS\HIMEMX.EXE
+DEVICE=C:\FDOS\JEMM386.EXE X=TEST
+DOS=HIGH,UMB
+DOSDATA=UMB (FreeDOS kernel specific)
+
+Usage example #3 (commandline):
+JEMMEX LOAD
+
+Usage example #4 (commandline):
+JEMMEX LOAD NOEMS
+
+---------------------------------------------------------
+
+Features:
+* Provides up to 32MB of Expanded Memory (EMS)
+* Provides UMBs to load programs high 
+* Provides VCPI, VDS etc
+* Fast system restart 
+*
+
+Supported:
+* 386 systems with at least 2MB memory
+* up to 4GB of system memory
+* 
+
+Not supported:
+* pre-386 systems?
+*
+
+Requirements:
+* 386 processor or newer with coprocessor 
+*

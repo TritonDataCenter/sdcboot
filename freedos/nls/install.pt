@@ -1,0 +1,29 @@
+0.0:Instalando a versão %s, copyright (c) 1998-2000 Jim Hall\n
+0.1:Este é um software livre, e você é bem-vindo para redistribui-lo\n
+0.2:sob determinadas condições; veja o arquivo COPYING para detalhes.\n
+0.3:A instalação deste não possui NEHUMA GARANTIA\n
+0.4:A instalação do programa foi terminada com sucesso.\n
+0.5:Haviam %u erros e %u avisos erros não fatais\n
+1.0:Pressione qualquer tecla para continuar
+1.1:Qual a localização dos arquivos a serem instalados? (instalando de?)
+1.2:Onde os arquivos deverão ser instalados? (instalando para?)
+2.0:Não
+2.1:Sim
+2.2:Você quer instalar este grupo de discos?
+2.3:Continuar instalando este disco?
+2.4:Instalar este pacote?
+3.0:Disco número:
+3.1:Intale em top-level
+3.2:Instalando a série:
+3.3:Pacote:
+3.4:Os arquivos para instalar este disco não foram encontrados!
+3.5:Instalando este disco.
+3.6:ERRO! Não instalou o pacote REQUERIDO.
+3.7:AVISO! Não instalou o pacote OPCIONAL.
+3.8:Você não tem o disco correto no drive. 
+3.9:Verifique novamente se é o disco correto e tente novamente.
+3.10:Se você estiver instalando outra série de discos, por favor insira
+3.11:o disco #1 da série seguinte no drive.
+4.0:OPCIONAIS
+4.1:REQUERIDOS
+4.2:IGNORADOS

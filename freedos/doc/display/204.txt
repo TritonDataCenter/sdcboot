@@ -1,0 +1,266 @@
+Expanding the hardware capabilities of DISPLAY/PRINTER
+======================================================
+
+  ======================================================================
+  NOTE: THIS FILE IS OUTDATED. Please contact the author if you with an
+  updated version (aitor.sm@gmail.com)
+  ======================================================================
+
+FreeDOS DISPLAY.SYS and PRINTER.SYS have some routines which are dependant on
+the hardware type that they work on. This hardware is selected in the first
+parameter of the commandline.
+For example:
+
+  DEVICE=C:\FDOS\DISPLAY.SYS  CON=(EGA,437,1)
+
+specifies a hardware type "EGA".
+
+
+Currently, there are five hardware types implemented in DISPLAY.SYS, and none
+in PRINTER.SYS. The types in DISPLAY.SYS in fact refer to the same
+producedures, but define different "subfont" sizes, which helps you save some
+RAM. You can also do this specifying the number of subfonts (ready in DISPLAY
+0.09, to come very soon). These will come ready on DISPLAY.SYS 0.09.
+
+They are
+
+  EGA        (automatic detection of number of subfonts, depending whether
+              you use EGA or VGA)
+
+  EGA 8      (these two are equivalent to DISPLAY.SYS CON=(EGA,437,(1,1)) )
+  LCD
+
+  EGA 14     (this is equivalent to  DISPLAY.SYS CON=(EGA,437,(1,2)) )
+
+  VGA        (this is equivalent to  DISPLAY.SYS CON=(EGA,437,(1,3)) )
+
+
+The specific procedures for EGA, as well as the Int10h handler of DISPLAY.SYS,
+are the original code of DISPLAY by Ilya V. Vasilyev (all the other stuff is
+what I have added).
+
+The notes below explain how to donate code to DISPLAY.SYS and PRINTER.SYS if
+you want to enlarge the capabilities with
+
+
+
+How can I contribute a new hardware type?
+=========================================
+
+In order to contribute a new type, the following structure is required:
+
+    HwName     DB  "xxxxxxxx"
+    CPHwName   DB  "xxxxxxxx"
+    InitP      DW
+    InitParam  DW
+
+HwName:     0-padded hardware name (such as "EGA") as it should appear in the
+            DISPLAY.SYS or PRINTER.SYS command line
+CPHwName:   space (#32)-padded name of the hardware to be identified in the
+            codepage entry header of the CPI files
+InitP:      Near pointer to the hardware device initialisation procedure
+InitParam:  A param to be passed to the previous procedure, so that the same
+            procedure can be used for different table entries
+
+
+Appart from the table, you need to create three procedures:
+
+HWInit    (NON-RESIDENT)
+          A procedure to be executed when DISPLAY is loaded, that detects the
+          hardware and initialises the required data
+SwSelect  (RESIDENT)
+          A procedure to load certain codepage whose data resides in certain
+          buffer supplied by the core component
+HwSelect  (RESIDENT)
+          A procedure to load certain codepage whose data is determined by
+          hardware
+
+Please send to me two files, written in NASM language, and please use no names
+for each field in the table, and a specific name for each procedure. A first
+file should contain the table above filled as appropriate, and the HWInit
+procedure. The second file should contain the two resident procedures (and any
+other resident procedure or variable that is required).
+
+
+
+What procedures can I call?
+===========================
+
+Respect to procedures, in HwInit you can use ANY procedure throuhgout the file.
+In particular, you may find useful to use these:
+
+OutStrDX:  write a string (which ends in '$').
+  IN:  DX: near address of the '$'-terminated string
+  OUT: -
+
+WriteNumber:  writes a number in decimal
+  IN:  AX: a number under 1000 to be displayed (3 digits at most)
+  OUT: -
+  NOTES:  the "SyntaxErrorStr" string space is reused, and this string can no
+          longer be used after this procedure is called
+
+
+In the resident routines, you can only call resident procedures (there's 
+nothing else interesting in the driver that you may want to call).
+
+In DISPLAY.SYS ONLY: you should make calls to the old Int10h handler by using
+
+          call    FAR [cs:dOld10]
+
+Of course, you can call any resident routine from HwInit, but the converse is
+not true.
+
+
+
+What variables can/should I use?
+================================
+
+When designing your routines, there is a number of variables that you can use,
+and even a number of variables that you are expected to fill. See the table
+below.
+
+  Flags of the variable
+  ---------------------
+  FLAG   Meaning
+  ------------------------------------------------------------------------
+  +      You should mandatorily fill in this variable in HwInit with the
+         appropriate value, or else DISPLAY/PRINTER will not work
+  *      Non-resident variables that you can optionally fill in, if the
+         information is available
+  &      Resident variable that you can ONLY write on the HwInit procedure
+         (but not in the resident routines)
+  ------------------------------------------------------------------------
+
+
+Useable variables
+--------------------------------------------------------------------------
+VarName          Flag  Type  Meaning
+--------------------------------------------------------------------------
+pRefreshHWcp      +    WORD  Near pointer to the software codepage
+                             selection routine
+pRefreshSWcp      +    WORD  Near pointer to the hardware codepage
+                             selection routine
+wMinFontSize      *    WORD  (DISPLAY.SYS ONLY) minimum number of subfonts
+                             that DISPLAY.SYS should admit. If the user
+                             specifies less than this value, then user's
+                             option will be ignored, and this variable will
+                             be used
+bMaxHWcpNumber    *    BYTE  Maximum number of hardware hardcoded codepages
+bAdapter          +    BYTE  (DISPLAY.SYS ONLY) Adapter type (or compatible),
+                             which is used by the DISPLAY int10h handler in
+                             order to provide the appropriate font info (for
+                             example, does not offer the 8x16 font if adapter
+                             is NOT VGA). See the constants below
+wTableSize        +    WORD  (PRINTER.SYS ONLY) This variable exists in both
+                             drivers, but you only have to fill in it in
+                             PRINTER.SYS. As in PRINTER there are no subfonts,
+                             you have to specify a maximum size of the font
+                             info, so that PRINTER can reserve required RAM
+                             buffers of the correct size to store the font
+                             info.
+                             DISPLAY will automatically override any value
+                             you give with a value based on the number of
+                             subfonts.
+wHardCPs          &    WORD  You can specify here ONE default hardware
+                             codepage for the device on startup (but leave it
+                             0 if it is unknown) 
+--------------------------------------------------------------------------
+
+
+Adapter type constants  (for bAdapter)
+----------------------
+Adapter type    Value
+---------------------
+NO               0
+MDA              2
+HGA              4
+CGA              6
+EGA              8
+MCGA            10
+VGA             12
+VESA            14
+
+
+
+
+What are the interfaces to the procedures?
+==========================================
+
+In this section it is described the interfaces of each of the three
+procedures, and the registers they may use. Please note that there isn't 
+much stack space so you shouldn't abuse the stack.
+
+
+HwInit
+------
+Detects the hardware device, initialises the device and some variables.
+  IN:  AX: the parameter stored in the device structure above
+  OUT: CFlag=0  on success
+       CFlag=1  on failure, if the device was not found, or couldn't be
+                initialised. In such case:
+                DX: near (relative to current CS) pointer to a string
+                    explaining the error (and ending in '$')
+  REGISTERS:  You must preserve SI if you use it, but can use the other
+              registers freely (except SS, SP, BP)
+
+RefreshHWcp
+-----------
+Refreshes certain hardware (hardcoded) codepage, if possible
+  IN:  CX: the number of hardware codepage to be restored, starting on 0
+  OUT: CFlag set on error, clear on success
+  REGISTERS: AX,CX,DS,ES,DI can be freely used, the others must be
+             preserved
+
+
+RefreshSWcp
+-----------
+Sets a user defined codepage from user loaded font info
+  IN:  AL: screen mode (as set by the functions ah=00h, ax=4f02h of the
+           interrupt 10h), -1 if mode is unknown
+  OUT: CFlag set on error, clear on success
+  REGISTERS: AX,CX,DS,ES,DI can be freely used, the others must be
+             preserved
+  NOTE: The font information about the font to be set is stored in
+        the following variables, that must be used:
+             bFont8x8:    times 2048 DB      ; space for the 8x8 font
+             bFont8x14:   times 3584 DB      ; space for the 8x14 font
+             bFont8x16:   times 4096 DB      ; space for the 8x16 font
+
+
+
+when are these routines to be inserted?
+=======================================
+
+When you have them ready, please mail them to me to (aitorsm -AT- inicia.es),
+and they will be launched with the next version of DISPLAY.SYS and PRINTER.SYS
+starting on version 0.09, which at the moment in which these notes are
+written, is not yet ready.
+
+
+
+are you going to write more of these routines?
+==============================================
+
+Personally I am fully satisfied with having support for EGA/VGA displays, and
+am not planning to write any more hardware support, although you can easily
+write your own routines, that can be easily attached to the current
+DISPLAY/PRINTER scheme.
+
+However, as there's no PRINTER.SYS hardware management routine, I would
+consider writing one for PRINTER.SYS *provided that*:
+(a) You plan to use it, and you can show you really need it
+(b) You have CPI fonts to use with it, which the FreeDOS project can
+    benefit from
+(c) Someone (maybe me, maybe you) has enough technical information about
+    the routines, because I have very little information about it...
+
+
+===================
+  Aitor SANTAMARIA MERINO
+  The FreeDOS Project, 7th of AUGUST, 2003
+
+Version 1.1: 15th of September, 2003
+  (thanks to Martin Stromberg)
+
+version 1.2: 11th of October, 2003
+  (thanks to Martin Stromberg)

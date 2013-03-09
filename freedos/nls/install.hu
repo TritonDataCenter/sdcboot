@@ -1,0 +1,28 @@
+0.0:Telepit” verzi¢: %s, Copyright (C) 1998-2000 Jim Hall
+0.1:Ez szabad szoftver, bizonyos felt‚telek mellett szabadon
+0.2:terjeszthet”; r‚szletek a COPYING  llom nyban.
+0.3:A telep¡t”h”z NINCS SEMMIFLE GARANCIA
+0.4:A telep¡t” sikeresen lefutott.
+0.5:”sszesen %u hiba ‚s %u nem v‚gzetes figyelmeztet‚s.
+1.0:Nyomjon le egy gombot a folytat shoz
+1.1:Hol van a telep¡t”k‚szlet? (mi a forr sk”nyvt r?)
+1.2:Hov  t”rt‚njen a telep¡t‚s? (mi a c‚lk”nyvt r?)
+2.0:nem
+2.1:igen
+2.2:Szeretn‚ ezt a lemezk‚szletet is telep¡teni?
+2.3:Folytassam ennek a lemeznek a telep¡t‚s‚t?
+2.4:Telep¡tsem ezt a csomagot?
+3.0:Lemezk‚szlet: 
+3.2:K”vetkez” telep¡t‚se: 
+3.3:Csomag: 
+3.4:Nem tal lom a telep¡t”lemezhez val¢ adat llom nyt!
+3.5:Az aktu lis lemezk‚szlet telep¡t‚se k‚sz.
+3.6:HIBA!  Nem sikerlt egy SZKSGES csomag telep¡t‚se.
+3.7:FIGYELEM!  Nem sikerlt egy OPCION LIS csomag telep¡t‚se..
+3.8:Val¢sz¡nleg nem a megfelel” lemez van a meghajt¢ban.
+3.9:Ellen”rizze, hogy a helyes lemezt haszn lja, majd pr¢b lja £jra.
+3.10:Ha tov bbi lemezk‚szletet is telep¡teni szeretne, helyezze be
+3.11:a k¡v nt lemezk‚szlet 1-es lemez‚t a meghajt¢ba.
+4.0:OPCION LIS
+4.1:SZKSGES
+4.2:KIHAGYVA

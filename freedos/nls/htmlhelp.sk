@@ -1,0 +1,97 @@
+#### This file is part of the FreeDOS HTML Help Viewer
+#### and is licensed under its terms.
+
+# Program Usage Screen Strings
+1.0:FreeDOS HTML Nápoveda
+1.1:Základné vo¾by
+1.2:Zobraz nápovedu na tejto téme 
+1.3:Zobraz túto správu
+1.4:Vynú monochromatickı display
+1.5:Poui "fancy" farebnú schému
+1.6:Poui ASCII namiesto rozšírenıch znakov
+1.7:Nastav HTML kódovú stránku na nnn, namiesto detekcie
+1.8:Rozšírené vo¾by
+1.9:Prepíš cestu k helpu
+1.10:Ak nieje špecifikovanı súbor, predpokladá sa index.htm
+1.11:Nahraj súbor inı ako index.htm relatívne k ceste nápovedy
+1.12:Keï uívate¾ stlaèí F1 alebo klikne na "help on help" nápoveda
+1.13:nahraje tento súbor. Prednastavenı je help.htm
+1.14:Premenné prostredia
+1.15:Adresár, ktorı obsahuje vaše súbory nápovedy
+1.16:Vlote sem /M, /A, F1, F2 ak si ich eláte prednastavi
+
+#Error Message Strings
+2.0:Nedá sa rezervova pamä
+2.1:Chybnı argument
+2.2:Prosím špecifikujte iba jednú tému 
+2.3:Nedá sa poui /f a /m súèastne
+2.4:Napíšte "HELP /?" pre pouitie.
+2.5:Téma s presne takım názvom nenájdená
+2.6:Nedá sa nájs téma
+2.7:Interná chyba: Zmena ve¾kosti zlyhala
+2.8:Nedá sa èíta komprimovanı súbor
+2.9:Nedá sa otvori
+2.10:Súbor zipu je prázdny alebo poškodenı
+2.11:Nedá sa nájs súbor. Nahrávanie prvého HTML súboru v zipe
+2.12:Nedá sa nájs html súbor v zazipovanom súbor
+2.13:Prosím nastavte správne jazyk
+2.14:Nepodporované kódové stránky
+2.15:Podporované kódové stránky
+
+#Menu Strings
+#### HTML Help will truncate strings 3.0 and 3.1
+#### if they exceed 14 characters.
+3.0:Koniec
+3.1:Nápoveda
+#### HTML Help will truncate strings 3.2-3.5
+#### if they exceed 10 characters.
+3.2:Spä
+3.3:Dopredu
+3.4:Obsah
+3.5:Vyh¾adávaj
+
+#Button Label Strings
+#### HTML Help will truncate strings 4.0-4.2
+#### if they exceed 8 characters.
+4.0:OK
+4.1:Spä
+4.2:Nápoveda
+
+#Status Bar Strings
+5.0:Vyh¾dáva sa téma...
+5.1:Plné vyh¾adávanie sa pripravuje...
+5.2:(STLAÈ ESC pre ukonèenie programu)...
+
+#Search Box Strings
+#### HTML Help will truncate strings:
+####    6.0      if it exceeds 35 characters;
+####    6.1      if it exceeds 20 characters;
+####    6.2-6.5  if they exceed 28 characters;
+####    6.6-6.13 if they exceed 35 characters.
+6.0:Vyh¾adanie Nápovedy
+6.1:Text na vyh¾adávanie:
+6.2:Rozlíšova ve¾ké a malé písmená
+6.3:Iba celé slová
+6.4:Úplné vyh¾adávanie
+6.5:na tejto stránke
+#Help on Search:
+6.6:Èo to robí
+#Lines 6.7-6.9 describe "Search":
+6.7:Úplné vyh¾adávanie:
+6.8:Prezri všetky subory
+6.9:Zoznam na stránke obsahu.
+#Line 6.10 can be used if you need more room.
+6.11:na tejto stránke:
+6.12:Prezrie otvorené dokumenty
+6.13:iba.
+
+#Search Results Strings
+7.0:Vısledok h¾adania
+7.1:Vyh¾adávanie vo všetkıch súboroch umiestnenıch na stránke s obsahom
+# The following line, 7.2, is used as "Searched [FILENAME]"
+7.2:Vyh¾adávanie v
+# The following line, 7.3, is used as "for: [TEXT]"
+7.3:pre
+7.4:Prepáète, nedá sa vyh¾adávat vo vısledkoch h¾adania
+7.5:Prerušené uívate¾om
+7.6:V=ysledok nenájdenı

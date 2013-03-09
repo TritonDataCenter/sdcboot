@@ -1,0 +1,1012 @@
+//   MESSAGE.H_d - Various text messages for 4DOS / 4OS2
+//   German Version by Friedrich W. Buckel 04-14-92
+//   Changed Sept 10, 1992 Buckel
+//   Copyright (c) 1988 - 1991  Rex C. Conn   All rights reserved
+
+
+#define SINGLE_QUOTE '`'		// quote characters
+#define DOUBLE_QUOTE '"'
+#define YES_CHAR 'J'
+#define NO_CHAR 'N'
+
+#define FIND_CHAR 'S'
+#define FIND_NEXT_CHAR 'W'
+#define HIBIT_CHAR 'H'
+#define WRAP_CHAR 'U'
+#define PRINT_CHAR 'D'
+
+#ifdef DEFINE_GLOBALS
+
+// USAGE messages
+char ALIAS_USAGE[] = "[/P /R ?] Aliasname=Wert";
+char ATTRIB_USAGE[] = "[/D /P /Q /S] [+|-AHRS] ?...";
+char BREAK_USAGE[] = "[ON | OFF]";
+#ifndef OS2
+char CALL_USAGE[] = "?";
+#else
+char CALL_USAGE[] = "[/Q] ?";
+#endif
+char CDD_USAGE[] = "~";
+char COLOR_USAGE[] = "# [BORDER rf]";
+#ifndef OS2
+char COPY_USAGE[] = "[/C /H /M /N /P /Q /R /S /U /V] Quelle[+] [/A /B] Ziel [/A /B]";
+char CTTY_USAGE[] = "GerÑt";
+#else
+char COPY_USAGE[] = "[/C /F /H /M /N /P /Q /R /S /U /V] Quelle [/A /B] Ziel [/A /B]";
+#endif
+char DELETE_USAGE[] = "[/N /P /Q /S /X /Y /Z] ?...";
+char DESCRIBE_USAGE[] = "?...";
+#ifdef OS2
+char DETACH_USAGE[] = "Befehl";
+#endif
+char DIR_USAGE[] = "[/A[:-rhsda] /O:-adeginrsu /124BCDFJKLMNPSTUVW] ?...";
+char DRAWBOX_USAGE[] = "ob li un re Art # [FILL ff]";
+char DRAWLINE_USAGE[] = "Zeile Spalte LÑnge Art #";
+#ifndef OS2
+char ESET_USAGE[] = "[/A /M] Variable...";
+#else
+char ESET_USAGE[] = "[/A] Variable...";
+#endif
+char EXCEPT_USAGE[] = "(?...) ...";
+char FOR_USAGE[] = "[/A[:-rhsda]] %Variable IN ([@]Menge) [DO] ...";
+char GLOBAL_USAGE[] = "[/H /I /P /Q] ...";
+char HISTORY_USAGE[] = "[/A /F /P /R ?]";
+char IF_USAGE[] = "[NOT] Bedingung ...";
+char IFF_USAGE[] = "[NOT] Bedingung THEN ^ ... [ELSE[IFF] ^ ...] ENDIFF";
+char INKEY_USAGE[] = "[/K /Wn] [Text] %%Variable";
+char INPUT_USAGE[] = "[/Wn] [Text] %%Variable";
+#ifndef OS2
+char KEYSTACK_USAGE[] = "[\"Tasten\"] [n] [@n] [/Wn] [!]";
+#else
+char KEYS_USAGE[] = "[ON | OFF | LIST]";
+#endif
+char LIST_USAGE[] = "[/H /S /W] ?...";
+char LOG_USAGE[] = "[ON | OFF | /W ?][Text]";
+char MD_USAGE[] = "~...";
+char MOVE_USAGE[] = "[/C /D /H /N /P /Q /R /S /U] Quelle [... Ziel]";
+char POPD_USAGE[] = "[*]";
+char RD_USAGE[] = "~...";
+#ifndef OS2
+char REBOOT_USAGE[] = "[/C /V]";
+#else
+char REBOOT_USAGE[] = "[/V]";
+#endif
+char RENAME_USAGE[] = "[/N /P /Q /S] Altname... Neuname";
+char SCREEN_USAGE[] = "Zeile Spalte [Text]";
+char SCRPUT_USAGE[] = "Zeile Spalte # Text";
+char SELECT_USAGE[] = "[/A[:-rhsda] /C /D /O:-adeginrsu] ... (?) ...";
+#ifndef OS2
+char SET_USAGE[] = "[/M /P /R ?] Variablenname=Wert";
+#else
+char SET_USAGE[] = "[/P /R ?] Variablenname=Wert";
+#endif
+char TEE_USAGE[] = "[/A] ?...";
+char TIMER_USAGE[] = "[/1 /2 /3 /S]";
+char TYPE_USAGE[] = "[/L /P] ?...";
+char UNALIAS_USAGE[] = "Aliasname...";
+#ifndef OS2
+char UNSET_USAGE[] = "[/M] Variablenname...";
+#else
+char UNSET_USAGE[] = "Variablenname...";
+#endif
+char VER_USAGE[] = "[/R]";
+
+// BATCH.C
+char ENDTEXT[] = "ENDTEXT";
+char ECHO_IS[] = "ECHO ist %s\n";
+char LOADBTM_IS[] = "LOADBTM ist %s\n";
+char PAUSE_PROMPT[] = "Weiter mit beliebiger Taste...";
+char IN[] = "in";
+char DO[] = "do";
+char IF_NOT[] = "not";
+char IF_OR[] = ".OR.";
+char IF_XOR[] = ".XOR.";
+char IF_AND[] = ".AND.";
+char IF_DIREXIST[] = "direxist";
+char IF_EXIST[] = "exist";
+char IF_ISDIR[] = "isdir";
+char IF_ISINTERNAL[] = "isinternal";
+char IF_ISALIAS[] = "isalias";
+char IF_ISLABEL[] = "islabel";
+char IF_ERRORLEVEL[] = "errorlevel";
+char EQ[] = "EQ";
+char GT[] = "GT";
+char GE[] = "GE";
+char LT[] = "LT";
+char LE[] = "LE";
+char NE[] = "NE";
+char THEN[] = "then";
+char IFF[] = "iff";
+char ELSEIFF[] = "elseiff";
+char ELSE[] = "else";
+char ENDIFF[] = "endiff";
+char INKEY_COMMAND[] = "INKEY";
+
+
+// DIRCMDS.C
+char DIRCMDS_VAR[] = "DIRCMDS";
+char DIRECTORY_OF[] = " Verzeichnis von  %s";
+char DIR_FILE_SIZE[] = "KMG";
+char DIR_BYTES_IN_FILES[] = "%12Lu Byte in %Lu Datei(en)";
+char DIR_BYTES_ALLOCATED[] = "%*Lu Byte belegt";
+char DIR_BYTES_FREE[] = "%12Lu Byte frei";
+char DIR_TOTAL[] = "    Gesamt:  %s";
+char DIR_LABEL[] = " <DIR>   ";
+#ifdef OS2
+char OS2_DIR_LABEL[] = "      <DIR>";
+#endif
+char COLORDIR[] = "colordir";
+char DESCRIBE_PROMPT[] = "Beschreibung \"%s\" : ";
+
+
+// ENV.C
+char SET_COMMAND[] = "SET";
+char UNSET_COMMAND[] = "UNSET";
+
+
+// ERROR.C
+#ifndef OS2
+char USAGE[] = "Syntax: %s ";
+#else
+char USAGE[] = "Syntax: %s ";
+#endif
+char FILE_SPEC[] = "[Lw:][Pfad]Datei";
+char PATH_SPEC[] = "[Lw:]Pfad";
+char COLOR_SPEC[] = "[BRIght] [BLInk] vf ON hf";
+
+// EXPAND.C
+char PATH_VAR[] = "PATH";
+char TEMP_DISK[] = "TEMP";
+char TEMP4DOS_DISK[] = "TEMP4DOS";
+#ifdef OS2
+char KEYS_LIST[] = "list";
+#endif
+char MONO_MONITOR[] = "mono";
+char COLOR_MONITOR[] = "color";
+
+char SCAN_NOCR[] = "%[^\r]";
+char FMT_STR[] = "%s";
+char FMT_PREC_STR[] = "%.*s";
+char FMT_LEFT_STR[] = "%-*s";
+char FMT_EQUAL_STR[] = "=%s";
+char FMT_STR_CRLF[] = "%s\n";
+char FMT_DOUBLE_STR[] = "%s%s";
+char FMT_PATH_STR[] = "%s\\%s";
+char FMT_STR_TO_STR[] = "%s -> %s";
+char FMT_FAR_STR[] = "%Fs";
+char FMT_FAR_PREC_STR[] = "%.*Fs";
+char FMT_FAR_LEFT_STR[] = "%-*Fs";
+char FMT_FAR_STR_CRLF[] = "%Fs\n";
+char FMT_CHAR[] = "%c";
+char FMT_INT[] = "%d";
+char FMT_UINT[] = "%u";
+char FMT_ULONG[] = "%lu";
+char FMT_TWO_UINTS[] = "%u %u";
+char FMT_UINT_LEN[] = "%u%n";
+
+char *VAR_ARRAY[] = {
+	"4ver",			// 4DOS / 4OS2 version
+	"?",			// return code of previous internal command
+	"alias",		// free alias space
+	"ansi",			// ANSI driver loaded
+	"batch",		// batch nesting level
+        "bg",                   // background color at cursor
+	"boot",			// boot drive
+	"codepage",		// active codepage
+	"column",		// current column position
+	"columns",		// # of columns on active display
+	"cpu",			// cpu type
+	"cwd",			// current working directory
+	"cwds",			// current working directory with trailing '\'
+	"cwp",			// current working path
+	"cwps",			// current working path with trailing '\'
+	"date",			// current date
+	"disk",			// current disk
+	"dos",			// DOS type (DOS or OS2)
+	"dosver",		// DOS version #
+	"dow",			// day of week
+	"dv",			// DESQview loaded flag
+	"env",			// free environment space
+	"fg",			// foreground color at cursor
+	"lastdisk",		// last disk in use
+	"monitor",		// monitor type (mono or color)
+	"mouse",		// mouse loaded (0 or 1)
+	"ndp",			// math coprocessor type
+	"row",			// current row
+	"rows",			// # of rows on active display
+	"shell",		// shell level (0 - 99)
+	"time",			// current time
+	"transient",		// transient or resident shell
+	"video",		// video type (cga, mono, ega, vga)
+#ifndef OS2
+	"win",			// Windows loaded flag
+#else
+	"pid",			// process ID
+	"ppid",			// parent process ID
+	"ptype",		// process type
+	"sid",			// session ID
+#endif
+	NULL
+};
+
+char *FUNC_ARRAY[] = {
+	"alias",
+	"ascii",
+	"attrib",
+	"char",
+	"date",
+	"descript",
+	"device",
+	"diskfree",
+	"disktotal",
+	"diskused",
+	"dosmem",
+	"ems",
+	"eval",
+	"exec",
+	"ext",
+	"extended",
+	"filedate",
+	"filesize",
+	"filetime",
+	"full",
+	"index",
+	"int",
+	"label",
+	"len",
+	"line",
+	"lines",
+	"lower",
+	"lpt",
+	"makedate",
+	"maketime",
+	"name",
+	"path",
+	"readscr",
+	"ready",
+	"remote",
+	"removable",
+	"search",
+	"select",
+	"substr",
+	"time",
+	"truename",
+	"unique",
+	"upper",
+	"word",
+	"xms",
+#ifdef OS2
+	"fstype",
+#endif
+	NULL
+};
+
+
+// FILECMDS.C
+char REPLACE[] = " (Ersetze)";
+char FILES_COPIED[] = "%6u Datei(en) kopiert\n";
+char MOVE_CREATE_DIR[] = "Erzeuge \"%s\"";
+char FILES_MOVED[] = "%6u Datei(en) verlagert\n";
+char FILES_RENAMED[] = "%6u Datei(en) umbenannt\n";
+char FILES_DELETED[] = "%6u Datei(en) gelîscht\n";
+char ARE_YOU_SURE[] = "Sind Sie sicher";
+char DELETE_QUERY[] = "Lîsche ";
+char DELETING_FILE[] = "Lîsche %s\n";
+
+
+// LINES.C
+char BOX_FILL[] = "fill";
+char BOX_SHADOW[] = "sha";
+
+
+// LIST.C                                                                      
+char LIST_HEADER[] = " %-12.12s ≥ \032 Bild Pos1 Ende ≥ Suche Weiter Druck HiBit Umb Esc ≥";
+char LIST_STDIN_MSG[] = "Umleitung";
+char LIST_WAIT[] = "Bitte warten";
+char LIST_FIND[] = "Suche: ";
+char LIST_NOT_FOUND[] = "Zeichenfolge nicht gefunden - Weiter mit beliebiger Taste";
+char LIST_PRINTING[] = "Druckvorgang lÑuft - Abbruch mit beliebiger Taste";
+
+
+// MISC.C
+char HELP_VAR[] = "4HELP";
+char HELP_EXE[] = "4help.exe";
+char HELP_NX[] = "/nx";
+char YES_NO[] = "%s (J/N)? ";
+char BRIGHT[] = "bri";
+char BLINK[] = "bli";
+char BORDER[] = "bor";
+
+
+// PARSER.C
+#ifndef OS2
+char LOG_FILENAME[] = "4DOSLOG";
+#else
+char LOG_FILENAME[80] = "C:\\4OS2LOG";
+#endif
+// Embedded copyright notices, not used for display
+char COPYRIGHT1[] = "Copyright 1988-1992  JP Software Inc. & Computer Solutions Software GmbH";
+char COPYRIGHT2[] = "Alle Rechte vorbehalten.  Vertrieb unter Lizenz von JP Software.";
+char CANCEL_BATCH_JOB[] = "\nStapeldatei abbrechen? (J/N/A) : ";
+char INSERT_DISK[] = "\nDiskette mit \"%s\" einlegen\n"; 
+char COMMAND_GROUP_MORE[] = "Mehr? ";
+char CMDLINE_VAR[] = "CMDLINE=";
+#ifndef OS2
+char DOS_HDR[] = "  DOS     <Strg>+<Esc> = Fensterliste                 <F1> oder HELP = Hilfe  ";
+char *DOS_NAME = "4DOS.COM";
+char COMSPEC_DOS[] = "%s=%c:\\%s";
+char BRAND_ERROR[] = "Fehler in COM-Datei; Kontakt zu JP Software aufnehmen\n";
+char DOS_VERSION[] = "\n%s   %s %u.%u\n";
+char MSVER[] = "DOS";
+char OS2VER[] = "OS/2";
+char DRVER[] = "DR-DOS";
+char FOURDOS_REV[] = "4DOS Revision A";
+char DOS_REVISION[] = "   DOS Revision %c";
+char OS2_REVISION[] = "   OS/2 Revision %u";
+char DOS_LOCATION[] = "\nDOS ist in %s";
+char DOS_HMA[] = "HMA";
+char DOS_ROM[] = "ROM";
+char DOS_LOW[] = "Hauptspeicher";
+#else
+char *OS2_NAME = "4OS2.EXE";
+char OS2_FS[] = "4OS2 Vollbild";
+char OS2_WIN[] = "4OS2 Fenster";
+char DOS_HDR[] = "  DOS     <Strg>+<Esc> = Fensterliste                 <F1> oder HELP = Hilfe  "; 
+char COMSPEC_OS2[] = "%s=%Fs";
+// char EXTERN_BREAK[] = "AusfÅhrung durch Strg+Untbr oder einen anderen Prozess abgebrochen"
+char OS2_VERSION[] = "%s   OS/2 Version ist %s\n";
+#endif
+char PROMPT_NAME[] = "PROMPT";
+char COMSPEC[] = "COMSPEC";
+
+
+// SYSCMDS.C
+char CDPATH[] = "_cdpath";
+char UNLABELED[] = "ohne Name";
+char VOLUME_LABEL[] = " DatentrÑger in Laufwerk %c ist %-12s";
+char VOLUME_SERIAL[] = "   DatentrÑgernummer: %04x:%04x";
+char NO_PATH[] = "Kein Pfad";
+char BYTES_FREE[] = "%12Lu Byte frei\n";
+#ifndef OS2
+char TOTAL_RAM[] = "\n%12Lu Byte konventioneller Speicher insgesamt\n";
+char TOTAL_EMS[] = "\n%12Lu Byte EMS Speicher insgesamt\n";
+char TOTAL_EXTENDED[] = "\n%12Lu Byte Erweiterungsspeicher\n";
+char XMS_FREE[] = "\n%12Lu Byte XMS Speicher frei  ";
+char HMA_FREE[] = "(HMA frei)";
+char HMA_USED[] = "(HMA belegt)";
+#endif
+char TOTAL_ENVIRONMENT[] = "\n%12Lu Byte Umgebungsspeicher insgesamt\n";
+char TOTAL_ALIAS[] = "\n%12Lu Byte Aliasspeicher insgesamt\n";
+char TOTAL_HISTORY[] = "\n%12Lu Byte Befehlsspeicher insgesamt\n";
+char TOTAL_DISK_USED[] = "%12Lu Byte LaufwerkskapazitÑt insgesamt\n%12Lu Byte belegt\n";
+char SELECT_HEADER[] = "     Zeichen ≥ Auswahl  ≥ Markieren Leert/+/- ≥ Start ENTER ≥";
+char SELECT_PAGE_COUNT[] = "Seite %2u von %2u";
+char MARKED_FILES[] = "  Markiert: %4u Datei(en) %5uK";
+char BREAK_IS[] = "%s ist %s\n";
+char SWAPPING_IS[] = "%s (%s) ist %s\n";
+char SETDOS_IS[] = "ANSI=%d\nCOMPOUND=%c\nESCAPE=%c\nINPUT=%u\nMODE=%u\nNOCLOBBER=%u\nROWS=%u\nCURSOR OVERSTRIKE=%u\nCURSOR INSERT=%u\nUPPER CASE=%u\nVERBOSE=%u\nSWITCH=%c\n";
+char GLOBAL_DIR[] = "\nGLOBAL: %s";
+char TIMER_NUMBER[] = "Stoppuhr %d ";
+char TIMER_ON[] = "AN: %s\n";
+char TIMER_OFF[] = "AUS: %s ";
+char ELAPSED_TIME[] = "Verstrichene Zeit: %u%c%02u%c%02u.%02u\n";
+char TIME_FMT[] = "%2u%c%02u%c%02u";
+char DT_SCAN[] = "%u%*1s%u%*1s%u";
+char NEW_DATE[] = "\nNeues Datum (%s): ";
+char NEW_TIME[] = "\nNeue Uhrzeit (hh:mm:ss): ";
+char CODE_PAGE[] = "Aktive Codeseite:   %u\n";
+char PREPARED_CODE_PAGES[] = "Vorbereitete Codeseiten: ";
+char REBOOT_IT[] = "BestÑtigen Sie den System-Neustart";
+#ifndef OS2
+char CONSOLE[] = "CON";
+#else
+char DOS_SYS[] = "DOS.SYS";
+#endif
+
+
+#ifdef OS2
+// SYSOS2.C
+char PROCESS_ID[] = "Der Prozess-ID lautet %d\n";
+char NO_DPATH[] = "Kein DPATH";
+#endif
+
+
+// WINDOW.C
+char PopSelectPrompt[] = " , ƒŸ oder Esc ";
+
+
+// Global string variables
+
+char _near ON[] = "ON";
+char _near OFF[] = "OFF";
+char _near WILD_FILE[] = "*.*";
+char _near WILD_EXT[] = ".*";
+char _near WILD_CHARS[] = "?*[";
+char _near QUOTES[] = "`\"";
+char _near QUOTES_PARENS[] = "`\"(";
+char _near BACK_QUOTE[] = "`";
+char _near NULLSTR[] = "";
+char _near SLASHES[] = "\\/";
+
+
+char _near *executables[] = {
+	".com",		// executable file extensions
+	".exe",
+	".btm",		// in-memory batch file
+#ifndef OS2
+	".bat",
+#else
+	".cmd",
+#endif
+	NULL
+};
+
+
+// video type array for IF VIDEO
+char _near *video_type[] = {
+	"mono",
+	"cga",
+	"ega",		// monochrome ega
+#ifndef OS2
+	"ega",		// color ega
+	"vga",		// monochrome vga
+	"vga"		// color vga
+#else
+	"vga",
+	"",
+	"",
+	"",
+	"8514"		// IBM 8514 (1024 x 768)
+#endif
+};
+
+
+#ifdef OS2
+// current process type
+char _near *ptype[] = {
+	"FS",
+	"",
+	"AVIO",
+	"PM",
+	"DT"
+};
+#endif
+
+
+// tables for date formatting
+char _near *daytbl[] = {
+        "Son",
+	"Mon",
+        "Die",
+        "Mit",
+        "Don",
+        "Fre",
+        "Sam"
+};
+
+
+char _near *montbl[] = {
+	"Jan",
+	"Feb",
+        "MÑr",
+	"Apr",
+        "Mai",
+	"Jun",
+	"Jul",
+	"Aug",
+	"Sep",
+        "Okt",
+	"Nov",
+        "Dez"
+};
+
+
+char _near *dateformat[] = {
+        "mm-tt-jj",             // USA date format
+        "tt-mm-jj",             // Europe
+        "jj-mm-tt"              // Japan
+};
+
+
+char _near *swap_mode[] = {
+	"EMS",
+	"XMS",
+	"Disk"
+};
+
+
+// COLORDIR attribute sequences
+// Fritz: Not translated
+COLORD _near colorize_atts[] = {
+	"dirs",_A_SUBDIR,
+	"rdonly",_A_RDONLY,
+	"hidden",_A_HIDDEN,
+	"system",_A_SYSTEM,
+	"archive",_A_ARCH
+};
+
+
+// ANSI color sequences (for COLOR)
+ANSI_COLORS _near colors[] = {
+	"Bla",30,
+	"Blu",34,
+	"Gre",32,
+	"Cya",36,
+	"Red",31,
+	"Mag",35,
+	"Yel",33,
+	"Whi",37
+};
+
+
+// 4DOS error messages
+char _near *int_4dos_errors[] = 
+{
+        "Syntaxfehler",
+        "Unbekannter Befehl",
+        "Befehlszeile zu lang",
+        "Schlie·endes AnfÅhrungszeichen fehlt",
+        "Datei kann nicht geîffnet werden",
+        "Datei kann nicht erstellt werden",
+        "Lîschen nicht mîglich",
+        "Lesefehler",
+        "Schreibfehler",
+        "Datei kann nicht in sich selbst kopiert werden",
+        "Unzureichender Disk Speicherplatz fÅr",          // 10
+        "Inhalt vor dem Kopieren verloren gegangen",
+        "Kein Alias",
+        "Keine Aliase definiert",
+        "Alias Schleife",
+        "Variablenschleife",
+        "UnzulÑssiges Datum",
+        "UnzulÑssige Uhrzeit",
+        "Verzeichnisstapel leer",
+        "Verzeichnis nicht lesbar",
+        "Sprungmarke (Label) nicht gefunden",                      // 20
+        "Zu wenige Umgebungsspeicher / Aliasspeicher",
+        "Variable nicht in der Umgebung",
+#ifndef OS2
+        "4DOS interner StackÅberlauf",
+#else
+        "4OS2 interner StackÅberlauf",
+#endif
+        "Batchdatei fehlt",
+        "Batchdateien zu tief verschachtelt",
+        "ENDTEXT fehlt",
+        "GOSUB fehlt",
+        "Umgebung bereits gesichert",
+        "SETLOCAL fehlt",
+        "Klammern nicht ausgewogen",
+        "Kein Ausdruck",
+        "Arithmetischer öberlauf",
+#ifndef OS2
+        "KSTACK.COM nicht geladen",
+        "UnzulÑssige DOS Version",
+        "Nicht im Swapping Modus",
+        "Keine UMBs vorhanden; lade in den Hauptspeicher",
+#endif
+};
+
+#else
+
+// USAGE messages
+extern char ALIAS_USAGE[];
+extern char ATTRIB_USAGE[];
+extern char BREAK_USAGE[];
+extern char CALL_USAGE[];
+extern char CDD_USAGE[];
+extern char COLOR_USAGE[];
+#ifndef OS2
+extern char COPY_USAGE[];
+extern char CTTY_USAGE[];
+#else
+extern char COPY_USAGE[];
+#endif
+extern char DELETE_USAGE[];
+extern char DESCRIBE_USAGE[];
+#ifdef OS2
+extern char DETACH_USAGE[];
+#endif
+extern char DIR_USAGE[];
+extern char DRAWBOX_USAGE[];
+extern char DRAWLINE_USAGE[];
+extern char ESET_USAGE[];
+extern char EXCEPT_USAGE[];
+extern char FOR_USAGE[];
+extern char GLOBAL_USAGE[];
+extern char HISTORY_USAGE[];
+extern char IF_USAGE[];
+extern char IFF_USAGE[];
+extern char INKEY_USAGE[];
+extern char INPUT_USAGE[];
+#ifndef OS2
+extern char KEYSTACK_USAGE[];
+#else
+extern char KEYS_USAGE[];
+#endif
+extern char LIST_USAGE[];
+extern char LOG_USAGE[];
+#ifndef OS2
+#define LOADHIGH_USAGE CALL_USAGE
+#endif
+#define LOADBTM_USAGE BREAK_USAGE
+extern char MD_USAGE[];
+#ifndef OS2
+extern char MOVE_USAGE[];
+#else
+extern char MOVE_USAGE[];
+#endif
+extern char POPD_USAGE[];
+extern char RD_USAGE[];
+extern char REBOOT_USAGE[];
+extern char RENAME_USAGE[];
+extern char SCREEN_USAGE[];
+extern char SCRPUT_USAGE[];
+extern char SELECT_USAGE[];
+extern char SET_USAGE[];
+#define SWAPPING_USAGE BREAK_USAGE
+extern char TEE_USAGE[];
+extern char TIMER_USAGE[];
+extern char TYPE_USAGE[];
+extern char UNALIAS_USAGE[];
+extern char UNSET_USAGE[];
+extern char VER_USAGE[];
+#define VERIFY_USAGE BREAK_USAGE
+
+
+// BATCH.C
+extern char ENDTEXT[];
+extern char ECHO_IS[];
+extern char LOADBTM_IS[];
+extern char PAUSE_PROMPT[];
+extern char IN[];
+extern char DO[];
+extern char IF_NOT[];
+extern char IF_OR[];
+extern char IF_XOR[];
+extern char IF_AND[];
+extern char IF_DIREXIST[];
+extern char IF_EXIST[];
+extern char IF_ISDIR[];
+extern char IF_ISINTERNAL[];
+extern char IF_ISALIAS[];
+extern char IF_ISLABEL[];
+extern char IF_ERRORLEVEL[];
+extern char EQ[];
+extern char GT[];
+extern char GE[];
+extern char LT[];
+extern char LE[];
+extern char NE[];
+extern char THEN[];
+extern char IFF[];
+extern char ELSEIFF[];
+extern char ELSE[];
+extern char ENDIFF[];
+extern char INKEY_COMMAND[];
+
+
+// DIRCMDS.C
+extern char DIRCMDS_VAR[];
+extern char DIRECTORY_OF[];
+extern char DIR_FILE_SIZE[];
+extern char DIR_BYTES_IN_FILES[];
+extern char DIR_BYTES_ALLOCATED[];
+extern char DIR_BYTES_FREE[];
+extern char DIR_TOTAL[];
+extern char DIR_LABEL[];
+#ifdef OS2
+extern char OS2_DIR_LABEL[];
+#endif
+extern char COLORDIR[];
+extern char DESCRIBE_PROMPT[];
+
+
+// ENV.C
+extern char SET_COMMAND[];
+extern char UNSET_COMMAND[];
+
+
+// ERROR.C
+extern char USAGE[];
+extern char FILE_SPEC[];
+extern char PATH_SPEC[];
+extern char COLOR_SPEC[];
+
+
+// EXPAND.C
+extern char PATH_VAR[];
+extern char TEMP_DISK[];
+extern char TEMP4DOS_DISK[];
+extern char MONO_MONITOR[];
+extern char COLOR_MONITOR[];
+#ifdef OS2
+extern char KEYS_LIST[];
+#endif
+
+extern char SCAN_NOCR[];
+extern char FMT_STR[];
+extern char FMT_PREC_STR[];
+extern char FMT_LEFT_STR[];
+extern char FMT_EQUAL_STR[];
+extern char FMT_DOUBLE_STR[];
+extern char FMT_PATH_STR[];
+extern char FMT_STR_CRLF[];
+extern char FMT_STR_TO_STR[];
+extern char FMT_FAR_STR[];
+extern char FMT_FAR_PREC_STR[];
+extern char FMT_FAR_LEFT_STR[];
+extern char FMT_FAR_STR_CRLF[];
+extern char FMT_CHAR[];
+extern char FMT_INT[];
+extern char FMT_UINT[];
+extern char FMT_ULONG[];
+extern char FMT_TWO_UINTS[];
+extern char FMT_UINT_LEN[];
+
+
+// defines for internal variable array
+#define VAR_4VER 0
+#define VAR_IERRORLEVEL 1
+#define VAR_ALIAS 2
+#define VAR_ANSI 3
+#define VAR_BATCH 4
+#define VAR_BG_COLOR 5
+#define VAR_BOOT 6
+#define VAR_CODEPAGE 7
+#define VAR_COLUMN 8
+#define VAR_COLUMNS 9
+#define VAR_CPU 10
+#define VAR_CWD 11
+#define VAR_CWDS 12
+#define VAR_CWP 13
+#define VAR_CWPS 14
+#define VAR_DATE 15
+#define VAR_DISK 16
+#define VAR_DOS 17
+#define VAR_DOSVER 18
+#define VAR_DOW 19
+#define VAR_DV 20
+#define VAR_ENVIRONMENT 21
+#define VAR_FG_COLOR 22
+#define VAR_LASTDISK 23
+#define VAR_MONITOR 24
+#define VAR_MOUSE 25
+#define VAR_NDP 26
+#define VAR_ROW 27
+#define VAR_ROWS 28
+#define VAR_SHELL 29
+#define VAR_TIME 30
+#define VAR_TRANSIENT 31
+#define VAR_VIDEO 32
+#ifndef OS2
+#define VAR_WIN 33
+#else
+#define VAR_OS2_PID 33		// process ID
+#define VAR_OS2_PPID 34		// parent process ID
+#define VAR_OS2_PTYPE 35	// process type
+#define VAR_OS2_SID 36		// session ID
+#endif
+
+
+// defines for variable function array
+#define FUNC_ALIAS 0
+#define FUNC_ASCII 1
+#define FUNC_ATTRIB 2
+#define FUNC_CHAR 3
+#define FUNC_DATE 4
+#define FUNC_DESCRIPT 5
+#define FUNC_DEVICE 6
+#define FUNC_DISKFREE 7
+#define FUNC_DISKTOTAL 8
+#define FUNC_DISKUSED 9
+#define FUNC_DOSMEM 10
+#define FUNC_EMS 11
+#define FUNC_EVAL 12
+#define FUNC_EXECUTE 13
+#define FUNC_EXTENSION 14
+#define FUNC_EXTENDED 15
+#define FUNC_FILEDATE 16
+#define FUNC_FILESIZE 17
+#define FUNC_FILETIME 18
+#define FUNC_FULLNAME 19
+#define FUNC_INDEX 20
+#define FUNC_INTEGER 21
+#define FUNC_LABEL 22
+#define FUNC_LENGTH 23
+#define FUNC_LINE 24
+#define FUNC_LINES 25
+#define FUNC_LOWER 26
+#define FUNC_LPT 27
+#define FUNC_MAKEDATE 28
+#define FUNC_MAKETIME 29
+#define FUNC_NAME 30
+#define FUNC_PATH 31
+#define FUNC_READSCR 32
+#define FUNC_READY 33
+#define FUNC_REMOTE 34
+#define FUNC_REMOVABLE 35
+#define FUNC_SEARCH 36
+#define FUNC_SELECT 37
+#define FUNC_SUBSTR 38
+#define FUNC_TIME 39
+#define FUNC_TRUENAME 40
+#define FUNC_UNIQUE 41
+#define FUNC_UPPER 42
+#define FUNC_WORD 43
+#define FUNC_XMS 44
+#define FUNC_FSTYPE 45
+
+
+// FILECMDS.C
+extern char REPLACE[];
+extern char FILES_COPIED[];
+extern char MOVE_CREATE_DIR[];
+extern char FILES_MOVED[];
+extern char FILES_RENAMED[];
+extern char FILES_DELETED[];
+extern char ARE_YOU_SURE[];
+extern char DELETE_QUERY[];
+extern char DELETING_FILE[];
+
+
+// LINES.C
+extern char BOX_FILL[];
+extern char BOX_SHADOW[];
+
+
+// LIST.C
+extern char LIST_HEADER[];
+extern char LIST_STDIN_MSG[];
+extern char LIST_WAIT[];
+extern char LIST_FIND[];
+extern char LIST_NOT_FOUND[];
+extern char LIST_PRINTING[];
+
+
+// MISC.C
+extern char HELP_VAR[];
+extern char HELP_EXE[];
+extern char HELP_NX[];
+extern char YES_NO[];
+extern char BRIGHT[];
+extern char BLINK[];
+extern char BORDER[];
+
+
+// PARSER.C
+extern char LOG_FILENAME[];
+extern char CANCEL_BATCH_JOB[];
+extern char INSERT_DISK[];
+extern char COMMAND_GROUP_MORE[];
+extern char CMDLINE_VAR[];
+#ifndef OS2
+extern char *DOS_NAME;
+extern char DOS_HDR[];
+extern char COMSPEC_DOS[];
+extern char BRAND_ERROR[];
+extern char DOS_VERSION[];
+extern char DOS_REVISION[];
+extern char DOS_IS[];
+extern char DOS_HMA[];
+extern char DOS_ROM[];
+extern char DOS_LOW[];
+#else
+extern char *OS2_NAME;
+extern char OS2_FS[];
+extern char OS2_WIN[];
+extern char OS2_PROMPT[];
+extern char COMSPEC_OS2[];
+extern char EXTERN_BREAK[];
+extern char OS2_VERSION[];
+#endif
+extern char PROMPT_NAME[];
+extern char COMSPEC[];
+
+
+// SYSCMDS.C
+extern char CDPATH[];
+extern char UNLABELED[];
+extern char VOLUME_LABEL[];
+extern char VOLUME_SERIAL[];
+extern char NO_PATH[];
+extern char BYTES_FREE[];
+extern char BYTES_TOTAL[];
+#ifndef OS2
+extern char TOTAL_RAM[];
+extern char TOTAL_EMS[];
+extern char TOTAL_EXTENDED[];
+extern char XMS_FREE[];
+extern char HMA_MEMORY[];
+extern char HMA_FREE[];
+extern char HMA_USED[];
+#endif
+extern char TOTAL_ENVIRONMENT[];
+extern char TOTAL_ALIAS[];
+extern char TOTAL_HISTORY[];
+extern char TOTAL_DISK_USED[];
+extern char SELECT_HEADER[];
+extern char SELECT_PAGE_COUNT[];
+extern char MARKED_FILES[];
+extern char BREAK_IS[];
+extern char SWAPPING_IS[];
+#define VERIFY_IS BREAK_IS
+#define LOG_IS BREAK_IS
+#define KEYS_IS BREAK_IS
+extern char SETDOS_IS[];
+extern char GLOBAL_DIR[];
+extern char TIMER_NUMBER[];
+extern char TIMER_ON[];
+extern char TIMER_OFF[];
+extern char ELAPSED_TIME[];
+extern char TIME_FMT[];
+extern char DT_SCAN[];
+extern char NEW_DATE[];
+extern char NEW_TIME[];
+extern char CODE_PAGE[];
+extern char PREPARED_CODE_PAGES[];
+extern char REBOOT_IT[];
+extern char CONSOLE[];
+
+#ifdef OS2
+extern char DOS_SYS[];
+#endif
+
+
+#ifdef OS2
+// SYSOS2.C
+extern char PROCESS_ID[];
+extern char NO_DPATH[];
+#endif
+
+
+//WINDOW.C
+extern char PopSelectPrompt[];
+
+
+extern int error_level;
+extern int ierror_level;
+extern int gfd;			// global file descriptor (for ^C trapping)
+
+extern char _near ON[];
+extern char _near OFF[];
+extern char _near WILD_FILE[];
+extern char _near WILD_EXT[];
+extern char _near WILD_CHARS[];
+extern char _near QUOTES[];
+extern char _near QUOTES_PARENS[];
+extern char _near BACK_QUOTE[];
+extern char _near NULLSTR[];
+extern char _near SLASHES[];
+
+extern PCH environment;
+extern PCH master_environment;
+extern PCH alias_list;
+extern PCH history_list;
+
+extern char _near *video_type[];
+#ifdef OS2
+extern char _near *ptype[];
+#endif
+extern char _near *daytbl[];
+extern char _near *montbl[];
+extern char _near *dateformat[];
+extern char _near *swap_mode[];
+extern COLORD _near colorize_atts[];
+extern ANSI_COLORS _near colors[];
+extern char _near *int_4dos_errors[];
+
+extern char _near *executables[];
+
+#define COM executables[0]
+#define EXE executables[1]
+#define BTM executables[2]
+#ifndef OS2
+#define BAT executables[3]
+#else
+#define CMD executables[3]
+#define BAT executables[4]
+#endif
+
+#endif
+

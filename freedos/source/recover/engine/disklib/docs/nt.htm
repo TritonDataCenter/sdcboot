@@ -1,0 +1,270 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="robots" content="noindex">
+   <meta name="GENERATOR" content="Mozilla/4.5 [en] (X11; I; Linux 2.0.36 i586) [Netscape]">
+   <title>ARTICLES @ DISKWAREZ.COM - Technical</title>
+</head>
+<body>
+
+<h1>
+Reading the MBR under Windows NT</h1>
+<b>04 May 1999</b>
+<h3>
+Introduction</h3>
+This article presents code to read the MBR (Master Boot Record) under Windows
+NT (along with some ancilliary functions). [A reprint of an October 1998
+article linked on the home page.] The code is derived from some sample
+code by The Microsoft Corporation that was in their SDK.
+<p>With Windows NT you just open a disk handle and just read. Simple eh?
+Well, not exactly. See <a href="rea.htm">Reading Sectors: A Comparison
+Between Operating Systems</a> for more information.
+<h3>
+Code</h3>
+Here is the .C <a href="../diskio/disk.c">source code</a>, .TXT
+<a href="../diskio/disk_c.txt">source
+code</a>, and here is some
+<a href="../diskio/disk.txt">output text</a>
+from tests on my computer.
+<p>Here is the &lt;PRE>&lt;/PRE> source code, but I left the &lt; and >
+characters unescaped and some browsers will not show them.
+<pre>/*
+&nbsp;&nbsp;&nbsp; File: DISK.C
+&nbsp;&nbsp;&nbsp; Desc: Read first sector of disk/drive (MBR or BOOT)
+&nbsp;&nbsp;&nbsp; Plat: Windows NT
+&nbsp;&nbsp;&nbsp; Auth: diskwarez
+&nbsp;&nbsp;&nbsp; Date: 07-Oct-1998
+
+&nbsp;&nbsp;&nbsp; Note: I totally dis-like Windows' C style (to put it mildly).
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Where ever I could I use normal C style. I loathe using
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Windows' typedefs like VOID and LPVOID etc. Anyhoo, this
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; code works and is so damn simple. Who ever said you
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; CAN'T read the MBR under Windows NT. (Writing the MBR
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; may be a different story.)
+*/
+
+#include&nbsp;<stdio.h>
+#include&nbsp;<stdlib.h>
+#include&nbsp;<stdarg.h>
+
+#if defined __STDC__ &amp;&amp; defined _MSC_VER
+#error Windows' SHIT is not ANSI compatable (use /Ze or /ze)
+#endif
+#if defined __WATCOMC__ &amp;&amp; defined NO_EXT_KEYS
+#error Windows' SHIT is not ANSI compatable (do not use -za)
+#endif
+#pragma warning(disable:4001)&nbsp;&nbsp; /* single line comment */
+#pragma warning(disable:4115)&nbsp;&nbsp; /* named type definition in parentheses */
+#pragma warning(disable:4201)&nbsp;&nbsp; /* nameless struct/union */
+#pragma warning(disable:4209)&nbsp;&nbsp; /* benign typedef */
+#pragma warning(disable:4214)&nbsp;&nbsp; /* bit field types other than int */
+#pragma warning(disable:4515)&nbsp;&nbsp; /* unreferenced inline function */
+#define WIN32_LEAN_AND_MEAN
+#define NO_INLINE_SHIT
+#include&nbsp;<windows.h>
+#include&nbsp;<winioctl.h>
+
+long winperror(char * message, ...);
+void *secmalloc(DISK_GEOMETRY *Geometry);
+
+int GetDiskGeometry(HANDLE hDisk, DISK_GEOMETRY *buf)
+{
+unsigned long count;
+
+&nbsp;&nbsp;&nbsp; return DeviceIoControl(hDisk,IOCTL_DISK_GET_DRIVE_GEOMETRY,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NULL,0,buf,sizeof(DISK_GEOMETRY),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &amp;count,NULL);
+}
+
+int GetDiskPartitionInfo(HANDLE hDisk,PARTITION_INFORMATION *buf)
+{
+unsigned long count;
+
+&nbsp;&nbsp;&nbsp; return DeviceIoControl(hDisk,IOCTL_DISK_GET_PARTITION_INFO,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NULL,0,buf,sizeof(PARTITION_INFORMATION),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &amp;count,NULL);
+}
+
+int LockVolume(HANDLE hDisk)
+{
+unsigned long count;
+
+&nbsp;&nbsp;&nbsp; return DeviceIoControl(hDisk,FSCTL_LOCK_VOLUME,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NULL,0,NULL,0,&amp;count,NULL);
+}
+
+int UnlockVolume(HANDLE hDisk)
+{
+unsigned long count;
+
+&nbsp;&nbsp;&nbsp; return DeviceIoControl(hDisk,FSCTL_UNLOCK_VOLUME,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NULL,0,NULL,0,&amp;count,NULL);
+}
+
+void PrintGeometry(char *DriveName,DISK_GEOMETRY *Geometry)
+{
+char *MediaType;
+
+&nbsp;&nbsp;&nbsp; if (DriveName)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("Geometry for Drive %s\n",DriveName);
+
+&nbsp;&nbsp;&nbsp; switch (Geometry->MediaType)
+&nbsp;&nbsp;&nbsp; {
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F5_1Pt2_512:&nbsp; MediaType = "5.25, 1.2MB,&nbsp; 512 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F3_1Pt44_512: MediaType = "3.5,&nbsp; 1.44MB, 512 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F3_2Pt88_512: MediaType = "3.5,&nbsp; 2.88MB, 512 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F3_20Pt8_512: MediaType = "3.5,&nbsp; 20.8MB, 512 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F3_720_512:&nbsp;&nbsp; MediaType = "3.5,&nbsp; 720KB,&nbsp; 512 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F5_360_512:&nbsp;&nbsp; MediaType = "5.25, 360KB,&nbsp; 512 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F5_320_512:&nbsp;&nbsp; MediaType = "5.25, 320KB,&nbsp; 512 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F5_320_1024:&nbsp; MediaType = "5.25, 320KB,&nbsp; 1024 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F5_180_512:&nbsp;&nbsp; MediaType = "5.25, 180KB,&nbsp; 512 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case F5_160_512:&nbsp;&nbsp; MediaType = "5.25, 160KB,&nbsp; 512 bytes/sector";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case RemovableMedia: MediaType = "Removable media other than floppy";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; case FixedMedia:&nbsp;&nbsp; MediaType = "Fixed hard disk media";break;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; default:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; MediaType = "Unknown";break;
+&nbsp;&nbsp;&nbsp; }
+&nbsp;&nbsp;&nbsp; printf("Media Type %s\n",MediaType);
+&nbsp;&nbsp;&nbsp; printf("Cylinders %d Tracks/Cylinder %d Sectors/Track %d\n",
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Geometry->Cylinders.LowPart,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Geometry->TracksPerCylinder,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Geometry->SectorsPerTrack);
+}
+
+HANDLE opendrive(char *drive)
+{
+char devname[64];
+
+&nbsp;&nbsp;&nbsp; if (isalpha(*drive))
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sprintf(devname,"\\\\.\\%c:",*drive);
+&nbsp;&nbsp;&nbsp; else
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; sprintf(devname,"\\\\.\\PHYSICALDRIVE%c",*drive);
+
+&nbsp;&nbsp;&nbsp; return CreateFile(devname,GENERIC_READ | GENERIC_WRITE,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; FILE_SHARE_READ | FILE_SHARE_WRITE,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NULL,OPEN_EXISTING,0,NULL);
+}
+
+
+int main()
+{
+int i;
+HANDLE dev;
+unsigned char *buf;
+unsigned long bytes,bread;
+DISK_GEOMETRY Geometry;
+PARTITION_INFORMATION partinfo;
+
+char *drive = "0";&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* change this for other drives */
+
+&nbsp;&nbsp;&nbsp; printf("Drive: %s\n",drive);
+
+&nbsp;&nbsp;&nbsp; dev = opendrive(drive);
+
+&nbsp;&nbsp;&nbsp; if ( dev == INVALID_HANDLE_VALUE )
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; return (int)winperror("CreateFile");
+
+&nbsp;&nbsp;&nbsp; LockVolume(dev);
+&nbsp;&nbsp;&nbsp; winperror("Lock");
+
+&nbsp;&nbsp;&nbsp; GetDiskPartitionInfo(dev,&amp;partinfo);
+&nbsp;&nbsp;&nbsp; winperror("GetDiskPartitionInfo");
+
+&nbsp;&nbsp;&nbsp; GetDiskGeometry(dev,&amp;Geometry);
+&nbsp;&nbsp;&nbsp; winperror("GetDIskGeometry");
+
+&nbsp;&nbsp;&nbsp; PrintGeometry(drive,&amp;Geometry);
+
+&nbsp;&nbsp;&nbsp; buf = secmalloc(&amp;Geometry);
+&nbsp;&nbsp;&nbsp; if (buf == NULL)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; abort();
+
+&nbsp;&nbsp;&nbsp; bytes = 512;
+
+&nbsp;&nbsp;&nbsp; ReadFile(dev, buf, bytes, &amp;bread, NULL);
+&nbsp;&nbsp;&nbsp; winperror("ReadFile");
+
+&nbsp;&nbsp;&nbsp; /* print first 16 bytes */
+
+&nbsp;&nbsp;&nbsp; for (i = 0; i &lt; 16; i++)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("%02x ",(unsigned)buf[i]);
+&nbsp;&nbsp;&nbsp; for (i = 0; i &lt; 16; i++)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("%c",isprint(buf[i]) ? buf[i] : '.');
+
+&nbsp;&nbsp;&nbsp; /* print last 16 bytes */
+
+&nbsp;&nbsp;&nbsp; printf("\n");
+&nbsp;&nbsp;&nbsp; for (i = 512-16; i &lt; 512; i++)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("%02x ",(unsigned)buf[i]);
+&nbsp;&nbsp;&nbsp; for (i = 512-16; i &lt; 512; i++)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("%c",isprint(buf[i]) ? buf[i] : '.');
+
+&nbsp;&nbsp;&nbsp; printf("\n");
+
+&nbsp;&nbsp;&nbsp; /* hey, lets try the next sector... */
+
+&nbsp;&nbsp;&nbsp; ReadFile(dev, buf, bytes, &amp;bread, NULL);
+&nbsp;&nbsp;&nbsp; winperror("ReadFile");
+
+&nbsp;&nbsp;&nbsp; for (i = 0; i &lt; 16; i++)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("%02x ",(unsigned)buf[i]);
+&nbsp;&nbsp;&nbsp; for (i = 0; i &lt; 16; i++)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("%c",isprint(buf[i]) ? buf[i] : '.');
+&nbsp;&nbsp;&nbsp; printf("\n");
+&nbsp;&nbsp;&nbsp; for (i = 512-16; i &lt; 512; i++)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("%02x ",(unsigned)buf[i]);
+&nbsp;&nbsp;&nbsp; for (i = 512-16; i &lt; 512; i++)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("%c",isprint(buf[i]) ? buf[i] : '.');
+
+&nbsp;&nbsp;&nbsp; /* simple eh? Looking into overlapped i/o for Seeking... */
+
+&nbsp;&nbsp;&nbsp; UnlockVolume(dev);
+
+&nbsp;&nbsp;&nbsp; return 0;
+}
+
+void *secmalloc(DISK_GEOMETRY *Geometry)
+{
+long NumBufs;
+long VirtBufSize;
+LPVOID IoBuffer;
+
+&nbsp;&nbsp;&nbsp; NumBufs = Geometry->Cylinders.LowPart;
+
+&nbsp;&nbsp;&nbsp; VirtBufSize = Geometry->BytesPerSector;
+
+&nbsp;&nbsp;&nbsp; IoBuffer = VirtualAlloc(NULL,VirtBufSize,MEM_COMMIT,PAGE_READWRITE);
+
+&nbsp;&nbsp;&nbsp; return IoBuffer;
+}
+
+long winperror(char * message, ...)
+{
+char *buf;
+va_list ap;
+long error;
+
+&nbsp;&nbsp;&nbsp; error = GetLastError();
+&nbsp;&nbsp;&nbsp; SetLastError(0);
+
+&nbsp;&nbsp;&nbsp; FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER|FORMAT_MESSAGE_FROM_SYSTEM,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; NULL,error,MAKELANGID(LANG_NEUTRAL,SUBLANG_DEFAULT),
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (LPTSTR)&amp;buf,0,NULL);
+
+&nbsp;&nbsp;&nbsp; va_start(ap,message);
+&nbsp;&nbsp;&nbsp; vprintf(message,ap);
+&nbsp;&nbsp;&nbsp; va_end(ap);
+
+&nbsp;&nbsp;&nbsp; printf(" : ");
+&nbsp;&nbsp;&nbsp; if (error)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printf("error = %lu, ",error);
+&nbsp;&nbsp;&nbsp; printf("%s",buf);
+
+&nbsp;&nbsp;&nbsp; LocalFree(buf);
+
+&nbsp;&nbsp;&nbsp; return error;
+}</pre>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+This is the file "copying.cws"  Copyright (C) 1995-2010 Charles W Sandmann
+It must be distributed verbatim.  Changing it is not allowed.
+
+   Copyright information for sources and executables that are marked
+   Copyright (C) CW Sandmann (cwsdpmi@earthlink.net)
+                 1206 Braelinn
+                 Sugar Land, TX 77479
+
+Source code copyright CW Sandmann is distributed under the terms of the
+GNU General Public License (see COPYING).
+
+In addition to the permissions given by the GNU GPL, I give permission to
+distribute the official CWSDPMI.EXE, CWSDPR0.EXE, or CWSPARAM.EXE binaries
+(as released by me, Charles Sandmann, without modification) together with
+precise information as to where to obtain source code on the Internet, in
+place of the source code or written offer as called for in section 3 of
+the GNU GPL version 2.  This includes FREE distributions with commercial
+and shareware programs.  However, you must still follow the GNU GPL in all
+other respects.  The official CWSDSTUB.EXE or CWSDSTR0.EXE may be included
+as the starter stub in your DJGPP images under the same terms.
+
+-----
+
+Some files in this package were originally based on "GO32.EXE" written by
+DJ Delorie (see http://www.delorie.com).  A release (dated 6-Feb-1995)
+on the original copyright terms allows this work to be distributed
+as a separate work under this copyright notice.
+
+A copy of the file "COPYING" is included with this document.  If you did not
+receive a copy of "COPYING", you may obtain one from whence this document
+was obtained, or by writing:
+      Free Software Foundation
+      51 Franklin Street, Fifth Floor
+      Boston, MA  02110-1301
+      USA

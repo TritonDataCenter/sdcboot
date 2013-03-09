@@ -1,0 +1,332 @@
+  JMP Main ;Skip over Data to Main Program
+
+
+;==============================================================================
+;NOTE: This program is written for and compiled with Eric Isaacson's A86
+;      assembly language compiler, using Options +P2 -F (80286+ CPU and
+;      no FPU).
+;==============================================================================
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;EQUATE/STRUCTURE/MACRO DEFINITIONS
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+;EQUATES
+;±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±±
+
+;==============================================================================
+;CONsole/Screen Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special ASCII Characters
+  ;----------------------------------------------------------------------------
+  Tab EQU  9 ;Tab
+  LF  EQU 10 ;Line Feed
+  CR  EQU 13 ;Carriage Return
+  EOF EQU 26 ;End-of-File
+
+;==============================================================================
+;DOS Related
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Special "hard-coded" DOS Device Handles.
+  ;These Handles are permanently hard-coded in DOS, and are always open.
+  ;There is no need to issue Find, Open, or Close calls to these
+  ;  devices - you can just use them at will.
+  ;----------------------------------------------------------------------------
+  StdInHandle  EQU 0 ;Standard Input Device Handle
+  StdOutHandle EQU 1 ;Standard Output Device Handle
+  StdErrHandle EQU 2 ;Standard Error Device Handle
+  StdAuxHandle EQU 3 ;Standard Auxiliary Device Handle (COM1 by default)
+  StdPrnHandle EQU 4 ;Standard Printer Device Handle (LPT1 by default)
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;DATA
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;==============================================================================
+;Messages we write to the screen
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Copyright should be the first data at the top of the compiled file!
+  ;If it is, when the user types "TYPE BOUNDTST.COM", Copyright is what
+  ;  they will see (with no Beeps or Happy Faces).
+  ;----------------------------------------------------------------------------
+  Copyright:
+    DB CR
+    DB "BOUNDTST 1.00, (C) 2008, Bret E. Johnson.",CR,LF
+    DB "A program to test the CPU BOUND Instruction Bug.",CR,LF
+    DB LF,0
+
+  Warning1:
+    DB CR
+    DB "This program will issue a BOUND instruction to your computer's CPU.",CR,LF
+    DB LF
+    DB "If you have not installed a proper patch (like my PRTSCR or USBPRINT programs),",CR,LF
+    DB "  this may either cause your computer to lock up, or may cause your printer",CR,LF
+    DB "  to print reams of paper until you turn off the Computer or the Printer.",CR,LF
+    DB LF
+    DB "If you have installed a proper patch, your computer should reboot.",CR,LF
+    DB 0,EOF
+  Warning2:
+    DB CR,' '
+    DB CR,LF
+    DB "Are you REALLY SURE you want to continue [Y/N]? ",0
+  YesMsg:
+    DB "Y",CR,LF,0
+  NoMsg:
+    DB "N",CR,LF,0
+
+  BadCPUMsg:
+    DB "This program requires at least an 80286 CPU.",CR,LF,0
+
+
+;==============================================================================
+;Program-specific Data
+;==============================================================================
+
+  ;----------------------------------------------------------------------------
+  ;Upper & Lower Bounds for the BOUND Instruction we are testing
+  ;If the register we are testing is in between these two values (inclusively),
+  ;  the program simply continues.  If it is not between these two values,
+  ;  an INT 5 is issued and the BOUND instruction is repeated indefinitely!
+  ;----------------------------------------------------------------------------
+  LowBound  DW 1 ;Lower Bound
+  HighBound DW 2 ;Upper Bound
+
+
+;ßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßßß
+;CODE
+;ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ
+
+;------------------------------------------------------------------------------
+;THE MAIN PROGRAM
+;Inputs:
+;Outputs: Issues BOUND insruction if user approves of it
+;Changes: Everything
+;------------------------------------------------------------------------------
+Main:
+  CLD               ;Go forward with string functions
+  MOV  DX,Copyright ;Write the
+  CALL WriteZCon    ;  Copyright Message
+  MOV  SI,81h       ;Point at Command Line
+  CALL IsSpaceOrEOL ;See if there's anything on the command line
+  JZ  >M10          ;If not, continue
+  MOV  DX,Warning1  ;If so, write the
+  CALL WriteZCon    ;  "help" message
+  JMP >M80          ;Done
+M10:                ;User does not need help
+  CALL Test8086     ;Is the CPU at least an 80286?
+  JNC >M70          ;If not, Error
+  CALL FlushKbdBuff ;Flush the Keyboard Buffer
+  MOV  DX,Warning1  ;Write
+  CALL WriteZErr    ;  the
+  MOV  DX,Warning2  ;  Warning
+  CALL WriteZErr    ;  Message
+  CALL WaitForKey   ;Wait for the user to respond
+  CALL Capitalize   ;Capitalize the response
+  CMP  AL,'Y'       ;Was it a Yes?
+  JE  >M20          ;If so, handle it
+  MOV  DX,NoMsg     ;Write the
+  CALL WriteZErr    ;  N
+  JMP >M80          ;Done
+M20:                ;The user wants to do it!
+  MOV  DX,YesMsg    ;Write the
+  CALL WriteZErr    ;  Y
+  XOR  AX,AX        ;Set AX to 0 (outside of Bounds)
+  BOUND AX,LowBound ;Issue BOUND instruction
+  JMP >M80          ;Done
+M70:                ;Error (illegal CPU)
+  MOV  DX,BadCPUMsg ;Write the
+  CALL WriteZErr    ;  Error Message
+  CALL BeepErr      ;Beep the speaker
+  MOV  AL,1         ;ErrorLevel = 1
+  JMP >M90          ;Done
+M80:                ;No error
+  XOR  AL,AL        ;ErrorLevel = 0
+M90:                ;Done
+  MOV  AH,4Ch       ;Function = Quit with ErrorLevel in AL
+  INT  21h          ;Do it
+
+;------------------------------------------------------------------------------
+;SKIP OVER SPACES TO FIND LEGITIMATE CHARACTERS, AND TEST FOR EOL
+;Inputs:  DS:[SI] = Command Line Pointer
+;Outputs: [SI] = The Next non-Space Character
+;         ZF = Set if EOL
+;            = Clear if legitimate character
+;Changes:
+;------------------------------------------------------------------------------
+IsSpaceOrEOL:
+  PUSH AX     ;Save used registers
+L10:          ;Loop to here to skip over spaces
+  LODSB       ;Get the next character
+  CMP  AL,' ' ;Is it a space?
+  JE   L10    ;If so, get the next character
+  CMP  AL,Tab ;Is it a Tab?
+  JE   L10    ;If so, get the next character
+  DEC  SI     ;If not, point back at the character
+  CMP  AL,CR  ;Set EOL flag
+  POP  AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;TEST AND SEE IF THE CPU IS AN 8086/8088
+;Inputs:
+;Outputs: CF = Clear if the CPU is an 8086/8088
+;            = Set if not at 8086/8088
+;Changes:
+;------------------------------------------------------------------------------
+Test8086:
+  PUSH AX,BX     ;Save used registers
+  PUSHF          ;Save flags
+  MOV  BX,0F000h ;Flags mask for testing (these bits always set on 8086/8088)
+  PUSHF          ;Put the current flags
+  POP  AX        ;  in AX
+  AND  AX,0FFFh  ;Try to clear the
+  PUSH AX        ;  four high bits
+  POPF           ;  of the flags
+  PUSHF          ;Put the current flags
+  POP  AX        ;  in AX
+  AND  AX,BX     ;Are the four high bits
+  CMP  AX,BX     ;  of the flags set?
+  JE  >E80       ;If so, it's an 8086/8088
+  POPF           ;Restore flags
+E70:             ;It is not an 8086/8088
+  STC            ;Set the not 8086/8088 flag
+  JMP >E90       ;We're done
+E80:             ;It is an 8086/8088
+  POPF           ;Restore flags
+  CLC            ;Set the 8086/8088 flag
+E90:             ;We're done
+  POP  BX,AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;BEEP THE SPEAKER
+;Inputs:
+;Outputs: Beeps the speaker
+;Changes:
+;------------------------------------------------------------------------------
+BeepErr:
+  PUSH AX,BX    ;Save used registers
+  XOR  BX,BX    ;BH = Video page = 0
+  MOV  AX,0E07h ;AH = 0Eh = Function = Write TTY
+                ;AL = 07h = Character to write = BEL
+  INT  10h      ;Do it
+  POP  BX,AX    ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WRITE ASCIIZ STRING TO CON OR TO ERR
+;Inputs:  DS:[DX] = Pointer to string
+;Outputs: Writes the string to CON or ERR
+;Changes:
+;------------------------------------------------------------------------------
+WriteZCon:             ;Write to CON
+  PUSH BX              ;Save used register
+  MOV  BX,StdOutHandle ;Write to STDOUT
+  JMP >Z10             ;Jump to do it
+WriteZErr:             ;Write to ERR
+  PUSH BX              ;Save used register
+  MOV  BX,StdErrHandle ;write to STDERR
+Z10:                   ;Write to CON or ERR
+  PUSH AX,CX           ;Save used registers
+  CALL CalcStrSizeDX   ;Calculate the size of the string (returns CX)
+  JZ  >Z80             ;If nothing to write, just quit
+  MOV  AH,40h          ;Function 40h (Write to Device)
+  INT  21h             ;Do it
+Z80:                   ;We're done
+  POP  CX,AX           ;Restore used registers
+  POP  BX              ;Restore used register
+  RET
+
+;------------------------------------------------------------------------------
+;CALCULATE THE LENGTH OF AN ASCIIZ STRING
+;Inputs:  DS:[DX] = Pointer to the string
+;Outputs: CX = Length of the string
+;         ZF = Set if string is 0 length
+;            = Clear if not
+;Changes:
+;------------------------------------------------------------------------------
+CalcStrSizeDX:
+  PUSH AX,DI  ;Save used registers
+  PUSH ES     ;Save used registers
+  MOV  ES,DS  ;Point ES:[DI]
+  MOV  DI,DX  ; at the string
+  XOR  AL,AL  ;Look for a 0
+  MOV  CX,-1  ;Start with max count for REPNE
+  REPNE SCASB ;Find the end of the string
+  NOT  CX     ;Calculate the size
+  DEC  CX     ;  of the string (sets ZF)
+  POP  ES     ;Restore used registers
+  POP  DI,AX  ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;FLUSH KEYBOARD BUFFER
+;Inputs:
+;Outputs:
+;Changes: Flushes the Keyboard Buffer
+;------------------------------------------------------------------------------
+FlushKbdBuff:
+  PUSH AX     ;Save used registers
+F10:          ;Loop to here for each key
+  CALL GetKey ;Get a key from the keyboard buffer
+  JNZ  F10    ;If there was one, get another
+  POP  AX     ;Restore used registers
+  RET
+
+;------------------------------------------------------------------------------
+;WAIT FOR A KEY TO BE PRESSED ON THE KEYBOARD
+;Inputs:
+;Outputs: AH = Keyboard Scan Code
+;         AL = ASCII value of keypress (or 0 if extended ASCII)
+;Changes: Flushes the Keyboard Buffer
+;------------------------------------------------------------------------------
+WaitForKey:
+  CALL GetKey     ;Get a key from the keyboard buffer
+  JZ   WaitForKey ;If none, keep waitint
+  RET
+
+;------------------------------------------------------------------------------
+;READ CHARACTER FROM THE KEYBOARD BUFFER
+;Inputs:
+;Outputs: AH = Keyboard scan code
+;         AL = ASCII value of keypress (or 0 if extended ASCII)
+;         AX = 0 if no key is waiting
+;Changes: ZF = Set if no key in buffer (and AX=0)
+;            = Clear if a key was found (AX = key)
+;------------------------------------------------------------------------------
+GetKey:
+  MOV  AH,1  ;Service 1 (Keystroke waiting?)
+  INT  16h   ;Do it
+  JZ  >K10   ;If no key waiting, we're done
+  XOR  AH,AH ;If a key is waiting, service 0 (Get keystroke)
+  INT  16h   ;Do it
+  JMP >K90   ;We're done
+K10:         ;No keystroke waiting
+  XOR  AX,AX ;Make sure AX=0
+K90:         ;We're done
+  OR   AX,AX ;Set the found/not found flag
+  RET
+
+;------------------------------------------------------------------------------
+;CAPITALIZE A CHARACTER (Byte)
+;Inputs:  AL = character to be capitalized
+;Outputs: AL = capitalized character
+;Changes:
+;------------------------------------------------------------------------------
+Capitalize:
+  CMP  AL,'a'     ;Is it less than 'a'?
+  JB  >C90        ;If so, quit
+  CMP  AL,'z'     ;Is it more than 'z'?
+  JA  >C90        ;If so, quit
+  SUB  AL,'a'-'A' ;If between 'a' and 'z', capitalize it
+C90:
+  RET

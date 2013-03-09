@@ -1,0 +1,11 @@
+iff isdir caveman then
+   echo #define BUILD %1 > caveman\build.h
+   echo BUILD     =         %1 > caveman\build.inc
+endiff
+echo #define VER_BUILD %1 > build.h
+echo INTVER    =         %1 > intver.asm
+echo %1 > build.txt
+echo %1 > build.dos
+echo %1 > build.dsr
+echo %1 > build.w16
+

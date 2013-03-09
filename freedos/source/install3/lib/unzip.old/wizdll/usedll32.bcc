@@ -1,0 +1,208 @@
+#
+# Borland C++ IDE generated makefile
+# Generated 4/22/96 at 9:13:45 AM 
+#
+.AUTODEPEND
+
+
+#
+# Borland C++ tools
+#
+IMPLIB  = Implib
+BCC32   = Bcc32 +BccW32.cfg 
+TLINK32 = TLink32
+TLIB    = TLib
+BRC32   = Brc32
+TASM32  = Tasm32
+#
+# IDE macros
+#
+
+
+#
+# Options
+#
+IDE_LinkFLAGS32 =  -LH:\BC45\LIB
+IDE_ResFLAGS32 = 
+LinkerLocalOptsAtW32_CcbUNZIPbDLLEXE32bwizunzipdexe =  -Tpe -aa -c -LC:\BC5\LIB
+ResLocalOptsAtW32_CcbUNZIPbDLLEXE32bwizunzipdexe = 
+BLocalOptsAtW32_CcbUNZIPbDLLEXE32bwizunzipdexe = 
+CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe = -IC:\BC5\INCLUDE;C:\UNZIP;C:\UNZIP\WINGUI -DUSEWIZUNZDLL;WIZUNZIP;NDEBUG;
+LinkerInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe = -x
+LinkerOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe = $(LinkerLocalOptsAtW32_CcbUNZIPbDLLEXE32bwizunzipdexe)
+ResOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe = $(ResLocalOptsAtW32_CcbUNZIPbDLLEXE32bwizunzipdexe)
+BOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe = $(BLocalOptsAtW32_CcbUNZIPbDLLEXE32bwizunzipdexe)
+
+#
+# Dependency List
+#
+Dep_usedll32 = \
+   C:\UNZIP\DLLEXE32\wizunzip.exe
+
+usedll32 : BccW32.cfg $(Dep_usedll32)
+  echo MakeNode
+
+Dep_CcbUNZIPbDLLEXE32bwizunzipdexe = \
+   wingui\wizunz32.def\
+   C:\UNZIP\32DLLOBJ\wizunzip.res\
+   C:\UNZIP\32DLLOBJ\winsetup.obj\
+   C:\UNZIP\32DLLOBJ\match.obj\
+   C:\UNZIP\32DLLOBJ\about.obj\
+   C:\UNZIP\32DLLOBJ\action.obj\
+   C:\UNZIP\32DLLOBJ\copyfile.obj\
+   C:\UNZIP\32DLLOBJ\iconbar.obj\
+   C:\UNZIP\32DLLOBJ\kbdproc.obj\
+   C:\UNZIP\32DLLOBJ\makedir.obj\
+   C:\UNZIP\32DLLOBJ\pattern.obj\
+   C:\UNZIP\32DLLOBJ\seldir.obj\
+   C:\UNZIP\32DLLOBJ\sizewndw.obj\
+   C:\UNZIP\32DLLOBJ\sound.obj\
+   C:\UNZIP\32DLLOBJ\status.obj\
+   C:\UNZIP\32DLLOBJ\updatelb.obj\
+   C:\UNZIP\32DLLOBJ\winit.obj\
+   C:\UNZIP\32DLLOBJ\wizunzip.obj\
+   C:\UNZIP\32DLLOBJ\wndproc.obj
+
+C:\UNZIP\DLLEXE32\wizunzip.exe : $(Dep_CcbUNZIPbDLLEXE32bwizunzipdexe)
+  $(TLINK32) @&&|
+ /v $(IDE_LinkFLAGS32) $(LinkerOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(LinkerInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) +
+C:\BC5\LIB\c0w32.obj+
+C:\UNZIP\32DLLOBJ\winsetup.obj+
+C:\UNZIP\32DLLOBJ\match.obj+
+C:\UNZIP\32DLLOBJ\about.obj+
+C:\UNZIP\32DLLOBJ\action.obj+
+C:\UNZIP\32DLLOBJ\copyfile.obj+
+C:\UNZIP\32DLLOBJ\iconbar.obj+
+C:\UNZIP\32DLLOBJ\kbdproc.obj+
+C:\UNZIP\32DLLOBJ\makedir.obj+
+C:\UNZIP\32DLLOBJ\pattern.obj+
+C:\UNZIP\32DLLOBJ\seldir.obj+
+C:\UNZIP\32DLLOBJ\sizewndw.obj+
+C:\UNZIP\32DLLOBJ\sound.obj+
+C:\UNZIP\32DLLOBJ\status.obj+
+C:\UNZIP\32DLLOBJ\updatelb.obj+
+C:\UNZIP\32DLLOBJ\winit.obj+
+C:\UNZIP\32DLLOBJ\wizunzip.obj+
+C:\UNZIP\32DLLOBJ\wndproc.obj
+$<,$*
+C:\BC5\LIB\import32.lib+
+C:\BC5\LIB\cw32.lib
+wingui\wizunz32.def
+|
+   $(BRC32) C:\UNZIP\32DLLOBJ\wizunzip.res $<
+
+C:\UNZIP\32DLLOBJ\wizunzip.res :  wingui\wizunzip.rc
+  $(BRC32) -R @&&|
+ $(IDE_ResFLAGS32) $(ROptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe)  -FO$@ wingui\wizunzip.rc
+|
+C:\UNZIP\32DLLOBJ\winsetup.obj :  wingui\winsetup.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\winsetup.c
+|
+
+C:\UNZIP\32DLLOBJ\match.obj :  match.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ match.c
+|
+
+C:\UNZIP\32DLLOBJ\about.obj :  wingui\about.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\about.c
+|
+
+C:\UNZIP\32DLLOBJ\action.obj :  wingui\action.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\action.c
+|
+
+C:\UNZIP\32DLLOBJ\copyfile.obj :  wingui\copyfile.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\copyfile.c
+|
+
+C:\UNZIP\32DLLOBJ\iconbar.obj :  wingui\iconbar.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\iconbar.c
+|
+
+C:\UNZIP\32DLLOBJ\kbdproc.obj :  wingui\kbdproc.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\kbdproc.c
+|
+
+C:\UNZIP\32DLLOBJ\makedir.obj :  wingui\makedir.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\makedir.c
+|
+
+C:\UNZIP\32DLLOBJ\pattern.obj :  wingui\pattern.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\pattern.c
+|
+
+C:\UNZIP\32DLLOBJ\seldir.obj :  wingui\seldir.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\seldir.c
+|
+
+C:\UNZIP\32DLLOBJ\sizewndw.obj :  wingui\sizewndw.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\sizewndw.c
+|
+
+C:\UNZIP\32DLLOBJ\sound.obj :  wingui\sound.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\sound.c
+|
+
+C:\UNZIP\32DLLOBJ\status.obj :  wingui\status.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\status.c
+|
+
+C:\UNZIP\32DLLOBJ\updatelb.obj :  wingui\updatelb.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\updatelb.c
+|
+
+C:\UNZIP\32DLLOBJ\winit.obj :  wingui\winit.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\winit.c
+|
+
+C:\UNZIP\32DLLOBJ\wizunzip.obj :  wingui\wizunzip.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\wizunzip.c
+|
+
+C:\UNZIP\32DLLOBJ\wndproc.obj :  wingui\wndproc.c
+  $(BCC32) -P- -c @&&|
+ $(CompOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) $(CompInheritOptsAt_CcbUNZIPbDLLEXE32bwizunzipdexe) -o$@ wingui\wndproc.c
+|
+
+# Compiler configuration file
+BccW32.cfg : 
+   Copy &&|
+-w
+-R
+-v
+-vi
+-H
+-H=usedll32.csm
+-W
+-H-
+-wcln
+-wucp
+-wbbf
+-wdef
+-wnod
+-wuse
+-wstv
+-wamp
+-wobs
+-d
+-C
+-N
+| $@
+
+

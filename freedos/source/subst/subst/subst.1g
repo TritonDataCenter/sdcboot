@@ -1,0 +1,69 @@
+.TH SUBST 1G "22 May 1995"
+.\"
+.\"    This is the documentation for the SWSUBST package, a SUBST/JOIN & more
+.\"    Copyright (C) 1995  Steffen Kaiser
+.\"
+.\"    This program is free software; you can redistribute it and/or modify
+.\"    it under the terms of the GNU General Public License as published by
+.\"    the Free Software Foundation; either version 2 of the License, or
+.\"    (at your option) any later version.
+.\"
+.\"    This program is distributed in the hope that it will be useful,
+.\"    but WITHOUT ANY WARRANTY; without even the implied warranty of
+.\"    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+.\"    GNU General Public License for more details.
+.\"
+.\"    You should have received a copy of the GNU General Public License
+.\"    along with this program; if not, write to the Free Software
+.\"    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.\"
+.\"  $Id: SUBST.1G 1.2 1995/05/26 05:31:58 ska Exp ska $
+.SH NAME
+subst \- substituiert den Pfad mit einem Laufwerksbuchstaben
+.SH SYNOPSIS
+\fBsubst\fP \fB/?\fP 
+
+\fBsubst\fP \fBlw1\fP: \fBlw2\fP:\fBpfad\fP
+
+\fBsubst\fP \fBlw\fP: \fB/d\fP
+
+\fBsubst\fP
+.SH DESCRIPTION
+\fIsubst\fP manipuliert die CDS (\fBC\fPurrent \fBD\fPirectory
+\fBS\fPtructure), so da\("s auf einen Pfad auch \("uber einen
+Laufwerksbuchstaben zugegriffen werden kann.
+
+\fIsubst\fP ist Teil des \fIswsubst\fP Pakets. Es kann, falls es nicht
+bereits existiert, durch Kopieren des Programms \fBswsubst.exe\fP nach
+\fBsubst.exe\fP erzeugt werden.
+.SH OPTIONS
+.IP \fB/?\fP 
+Gibt einen kleinen Hilfebildschirm aus.
+.IP \fB/d\fP
+Hebt die Verbindung zwischen dem Laufwerk \fBlw\fP und dem geSUBSTeten
+Pfad wieder auf. Falls das Laufwerk geJOINt ist, wird die Verbindung
+ebenfalls gel\("ost.
+.IP "\fBlw1: lw2:pfad\fP"
+Substituiert den Pfad \fBpfad\fP auf Laufwerk \fBlw2\fP mit dem
+Laufwerksbuchstaben \fBlw1\fP. Falls \fBlw1\fP bereits geSUBSTet oder
+geJOINt ist, wird diese Verbindung automatisch gel\("ost. \fBpfad\fP
+mu\("s weder existieren noch vollst\("andig sein.
+.IP "\fBohne Parameter\fP"
+Gibt alle geSUBSTeten Laufwerke in der Form: 'X: => Y:\PATH' aus, wobei
+Y:\PATH der auch mit X:\ ansprechbare vollst\("andige Pfad ist.  Falls
+kein Laufwerk geSUBSTet ist, wird auch keine Ausgabe erzeugt.
+.SH "SEE ALSO"
+swsubst, join.
+.SH "KNOWN BUGS"
+.IP \(bu
+Netzlaufwerke, wie z.B. CD-ROMs, k\("onnen nicht benutzt werden.
+.IP \(bu
+Manchmal funktionieren Substitutionen auf Diskettenlaufwerken nicht.
+.SH CONTRIBUTERS
+    Steffen Kaiser
+.br
+Ernst-Th\("almann-Stra\("se 2
+.br
+     D-09126 Iden
+.br
+ Deutschland - Germany

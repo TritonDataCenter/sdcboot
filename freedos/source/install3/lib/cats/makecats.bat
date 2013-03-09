@@ -1,0 +1,1 @@
+@if not exist catsdb.lib wmake /ms

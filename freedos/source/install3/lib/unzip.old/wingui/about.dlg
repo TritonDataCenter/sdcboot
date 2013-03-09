@@ -1,0 +1,24 @@
+
+ABOUT DIALOG 113, 30, 160, 174
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "About WizUnZip"
+FONT 8, "Helv"
+{
+ CTEXT "Windows Info-ZIP UnZip", -1, 4, 6, 150, 8
+ CTEXT "Version 3.0 beta  January 10, 1996", IDM_ABOUT_VERSION_INFO, 4, 14, 152, 8, SS_CENTER | NOT WS_GROUP
+ CTEXT "A non-profit unzipper product.", -1, 8, 22, 144, 8, NOT WS_GROUP
+ CTEXT "Based on Info-ZIP's UnZip ver. 5.2 beta", IDM_ABOUT_UNZIP_INFO, 2, 31, 154, 8, SS_CENTER | NOT WS_GROUP
+ CTEXT "Report bugs to: Zip-Bugs@WKUVX1.WKU.EDU", -1, 2, 40, 156, 8
+ CTEXT "Windows interface by:", -1, 25, 51, 112, 8, NOT WS_GROUP
+ CTEXT "Mike White", -1, 49, 64, 60, 7
+ CTEXT "CIS 71234,353", -1, 44, 72, 68, 8
+ CTEXT "Robert A. Heath", -1, 44, 85, 74, 8, NOT WS_GROUP
+ CTEXT "157 Chartwell Rd.", -1, 39, 94, 86, 8, NOT WS_GROUP
+ CTEXT "Columbia SC, 29210", -1, 40, 102, 82, 8, NOT WS_GROUP
+ CTEXT "CIS: 71600,437", -1, 20, 111, 116, 8, NOT WS_GROUP
+ CTEXT "Robert.Heath@columbiasc.ncr.com", -1, 0, 122, 154, 8, SS_CENTER | NOT WS_GROUP
+ CTEXT "Johnny Lee", -1, 41, 130, 74, 8, NOT WS_GROUP
+ CTEXT "johnnyl@microsoft.com", -1, 38, 138, 86, 8, NOT WS_GROUP
+ ICON "WizUnZip", -1, 10, 79, 16, 26
+ DEFPUSHBUTTON "OK", IDOK, 48, 150, 64, 18, WS_GROUP
+}

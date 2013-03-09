@@ -1,0 +1,49 @@
+          ;  Translated by Fritz / 04-14-92
+          ;
+          ;  Parse error text to be INCLUDEd in 4DLINIT.ASM
+          ;
+          ;  Copyright 1991, JP Software Inc., All Rights Reserved
+          ;  Author:  Tom Rawson  05/11/91
+          ;
+          ; This module includes only an error message table.  Routines for
+          ; accessing this table are in ERRORMSG.ASM.
+          ;
+          ; ****************************************************************
+          ; NOTE:  This text has been compressed and copied from
+          ; PARSERRS.TXT.  Any changes should be made there, not here!
+          ; ****************************************************************
+          ;
+          public    ParsErrs
+          ;
+          ;
+          ; NOTE:  This text is loaded initially in 4DLINIT.ASM.  It is
+          ; then moved by 4DLINIT code into the resident portion of 4DOS
+          ; if necessary.  This move invalidates the "dw  offset ParsBad"
+          ; below.  This is fixed by adjusting this value inside the
+          ; subroutine LoadMod in 4DLINIT.  Be aware of this if you change
+          ; the structure of the data below!
+          ;
+          ;
+ParsErrs  label     byte                ;beginning of message table
+          dw        offset ParsBad      ;store offset of bad error number msg
+          ;
+          ; Translation table
+          ;
+##
+          ; Error messages
+          ;
+#1 Zu viele Parameter
+#2 Erforderlicher Parameter fehlt
+#3 Unzul„ssiger Schalter
+#4 Unzul„ssiger Tastaturname
+#6 Parameter Wert nicht im zul„ssigen Bereich
+#7 Parameter Wert nicht zul„ssig
+#8 Parameter Wert nicht zul„ssig
+#9 Parameter Format nicht korrekt
+#10 Unzul„ssiger Parameter
+#11 Unzul„ssige Parameter Kombination
+          ;
+          db        0FFh, 0             ;end of table
+          ;
+ParsBad   db        1, 0                ;no message if not found
+

@@ -1,0 +1,40 @@
+:: Renumbers lines in INIDLG.H
+setlocal
+unalias *
+alias error `echo.^echo %&^beep^beep^goto done`
+alias output `if %@filewrite[%outf,%&] == -1 error Cannot write to output file`
+:: alias output `echo OUT:  %&`
+set idinum=0
+set inf=%@fileopen[inidlg.h,read]
+if %inf == -1 error Cannot open input file
+set outf=%@fileopen[inidlg.hn,write]
+if %outf == -1 error Cannot open output file
+set startflag=0
+
+:lineloop
+set line=%@fileread[%inf]
+if "%line" == "**EOF**" goto done
+iff "%@instr[0,12,%line]" != "#define IDI_" .or. "%@word[2,%line]" == "0" .or. %@numeric[%@word[2,%line]] == 0 then
+   output %line
+else
+   set idiname=%@word[1,%line]
+   iff %@index[%line,_MARK ] != -1 .and. %idiname != IDI_MASTER_MARK then
+      set idimod=%@eval[%idinum %% 10]
+      set idinum=%@eval[%idinum + 10 - %idimod]
+      if %idimod ge 6 set idinum=%@eval[%idinum + 10]
+   elseiff %@index[%line,_END ] == -1 .and. %startflag == 0 then
+      set idinum=%@inc[%idinum]
+   endiff
+   output #define %idiname %idinum
+   set startflag=0
+   if %@index[%line,_START ] != -1 set startflag=1
+endiff
+goto lineloop
+
+:done
+set dummy=%@fileclose[%inf]
+set dummy=%@fileclose[%outf]
+move inidlg.h *.ho
+ren inidlg.hn *.h
+endlocal
+

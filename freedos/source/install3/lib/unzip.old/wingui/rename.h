@@ -1,0 +1,6 @@
+#define IDM_RENAME_TEXT     100
+#define IDM_TO_TEXT         101
+#define IDM_NEW_NAME_TEXT   102
+#define IDM_RENAME_RENAME   103
+#define IDM_RENAME_CANCEL   104
+#define IDM_RENAME_HELP     105

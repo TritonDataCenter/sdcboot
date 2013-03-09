@@ -1,0 +1,9 @@
+;module-definition file for Windows Unzip DLL -- used by link.exe
+LIBRARY WIZUNZ32 ; Library module name
+
+DESCRIPTION 'Windows Info-ZIP UnZip DLL 1.0 by Info-ZIP, Mike White 1996'
+
+EXPORTS
+	 DllProcessZipFiles          ; actual entry point
+     GetDllVersion
+

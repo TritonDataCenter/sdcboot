@@ -1,0 +1,150 @@
+:: Renumbers numeric #defines in a .H file
+:: 
+:: Invoke with:
+::  
+::    renum filename
+::  
+:: where FILENAME.H exists.  Output is written to FILENAME.H, the
+:: old file is saved as FILENAME.HO.  Any previous FILENAME.HO is
+:: deleted.
+::
+:: Lines which do not begin with #define, or where the second
+:: parameter to #define is non-numeric, or where numbering has
+:: been disabled (see below), are output as-is.
+::
+:: RENUM currently can NOT handle comments on the same line as a
+:: #define to be renumbered.  Put comments on separate lines, or
+:: on lines where numbering is OFF, or they will be deleted.
+::  
+:: RENUM depends on the comments in the file, formatted like this:
+::  
+::    //NUM code [value] ...
+:: 
+:: Code and code / value pairs can be repeated on the same line.
+:: The possible codes are:
+::  
+::    ON          Enable numbering (default)
+::    OFF         Disable numbering
+::    OFF nnn     Disable numbering for next nnn lines
+::    HEX         Output in hex
+::    DEC         Output in decimal (default)
+::    NEXT nnn    Next number is decimal nnn (default 1)
+::    ADD nnn     Increment current number by nnn
+::    ROUND       Increment current number by half the base, then round
+::                to next multiple of the base (10 for decimal, 16 for
+::                hex).  For example this rounds 0x107 to 0x110, but
+::                0x108 to 0x120, leaving plenty of room for manual
+::                additions.
+::  
+setlocal
+unalias *
+setdos /x-6
+set inf=
+set outf=
+set error=
+on break (set error=Y ^ goto done)
+on errormsg (set error=Y ^ goto done)
+
+alias error `echo.^echo %& (at line %lnum)^beep^beep^goto done`
+alias output `if "%@filewrite[%outf,%&]" == "-1" error Cannot write to output file`
+:: alias output `echo OUT:  %&`
+alias getvalue `if %@numeric[%@word[1,%line]] != 0 (set value=%@word[1,%line] ^ set gotvalue=Y)`
+
+if not exist %1.h error File %@upper[%1.h] does not exist
+set inf=%@fileopen[%1.h,read]
+if %inf == -1 error Cannot open input file
+set outf=%@fileopen[%1.hn,write]
+if %outf == -1 error Cannot open output file
+set lnum=0
+set mode=DEC
+set base=10
+set process=ON
+set num=1
+set skipcnt=0
+
+:lineloop
+set line=%@fileread[%inf]
+set lnum=%@inc[%lnum]
+if "%line" == "**EOF**" goto done
+iff "%@instr[0,6,%line]" == "//NUM " then
+   output %line
+   set line=%@instr[6,255,%line]
+   set gotvalue=N
+   if "%line" != "" for %code in (%line) gosub numproc
+elseiff "%process" != "ON" .or. "%@instr[0,8,%line]" != "#define " .or. "%@numeric[%@instr[0,1,%@word[2,%line]]]" == "0" then
+   output %line
+   iff %skipcnt != 0 then
+      set skipcnt=%@dec[%skipcnt]
+      if %skipcnt == 0 set process=ON
+   endiff
+else
+   set defname=%@word[1,%line]
+   iff "%mode" == "DEC" then
+      set nout=%num
+   else
+      set nnn=%num
+      set nout=
+      do i = 0 to 3
+         set dig=%@eval[%nnn %% 16]
+         if %dig gt 9 set dig=%@char[%@eval[%dig + 55]]
+         set nout=%dig%%nout
+         set nnn=%@int[%@eval[%nnn / 16]]
+         if %nnn == 0 leave
+      enddo
+   endiff
+   iff %@len[%defname] lt 23 then
+      set pad=`%@repeat[ ,%@eval[23 - %@len[%defname]]]`
+   else
+      set pad=
+   endiff
+:   output #define %defname%%pad 0x%nout
+output #define %defname%%pad %nout
+   set num=%@inc[%num]
+endiff
+goto lineloop
+
+:done
+on error
+setdos /x0
+if "%inf" != "" set dummy=%@fileclose[%inf]
+if "%outf" != "" set dummy=%@fileclose[%outf]
+iff "%error" != "Y" then
+   move %1.h *.ho
+   ren %1.hn *.h
+endiff
+endlocal
+quit
+
+:: Handle //NUM
+:numproc
+::  Skip any previously handled value
+if "%gotvalue" == "Y" (set gotvalue=N ^ return)
+iff "%code" == "ON" then
+   set process=%code
+elseiff "%code" == "OFF" then
+   set process=%code
+   getvalue
+   set skipcnt=%@if["%gotvalue" == "Y",%value,0]
+elseiff "%code" == "DEC" .or. "%code" == "HEX" then
+   set mode=%code
+   set base=%@if["%mode" == "DEC",10,16]
+elseiff "%code" == "NEXT" then
+   getvalue
+   set num=%@if["%gotvalue" == "Y",%value,1]
+   echo New value %num
+elseiff "%code" == "ADD" then
+   :: Increment number      
+   getvalue
+   if "%gotvalue" == "Y" set num=%@eval[%num + %value]
+elseiff "%code" == "ROUND" then
+   :: Round to nearest multiple of the base
+   set num=%@eval[%num + (%base / 2)]
+   set mod=%@eval[%num %% %base]
+   set num=%@eval[%num + %base - %mod]
+   echo Rounded to %num
+else
+   error Invalid //NUM code %code
+endiff
+return
+
+

@@ -1,0 +1,28 @@
+!IFNDEF LANGUAGE
+LANGUAGE=ENGLISH
+!ENDIF
+
+!IF "$(LANGUAGE)" == "ENGLISH"
+OBJ=DOS
+!ENDIF
+
+!IF "$(LANGUAGE)" == "GERMAN"
+OBJ=DOS_D
+!ENDIF
+
+CFLAGS=/c /D$(LANGUAGE) /Fo$(OBJ)\ /Lp /AM /J /Gs /Os /W3 /Zp1
+
+!IF "$(LANGUAGE)" == "ENGLISH"
+ALL : batcomp.exe
+!ELSE
+ALL : $(OBJ)\batcomp.exe
+!ENDIF
+
+$(OBJ)\batcomp.obj : batcomp.c batcomp.h
+	cl $(CFLAGS) batcomp.c
+
+batcomp.exe : \
+	$(OBJ)\batcomp.obj
+!INCLUDE DOLINK.MAK        
+
+

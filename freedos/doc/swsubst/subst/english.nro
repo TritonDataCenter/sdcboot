@@ -1,0 +1,142 @@
+.TH SUBST 1 "22 May 1995"
+.. 
+..    This is the documentation for the SWSUBST package, a SUBST/JOIN & more
+..    Copyright (C) 1995  Steffen Kaiser
+.. 
+..    This program is free software; you can redistribute it and/or modify
+..    it under the terms of the GNU General Public License as published by
+..    the Free Software Foundation; either version 2 of the License, or
+..    (at your option) any later version.
+.. 
+..    This program is distributed in the hope that it will be useful,
+..    but WITHOUT ANY WARRANTY; without even the implied warranty of
+..    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+..    GNU General Public License for more details.
+.. 
+..    You should have received a copy of the GNU General Public License
+..    along with this program; if not, write to the Free Software
+..    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.. 
+..  $Id: SUBST.1 1.2 1995/05/26 05:31:58 ska Exp ska $
+.SH NAME
+subst - substitute a path by a drive letter.
+.SH SYNOPSIS
+.cb
+subst
+.cb
+/?
+
+.cb
+subst
+.cb
+dr1
+.ct : 
+.cb
+dr2
+.ct :
+.cb
+.ct path
+
+.cb
+subst
+.cb
+dr
+.ct : 
+.cb
+/d
+
+.cb
+subst
+.SH DESCRIPTION
+.cu
+subst
+is designed to manipulate the CDS (
+.cb
+.ct C
+.ct urrent
+.cb
+D
+.ct irectory 
+.cb
+S
+.ct tructure), so a path of one drive can be accessed
+by a drive letter.
+
+.cu
+subst
+is part of the 
+.cu
+swsubst
+package. It can be created, if
+it does not already exist, by copying the executable 
+.cb
+swsubst.exe
+to
+.cb
+subst.exe
+.ct .
+.SH OPTIONS
+.IP /? 
+Displays a little help screen.
+.IP /d
+Causes 
+.cu
+subst
+to break off the relation between the drive letter 
+.cb
+dr
+and
+the substituted path. If 
+.cb
+dr
+is JOIN'ed and not SUBST'ed, the relation
+is been broken off, too.
+.IP "dr1: dr2:path"
+Causes 
+.cu
+subst
+to substitute the 
+.cb
+path
+on drive 
+.cb
+dr2
+with
+the drive letter 
+.cb
+dr1
+.ct . If 
+.cb
+dr1
+is already SUBST'ed or JOIN'ed,
+this relation will be broken off. 
+.cb
+path
+need not neither exist nor
+fully qualified. It will be created as well as the full path relative to
+the current working directory on drive 
+.cb
+dr2
+.ct .
+.IP "without any parameter"
+This dumps a list onto the screen containing all SUBST'ed drives in
+the form: X: => Y:\PATH; where Y:\PATH is the fully-qualified path and
+by X: substituted path. If there is no SUBST'ed drive, no output
+occurs.
+.SH "SEE ALSO"
+swsubst, join.
+.SH "KNOWN BUGS"
+.IP o
+Networked drives cannot be used.
+.IP o
+Sometimes substitutions onto a floppy drive won't work for unknown
+reason.
+.ne 8
+.SH CONTRIBUTERS
+.ce 6
+Steffen Kaiser
+Mittelstraáe 112/B115
+53757 Sankt Augustin - Menden
+Deutschland - Germany
+
+e-mail: Steffen.Kaiser@@FH-Rhein-Sieg.DE

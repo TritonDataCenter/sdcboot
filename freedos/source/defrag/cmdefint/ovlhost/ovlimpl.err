@@ -1,0 +1,34 @@
+..\..\engine\header\direct.h(26): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\direct.h(45): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\direct.h(78): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\direct.h(109): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\direct.h(110): Error! E1091: Wrong LFN entry structure
+..\..\engine\header\boot.h(40): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\boot.h(41): Error! E1091: Wrong struct FAT32Specific
+..\..\engine\header\boot.h(68): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\boot.h(69): Error! E1091: Wrong struct FAT1216Specific
+..\..\engine\header\boot.h(114): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+..\..\engine\header\boot.h(115): Error! E1091: WRONG BOOT SECTOR STRUCT LENGTH
+..\..\engine\header\fsinfo.h(23): Error! E1105: 'sizeof' not allowed in #if or #elif expression
+OVLIMPL.C(34): Warning! W137: Extern function 'UpdateInterfaceState' redeclared as static
+OVLIMPL.C(34): Note! I2002: 'UpdateInterfaceState' defined in: ..\..\modlgate\expected.h(6)
+OVLIMPL.C(37): Warning! W137: Extern function 'SmallMessage' redeclared as static
+OVLIMPL.C(37): Note! I2002: 'SmallMessage' defined in: ..\..\modlgate\expected.h(7)
+OVLIMPL.C(45): Warning! W137: Extern function 'LargeMessage' redeclared as static
+OVLIMPL.C(45): Note! I2002: 'LargeMessage' defined in: ..\..\modlgate\expected.h(8)
+OVLIMPL.C(50): Warning! W137: Extern function 'DrawDriveMap' redeclared as static
+OVLIMPL.C(50): Note! I2002: 'DrawDriveMap' defined in: ..\..\modlgate\expected.h(10)
+OVLIMPL.C(58): Warning! W137: Extern function 'DrawOnDriveMap' redeclared as static
+OVLIMPL.C(58): Note! I2002: 'DrawOnDriveMap' defined in: ..\..\modlgate\expected.h(9)
+OVLIMPL.C(98): Warning! W137: Extern function 'DrawMoreOnDriveMap' redeclared as static
+OVLIMPL.C(98): Note! I2002: 'DrawMoreOnDriveMap' defined in: ..\..\modlgate\expected.h(12)
+OVLIMPL.C(139): Warning! W137: Extern function 'LogMessage' redeclared as static
+OVLIMPL.C(139): Note! I2002: 'LogMessage' defined in: ..\..\modlgate\expected.h(11)
+OVLIMPL.C(147): Warning! W137: Extern function 'QuerySaveState' redeclared as static
+OVLIMPL.C(147): Note! I2002: 'QuerySaveState' defined in: ..\..\modlgate\expected.h(14)
+OVLIMPL.C(152): Warning! W137: Extern function 'IndicatePercentageDone' redeclared as static
+OVLIMPL.C(152): Note! I2002: 'IndicatePercentageDone' defined in: ..\..\modlgate\expected.h(16)
+OVLIMPL.C(153): Warning! W111: Meaningless use of an expression
+OVLIMPL.C(154): Warning! W111: Meaningless use of an expression
+OVLIMPL.C(158): Warning! W137: Extern function 'GetMaximumDrvMapBlock' redeclared as static
+OVLIMPL.C(158): Note! I2002: 'GetMaximumDrvMapBlock' defined in: ..\..\modlgate\expected.h(18)

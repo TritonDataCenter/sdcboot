@@ -1,0 +1,106 @@
+# Makefile for UnZip 5.20 and later:  Human68K with gcc        NIIMI Satoshi
+#
+# The original Makefile maybe works fine, but X68000 is too slow
+# to process it.  So I split out needed part.
+#
+# Last revised:  11 Feb 96
+
+VPATH = HUMAN68K
+
+CC = gcc
+CFLAGS = -Wall -O -I. -fomit-frame-pointer -fstrength-reduce
+LDFLAGS = -s
+
+LIBS = -lsignal -ldos -lmb
+
+# UnZipSFX flags
+XC = -DSFX
+
+# fUnZip flags
+FC = -DFUNZIP
+
+# object files
+OBJS = unzip.o crc32.o crctab.o crypt.o envargs.o explode.o extract.o \
+	fileio.o globals.o inflate.o list.o match.o process.o ttyio.o \
+	unreduce.o unshrink.o zipinfo.o human68k.o options.o
+OBJX = unzipsfx.o crc32.o crctab.o crypt.o extract_.o fileio.o inflate.o \
+	match.o process_.o ttyio.o human68_.o
+OBJF = funzip.o crc32.o crypt_.o globals_.o inflate_.o ttyio_.o
+
+UNZIP_H = unzip.h unzpriv.h globals.h
+
+UNZIPS = unzip.x unzipsfx.x funzip.x
+
+.c.o:
+	$(CC) $(CFLAGS) -I. -c $< -o $@
+
+# for debugging
+.c.s:
+	$(CC) $(CFLAGS) -c $< -o $@
+
+all:		unzips
+unzips:		$(UNZIPS)
+docs:		$(DOCS)
+unzipsman:	unzips docs
+unzipsdocs:	unzips docs
+
+clean:
+	rm -f $(OBJS) $(OBJF) $(OBJX) $(UNZIPS)
+
+unzip.x: $(OBJS)
+	$(CC) $(LDFLAGS) -o $@ $(OBJS) $(LIBS)
+
+unzipsfx.x: $(OBJX)
+	$(CC) $(LDFLAGS) -o $@ $(OBJX) $(LIBS)
+
+funzip.x: $(OBJF)
+	$(CC) $(LDFLAGS) -o $@ $(OBJF) $(LIBS)
+
+crc32.o:	crc32.c $(UNZIP_H) zip.h
+crctab.o:	crctab.c $(UNZIP_H) zip.h
+crypt.o:	crypt.c $(UNZIP_H) zip.h crypt.h ttyio.h
+envargs.o:	envargs.c $(UNZIP_H)
+explode.o:	explode.c $(UNZIP_H)
+extract.o:	extract.c $(UNZIP_H) crypt.h
+fileio.o:	fileio.c $(UNZIP_H) crypt.h ttyio.h ebcdic.h
+funzip.o:	funzip.c $(UNZIP_H) crypt.h ttyio.h tables.h
+globals.o:	globals.c $(UNZIP_H)
+inflate.o:	inflate.c inflate.h $(UNZIP_H)
+list.o:		list.c $(UNZIP_H)
+match.o:	match.c $(UNZIP_H)
+process.o:	process.c $(UNZIP_H)
+ttyio.o:	ttyio.c $(UNZIP_H) zip.h crypt.h ttyio.h
+unreduce.o:	unreduce.c $(UNZIP_H)
+unshrink.o:	unshrink.c $(UNZIP_H)
+unzip.o:	unzip.c $(UNZIP_H) crypt.h version.h consts.h
+zipinfo.o:	zipinfo.c $(UNZIP_H)
+
+crypt_.o:	crypt.c $(UNZIP_H) zip.h crypt.h ttyio.h	# funzip
+	$(CC) $(CFLAGS) $(FC) -c $< -o $@
+
+extract_.o:	extract.c $(UNZIP_H) crypt.h			# unzipsfx
+	$(CC) $(CFLAGS) $(XC) -c $< -o $@
+
+globals_.o:	globals.c $(UNZIP_H)				# funzip
+	$(CC) $(CFLAGS) $(FC) -c $< -o $@
+
+human68k.o:	human68k/human68k.c $(UNZIP_H)
+	$(CC) $(CFLAGS) -I. -c human68k/human68k.c -o $@
+
+human68_.o:	human68k/human68k.c $(UNZIP_H)			# unzipsfx
+	$(CC) $(CFLAGS) $(XC) -I. -c human68k/human68k.c -o $@
+
+inflate_.o:	inflate.c inflate.h $(UNZIP_H) crypt.h		# funzip
+	$(CC) $(CFLAGS) $(FC) -c $< -o $@
+
+process_.o:	process.c $(UNZIP_H)				# unzipsfx
+	$(CC) $(CFLAGS) $(XC) -c $< -o $@
+
+ttyio_.o:	ttyio.c $(UNZIP_H) zip.h crypt.h ttyio.h	# funzip
+	$(CC) $(CFLAGS) $(FC) -c $< -o $@
+
+unzipsfx.o:	unzip.c $(UNZIP_H) crypt.h version.h consts.h	# unzipsfx
+	$(CC) $(CFLAGS) $(XC) -c $< -o $@
+
+diff:
+	-(cd ..; diff -cNr unz52h unz52h-x68k -x GNUmakefile -x "*.[ox]" > unzip68k.dif)

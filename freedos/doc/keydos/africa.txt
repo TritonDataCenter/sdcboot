@@ -1,0 +1,77 @@
+Support for indo-european and native languages on Africa
+========================================================
+
+Below is the list of the official, co-official, national  and  widely  spoken
+languages on all african countries which are assisted by the  "international"
+versions of the US, french and portuguese keyboards, namely UX, FX and PX.
+
+Afar
+Afrikaans
+Angolar
+Badiu
+Bambara
+Boavista
+Brava
+Chichewa
+Criol d'Soncente
+Dagaari
+Dagbani
+Dangbe
+Dinka
+Dioula
+Ewe
+Fanagalo
+Fogo
+Forro
+French
+French Patois
+Fula
+Ga
+German
+Gonja
+Italian
+Kanuri
+Kasem
+Khoe
+Kikongo
+Kinyarwanda
+Kirundi
+Krio
+Lingala
+Lobedu
+Luganda
+Maio
+Malagasy
+Mandinka
+Moore
+Nama
+Ndebele (Northern/Southern)
+Nuer
+Nyanja
+Nzema
+Oromo
+Pluthi
+Portuguese
+Principense
+Sal
+San
+Sango
+Santo Ant∆o
+S∆o Nicolau
+Shikomor
+Somali
+Soninke
+Sotho (Northern/Southern)
+Spanish
+Sranan
+Swahili
+Swati
+Tshiluba
+Tsonga
+Tswana
+Twi
+Venda
+Wolof
+Xhosa
+Zarma
+Zulu

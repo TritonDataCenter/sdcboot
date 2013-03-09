@@ -1,0 +1,20 @@
+#
+# Makefile for the data structures
+#
+
+include ../../configlinux.mak
+
+.PHONY: dtstrct.a
+
+all: dtstrct.a
+	@echo Data structures compiled
+
+dtstrct.a: bitfield.o
+	@$(libman) ../lib/fte.a bitfield.o
+
+bitfield.o: bitfield.c
+	@$(compiler) $(options) bitfield.c
+
+clean:
+	@-rm -f bitfield.o
+

@@ -1,0 +1,28 @@
+:: Release information and branding text
+
+:: Current release numbers
+set 4DOSREL=2
+set 4NTREL=2
+set TCMD32REL=2
+
+:: Brand info for release versions
+set 4dosname=4DOS
+set 4dossn=999001
+set 4dostxt="This trial version of 4DOS may be used for up to 21 days before purchase."
+set 4ntname=4NT
+set 4ntsn=999001
+set 4nttxt="This trial version of 4NT may be used for up to 21 days before purchase."
+set tcmd32name=TCMD32
+set tcmd32sn=999001
+set tcmd32txt="This trial version of Take Command may be used for up to 21 days before purchase."
+set 4dosrtname=4DOSRT
+set 4dosrtsn=999601
+set 4dosrttxt="Unbranded, not for distribution! Contact JP Software to make this version usable."
+set 4ntrtname=4NTRT
+set 4ntrtsn=999601
+set 4ntrttxt="Unbranded, not for distribution! Contact JP Software to make this version usable."
+set tcmd32rtname=TC32RT
+set tcmd32rtsn=999601
+set tcmd32rttxt="Unbranded, not for distribution! Contact JP Software to make this version usable."
+
+

@@ -1,0 +1,55 @@
+This is a modified distribution of zlib, cut down and tweaked for
+FreeDOS HTML HELP as compiled with Borland Turbo C++ 3.1.
+
+Since it is a modified version, the version number in zlib.h
+has been changed to "1.2.1.f-htmlhelp"
+
+MODIFICATIONS
+=============
+
+ - files not needed by html help have not been left out, such as those
+   that implement encryption suppport and deflation.
+
+ - the make file (derived from a make file in
+   the zlib distribution "msdos\makefile.tc") has been customised
+
+ - the following compile-time options have been defined in zlib.h:
+        BUILDFIXED
+        DYNAMIC_CRC_TABLE
+        NO_GZCOMPRESS
+        NO_GZIP
+        PKZIP_BUG_WORKAROUND
+
+ - #include "zconf.h" in zlib.h changed to #include "unz\zconf.h"
+
+ - in many of the files, code has been #defined out to save on executable size.
+   The defines are of the form:
+  
+       #ifdef ZLIB_HH_DONTCUT
+    
+        ...
+  
+       #endif
+
+TO COMPILE
+==========
+
+To compile the library with Turbo C++, run MAKE whilst in this directory.
+All files that are needed will be put in
+
+     zlib_hh\source\zlib_hh\unz
+
+copy these to
+
+     help\source\help\unz
+
+
+OBTAINING AN OFFICIAL VERSION OF ZLIB
+=====================================
+
+The complete, official ZLIB distribution can be obtained from
+the zlib homepage "www.zlib.org".
+
+=========
+Rob Platt
+worldwiderob@yahoo.co.uk

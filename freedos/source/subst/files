@@ -1,0 +1,16 @@
+JOIN         Subdirectory containing the documentation for JOIN
+SUBST        Subdirectory containing the documentation for SUBST
+compile.bat  compile with Borland C
+deutsch.msg  German message definition file
+deutsch.nro  German documentation in NRO format
+english.msg  English message definition file
+english.nro  English documentation in NRO format
+files        This file
+history      Change log
+makefile     Makefile for DMake
+notes        Notes how to compile SWSUBST
+readme       Readme
+src.rsp      Source files response file
+swsubst.1    Documentation for SWsubst in English for NROFF
+swsubst.1g   Documentation for SWsubst in German for NROFF
+swsubst.exe  compiled with Borland C v4.5

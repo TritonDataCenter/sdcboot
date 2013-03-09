@@ -1,0 +1,16 @@
+D:\SRC\FREECOM\TESTS>echo This is a test batch file
+This is a test batch file
+D:\SRC\FREECOM\TESTS>echo
+ECHO is on
+Testing with echo off
+D:\SRC\FREECOM\TESTS>echo Testing wih echo on
+Testing wih echo on
+D:\SRC\FREECOM\TESTS>echo off
+Testing : test2 p1 p2 p3 p4    
+Testing : p1 p2 p3 p4     
+Testing : p2 p3 p4      
+now test the environment substitution
+path is c:\tcpp\bin;c:\setedit\bin;c:\bin;c:\gnu;c:\dosemu;c:\tc 
+PATH is c:\tcpp\bin;c:\setedit\bin;c:\bin;c:\gnu;c:\dosemu;c:\tc 
+Absent variable is 
+Bad f

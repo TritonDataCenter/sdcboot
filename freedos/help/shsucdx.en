@@ -1,0 +1,45 @@
+SHSUCDX
+
+SHSUCDX is a CD-ROM extender, compatible to MSCDEX.
+
+For all the additional options, please see SHSUCDX /?
+
+
+---------------------------------------------------------
+
+Usage example #1 (autoexec.bat, setting CD drive as X: ): 
+DEVLOAD C:\DRIVER\UIDE.SYS /D:FDCD0001
+SHSUCDX /D:FDCD0001,X
+
+Usage example #2 (ISO file located on FAT filesystem or on CD)
+SHSUCDHD /F:X:\ISOLINUX\FDBOOTCD.ISO
+SHSUCDX /D:SHSU-CDH
+
+---------------------------------------------------------
+
+Features:
+* Commandline loadable, unloadable
+* Override MSCDEX if using /I option
+* Supports pre-loading
+* Advanced batchfile options support (errorlevel)
+* Multiple layer loading (ISO on physical CD etc)
+*
+
+Supported:
+* Computers with 8086 or more recent processor
+* Drivers for physical CD drives (UIDE.SYS / VIDE-CDD.SYS)
+* Specific driver for non-emulation mode CD booting (ELTORITO.SYS)
+* Disk-backed CD image files ( as SHSU-CDH)
+* Memory-loaded CD image files (as SHSU-CDR)
+* Memory-stored CD 1:1 copy (SHSU-CDI)
+*
+
+Not supported:
+* UDF 
+* long filenames
+* 
+
+Requirements:
+* Driver loaded which offers SHSUCDX a block device name
+* ISO9660 filesystem used on the data disk you want to read
+*

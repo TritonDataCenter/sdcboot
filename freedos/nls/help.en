@@ -1,0 +1,8 @@
+0.0:Display a help topic
+0.1:Usage:
+0.2:topic
+0.3:Environment:
+0.4:Pager program to display a text file
+0.5:Directory that contains your help files
+0.6:Preferred language for your help files
+1.0:Cannot execute pager program.

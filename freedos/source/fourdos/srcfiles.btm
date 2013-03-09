@@ -1,0 +1,4 @@
+@echo off
+if "%1" == "" (echo.^echo Usage:  SRCFILES listname^echo.^quit)
+for %%f in (@%1) do if "%f" != "" (echo %@substr[%f%ÿÿÿÿÿÿÿÿÿÿÿÿÿÿ,0,12]  %@substr[ÿÿÿÿÿÿ%@filesize[%f],5,-6]  %@filedate[%f]  %@filetime[%f])
+

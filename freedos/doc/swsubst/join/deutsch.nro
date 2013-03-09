@@ -1,0 +1,134 @@
+.TH JOIN 1G "22 May 1995"
+.. 
+..    This is the documentation for the SWSUBST package, a SUBST/JOIN & more
+..    Copyright (C) 1995  Steffen Kaiser
+.. 
+..    This program is free software; you can redistribute it and/or modify
+..    it under the terms of the GNU General Public License as published by
+..    the Free Software Foundation; either version 2 of the License, or
+..    (at your option) any later version.
+.. 
+..    This program is distributed in the hope that it will be useful,
+..    but WITHOUT ANY WARRANTY; without even the implied warranty of
+..    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+..    GNU General Public License for more details.
+.. 
+..    You should have received a copy of the GNU General Public License
+..    along with this program; if not, write to the Free Software
+..    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.. 
+..  $Id: JOIN.1G 1.2 1995/05/26 05:31:58 ska Exp ska $
+.SH NAME
+join - fÅgt ein Laufwerk in ein Verzeichnis ein
+.SH SYNOPSIS
+.cb
+join
+.cb
+/?
+
+.cb
+join
+.cb
+lw1
+.ct : 
+.cb
+lw2
+.ct :
+.cb
+.ct pfad
+
+.cb
+join
+.cb
+lw
+.ct : 
+.cb
+/d
+
+.cb
+join
+
+.SH DESCRIPTION
+.cu
+join
+manipuliert die CDS (
+.cb
+.ct C
+.ct urrent
+.cb
+D
+.ct irectory 
+.cb
+S
+.ct tructure), so da· ein Laufwerk Åber ein
+Verzeichnis eines anderen Laufwerks verfÅgbar ist.
+
+.cu
+join
+ist Teil des 
+.cu
+swsubst
+Pakets. Es kann, falls es nicht
+bereits existiert, durch Kopieren des Programms 
+.cb
+swsubst.exe
+nach
+.cb
+join.exe
+bereitgestellt werden.
+.SH OPTIONS
+.IP /? 
+Zeigt einen kleinen Hilfebildschirm an.
+.IP /d
+Weist 
+.cu
+join
+an, die bestehende Verbindung zwischen einem geJOINten
+Laufwerk 
+.cb
+lw
+und dem Verzeichnis wieder aufzuheben. Falls 
+.cb
+lw
+geSUBSTet ist, wird die Verbindung ebenfalls gelîst.
+.IP "lw1: lw2:pfad"
+FÅgt das Laufwerk 
+.cb
+lw1
+in den Pfad 
+.cb
+pfad
+auf dem Laufwerk
+.cb
+dr2
+ein.  Ist 
+.cb
+lw1
+bereits geSUBSTet oder geJOINt, wird diese
+Verbindung gelîst. Der Pfad 
+.cb
+pfad
+mu· weder existieren noch
+vollstÑndig angegeben werden.
+.IP "ohne Parameter"
+Gibt die Liste aller geJOINten Laufwerke in der Form: 'X: => Y:\PFAD'
+aus, wobei Y:\PFAD das Verzeichnis ist, Åber welches das Laufwerk X:
+angesprochen werden kann. Falls kein geJOINtes Laufwerk existiert, wird
+auch keine Ausgabe erzeugt.
+.SH "SEE ALSO"
+swsubst, subst.
+.SH "KNOWN BUGS"
+.IP o
+Netzlaufwerke, zu denen auch CD-ROMs gehîren, kînnen nicht
+verwendet werden.
+.IP o
+Manchmal funktionieren JOINs auf Diskettenlaufwerken nicht.
+.ne 10
+.SH CONTRIBUTERS
+.ce 6
+Steffen Kaiser
+Mittelstra·e 112/B115
+53757 Sankt Augustin - Menden
+Deutschland - Germany
+
+e-mail: Steffen.Kaiser@@FH-Rhein-Sieg.DE

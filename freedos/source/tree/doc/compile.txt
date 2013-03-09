@@ -1,0 +1,57 @@
+Tree v3.7 for FreeDOS, compile instructions.
+
+Tree uses the findfile.h header file to provide a consistant interface
+to the necessary compiler dependant functions.  findfile.h is Public
+Domain, and currently supports compiler independent methods for
+find first file, find next file, find close (needed for some but not 
+all compilers), get volume label, get serial #, get current drive, 
+get current working directory, and the necessary defines for file 
+attributes and path component sizes.  Refer to findfile.h for a full 
+list of compilers it is written/tested to work with.
+
+To compile tree, setup your compiler environment properly, then
+compile specifying tree.c as the source file.
+
+Cats message support (Jim Hall's Cats) will not compile with 
+  Micro-C/PC nor with HiTech's Pacific C.
+If you are compiling with cats support:
+You must define USE_CATGETS (either on command line or in the source),
+and add the files catgets.c db.c get_line.c
+For any of the Borland compilers and Digital Mars compilers then
+Jim's Cats 3.9.4 or higher can be used.  For Microsoft Visual C
+patch catgets.c to not use dir.h and add a few macros.
+[Note: The necessary files from Jim's LGPL Cats 3.9.4 with this patch 
+       are included in the SOURCE directory. ]
+#ifdef _MSC_VER				/* dir.h not available for MS C */
+#define MAXPATH _MAX_PATH
+#define MAXDIR _MAX_DIR
+#define MAXEXT _MAX_EXT
+#define fnmerge _makepath
+#else
+#include <dir.h>				/* fnmerge */
+#endif
+
+Jim Hall has added a Makefile, refer to it, future versions will
+no longer include cmplall.bat.
+
+CMPLALL.BAT can be used to compile tree with all tested compilers.
+You MUST edit it and correct the paths to match where the compilers
+are actually installed before running!  If needed, this file can be
+looked at for working examples [on my machine] to compile tree.
+
+Other compilers:
+  If the compiler is similar to one of the above, try compiling with
+  similar arguments (eg Borland C/C++ 4.0 and 5.0 may work by simply
+  compiling with the same arguments as BCC 3.1, 4.5, or 5.5).  If your
+  compiler is compatible but doesn't provide necessary defines you
+  may need to define __TURBOC__, MICROC, _MSC_VER, etc when you compile.
+  If your compiler is signicately different, then edit findfile.h
+  and add in a section for your compiler refering to the other
+  compilers for examples.  If you have a compiler not listed and it
+  works or you added the necessary logic to make it work, please
+  consider sending them to jeremyd@computer.org and specifying that
+  they are public domain so I can add them to my public domain
+  findfile.h for all to use.
+
+June 15, 2001
+Jeremy Davis <jeremyd@computer.org> http://www.darklogic.org/

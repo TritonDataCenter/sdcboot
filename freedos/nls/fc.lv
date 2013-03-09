@@ -1,0 +1,44 @@
+# Translation courtesy of Kristaps Kaupe <Kristaps@turiba.lv>
+# Needs translation for 1.13, 1.14, 1.15, 1.16, 1.17, 1.18, 2.12, 2.13, 2.14, 2.15, 3.0, 3.1, 3.2, 3.3
+#### Help        ####
+1.0:SalŒdzina divus vai vairƒk failus un parƒda atÕéirŒbas starp tiem
+1.1:FC [atsl‰gas] [disks1:][ceëÕ1]fails1 [disks2:][ceëÕ2]fails2 [atsl‰gas]
+1.2: /A    RƒdŒt tikai atÕéirŒbu pirmƒs un p‰d‰jƒs rindas
+1.3: /B    Veikt binƒro salŒdzinƒÕanu
+1.4: /C    NeizÕéirt lielos un mazos burtus
+1.5: /L    SalŒdzinƒt failus kƒ ASCII tekstu
+1.6: /Mn   UzstƒdŒt maksimƒlo atÕéirŒbu skaitu binƒrajƒ salŒdzinƒÕanƒ uz n baitiem
+1.7:       (noklus‰tais = %d, 0 = neierobeØots, /M = /M0)
+1.8: /N    RƒdŒt rindu numurus teksta salŒdzinƒÕanƒ
+1.9: /S    PaplaÕinƒt mekl‰Õanu ar apakÕkatalogu failiem
+1.10: /T    Neatspiest tabus uz atstarp‰m
+1.11: /W    Saspiest tukÕumus (tabus un atstarpes) teksta salŒdzinƒÕanƒ
+1.12: /X    NerƒdŒt konteksta rindas teksta salŒdzinƒÕanƒ
+1.13: /LBn  Set the maximum number of consecutive different ASCII lines to n
+1.14: /nnn  Set the minimum number of consecutive matching lines to nnn
+1.15:       for comparison resynchronization
+1.16: /R    Show a brief final report (always active when using /S)
+1.17: /Q    Don't show the list of differences
+1.18: /U    Show the filenames of the files without a correspondent
+#### Messages    ####
+2.0:Nepareiza atsl‰ga: %s
+2.1:Pƒrƒk daudz failu nosaukumu
+2.2:Nepareizs faila vƒrds
+2.3:Fails nav norƒdŒts
+2.4:UzmanŒbu: failu izm‰ri atÕéiras!
+2.5:SalŒdzinƒÕana aptur‰ta p‰c %d atÕéirŒbƒm
+2.6:Nav atÕéirŒbu
+2.7:UzmanŒbu: salŒdzinƒÕana aptur‰ta p‰c %d rindƒm
+2.8:Nepietiek atmiìas
+2.9:Kë×da atverot failu %s
+2.10:SalŒdzinu %s ar %s
+2.11:Nav tƒda faila vai kataloga
+2.12:Resync failed: files too different
+2.13:The files are of different size
+2.14:The files are different
+2.15:File %s has no correspondent (%s)
+#### Report text ####
+3.0:Compared %d files
+3.1: in %d directories
+3.2:%d files match, %d files are different
+3.3:%d files have no correspondent

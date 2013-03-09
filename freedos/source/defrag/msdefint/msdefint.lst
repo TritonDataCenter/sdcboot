@@ -1,0 +1,240 @@
+Publics by module
+
+ACTIONS 	size = 1175
+	_BeginOptimization                _OptimizationMethods
+	_QueryDisk                        _SelectDrive
+	_SelectOptimizationMethod         _SelectSortOptions
+
+ALTKEY  	size = 35
+	_AltKeyPressed                  
+
+CHECKOS 	size = 344
+	_CheckOS                        
+
+CHECKSUM	size = 152
+	_CalculateCheckSum              
+
+CHKARGS 	size = 1022
+	_GetParsedDrive                   _IsMethodEntered
+	_IsRebootRequested                _MustAutomaticallyExit
+	_ParseArguments                 
+
+CMDBTN  	size = 1248
+	_CreateCommandButton            
+
+CMNCTRLS	size = 26
+	_CancelButton                     _OkButton
+
+COPYRIGT	size = 1505
+	_ShowCopyRight                  
+
+DEFRDONE	size = 1104
+	_ReportDefragDone               
+
+DRAWSCR 	size = 783
+	_DrawScreen                     
+
+DRVMAP  	size = 636
+	_ClustersPerBlock                 _DrawBadBlock
+	_DrawDrvMap                       _DrawOptimizedBlock
+	_DrawReadBlock                    _DrawUnmovableBlock
+	_DrawUnusedBlock                  _DrawUsedBlock
+	_DrawWriteBlock                 
+
+DRVSLTBX	size = 775
+	_CreateDriveSelectionBox        
+
+EVENT   	size = 249
+	_ClearEvent                       _GetEvent
+
+EVENTBTN	size = 546
+	_CreateEventButton              
+
+EXTEVENT	size = 153
+	_CheckExternalEvent             
+
+FRAME   	size = 165
+	_CreateFrame                    
+
+GDSCREEN	size = 99
+	GetScreenAddress                  _LoDumpScreen
+	_LoGrabScreen                   
+
+HELPVIEW	size = 1474
+	_CreateHelpView                 
+
+HIGDSCRN	size = 114
+	_DumpScreen                       _GrabScreen
+
+HIMOUSE 	size = 433
+	_AnyButtonPressed                 _CheckMouseRelease
+	_ClearMouse                       _GetPressedX
+	_GetPressedY                      _GetReleasedX
+	_GetReleasedY                     _LockMouse
+	_MousePressed                     _MouseReleased
+	_PressedInRange                   _ReleasedInRange
+	_UnLockMouse                    
+
+HLINE   	size = 124
+	_CreateHLine                    
+
+HLPDIALG	size = 403
+	_ShowHelpSystem                 
+
+HLPFNCS 	size = 1878
+	_CheckHelpClick                   _CheckHelpEnter
+	_CheckHelpTab                     _CurrentLink
+	_DrawHelpLine                     _GetLastHelpTop
+	_PastEndOfHelp                    _SelectHelpPage
+
+HLPLNPRS	size = 1001
+	_GetHlpAsciiChar                  _GetHlpLinkCaption
+	_GetHlpLinkIndex                  _GetHlpTextToCenter
+	_IsCenterOnLine                   _IsFullLine
+	_IsHlpAsciiChar                   _IsHlpReference
+	_PassCenterOnLinePart             _PassHlpAsciiChar
+	_PassHlpFullLinePart              _PassHlpReferencePart
+	_PassNextHelpPart               
+
+HLPPARSE	size = 628
+	_FreeHelpSysData                  _GetHelpLine
+	_GetHelpLineCount                 _ParseHelpFile
+
+HLPREAD 	size = 1450
+	_CheckHelpFile                    _ReadHelpFile
+
+HLPSYSID	size = 117
+	_GetHelpIndex                     _PreviousHelpIndex
+	_RememberHelpIndex              
+
+ICTRLVLS	size = 61
+	_InitializeControlValues        
+
+IDXSTACK	size = 135
+	_PopHelpIndex                     _PushHelpIndex
+	_TopHelpIndex                   
+
+INTTOSTR	size = 127
+	_IntToString                    
+
+KEEPDOS 	size = 91
+	_RestoreDOSState                  _SaveDOSState
+
+KEYBOARD	size = 46
+	_AltKeyDown                       _ClearKeyboard
+	_KeyPressed                       _ReadKey
+
+LABEL   	size = 127
+	_CreateLabel                    
+
+LOGPRINT	size = 12
+	_LogPrint                       
+
+LOLOGMAN	size = 98
+	_PrintChar1                       _Scroll1Up
+	_ShowScreenPage                   _gotoxy1
+
+LOLSTBX 	size = 1583
+	_CreateLowListBox               
+
+LOVIEW  	size = 1149
+	_CreateLowView                  
+
+LOWTIME 	size = 36
+	_GetTime                        
+
+LOWVIDEO	size = 2482
+	_ChangeCharColor                  _ColorArea
+	_ColorScreen                      _DelimitStatusBar
+	_DrawBox                          _DrawButton
+	_DrawDoubleBox                    _DrawSelectionButton
+	_DrawSequence                     _DrawSingleBox
+	_DrawStatusBar                    _DrawStatusOnBar
+	_DrawText                         _DrawVScrollBox
+	_InvertLine                       _SetStatusBar
+	_ShowDialog                     
+
+MAPLEGND	size = 1820
+	_ShowMapLegend                  
+
+MENU    	size = 1393
+	_MainMenu                       
+
+METHODS 	size = 1271
+	_AskOptimizationMethod          
+
+MOUSE   	size = 349
+	_CloseMouse                       _CountButtonPresses
+	_CountButtonReleases              _HideMouse
+	_InitMouse                        _MouseGotoXY
+	_MousePresent                     _ShowMouse
+	_WhereMouse                     
+
+MSDEFINT	size = 1097
+	_MSDefint                       
+
+MSGBXS  	size = 1152
+	_ErrorBox                         _InformUser
+	_ShowModalMessage                 _WarningBox
+
+OVLIMPL 	size = 692
+	_MSDEFINT_GetCallbacks            _StartCounting
+
+RECOMENT	size = 1139
+	_RecommendMethod                
+
+SCRCLIP 	size = 8293
+	_CopyScreen                       _PasteScreen
+	_SetClipIndex                   
+
+SCREEN  	size = 581
+	_ChangeCursorPos                  _DOSWipeScreen
+	_DrawChar                         _GetCursorShape
+	_GetHighIntensity                 _GetScreenCols
+	_GetScreenLines                   _HideCursor
+	_InvertChar                       _PrintChar
+	_PrintString                      _ReadCursorAttr
+	_ReadCursorChar                   _SetBackColor
+	_SetCursorShape                   _SetForColor
+	_SetHighIntensity                 _SetScreenLines
+	_isEGA                          
+
+SCRLOG  	size = 143
+	_ScrLogPrint                      _ShowScreenLog
+
+SCRMASK 	size = 694
+	_ClearStatusBar                   _DrawBlockSize
+	_DrawCurrentDrive                 _DrawMethod
+	_DrawTime                         _SetStatusOnBar
+
+SELDRVBX	size = 870
+	_ShowDriveSelectionBox          
+
+SLCTBTN 	size = 717
+	_CreateSelectionButton          
+
+SORTBOX 	size = 2213
+	_GetSortOptions                 
+
+STRINGS 	size = 53
+	_StringCopy                       _StringLength
+
+TIME    	size = 37
+	_WasteTime                      
+
+TIMLABEL	size = 325
+	_CreateTimeLabel                
+
+UNHUF   	size = 4339
+	_UncompressBuffer                 _read_header
+	_uncompress                     
+
+VSCRCTRL	size = 1048
+	_CreateVScrollBox               
+
+WINMAN  	size = 2268
+	_CloseWindow                      _ControlWindow
+	_OpenWindow                     
+
+WNDWCLSR	size = 203
+	_CreateWindowCloser             

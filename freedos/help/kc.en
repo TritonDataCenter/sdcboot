@@ -1,0 +1,76 @@
+NAME
+
+  KC - KEY language Keyboard descriptor files compiler
+
+
+SYNOPSIS
+
+  KC   <sourcefilename> [<targetfilename>] [/B]
+  KC   /?
+
+
+DESCRIPTION
+
+ KC is a compiler of keyboard descriptor, that produces a binary form (a
+ KeybCB) from a text description in the KEY language.
+
+ The output can be a raw KeybCB, or alternatively, a complete KL file, useable
+ for the FD-KEYB 2.0 keyboard driver.
+
+
+OPTIONS
+
+<sourcefilename>   The name of the source file, in KEY language, to be
+                   compiled.
+                   If extension is omitted, KEY extension is appended
+                   automatically
+<targetfilename>   The name of the KL file to be written (unless /B is used)
+                   If extension is omitted, KL extension is appended
+                   automatically
+/B                 [Bare] Creates a bare binary KeybCB image, instead of a KL
+                   file
+/?                 Shows fast help
+
+
+EXAMPLES
+
+  KC  FR
+
+  Compiles FR.KEY into FR.KL
+
+  KC  SP.KEY  SP.KCB /B
+
+  Compiles SP.KEY into a bare keyboard control block SP.KCB
+
+
+BUGS
+
+  None known
+
+
+AUTHOR/CONTRIBUTORS
+
+   KC: compiles keyboard descriptors in KEY language to a KeybCB,
+   wrapped in a KL file (for use of FD-KEYB 2.X)
+
+   Copyright (C) 2004 by Aitor SANTAMARIA_MERINO
+   aitorsm@inicia.es
+
+   Many thanks to Henrique Peron, Axel Frinke and T. Kabe for their help
+
+
+COPYING
+
+   This program is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by the Free
+   Software Foundation; either version 2 of the License, or (at your option)
+   any later version.
+
+   This program is distributed in the hope that it will be useful, but WITHOUT
+   ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+   FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+   more details.
+
+   You should have received a copy of the GNU General Public License along
+   with this program; if not, write to the Free Software Foundation, Inc., 
+   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.

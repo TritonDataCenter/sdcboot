@@ -1,0 +1,16 @@
+CFLAGS=/c /AL /J /Gs /Od /W3 /Zp1 /Zi /Zd
+
+#
+# Force NMAKE to assemble everything
+#
+
+ALL : apprel.exe
+
+apprel.obj : apprel.c 
+	CL $(CFLAGS) apprel.c
+
+apprel.exe : apprel.obj apprel
+        link /M apprel,apprel,apprel/map;
+#        link /CO /M apprel,apprel,apprel/map;
+#        e:\peri\ts apprel /e
+

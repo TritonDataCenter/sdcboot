@@ -1,0 +1,7 @@
+
+LABEL Version 1.4b
+Creates, changes or deletes the volume label of a disk.
+
+LABEL [drive:][label]
+  [drive:]  Specifies which drive you want to label
+  [label]   Specifies the new label you want to label the drive

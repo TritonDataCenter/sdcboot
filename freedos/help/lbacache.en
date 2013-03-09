@@ -1,0 +1,6 @@
+LBACACHE
+
+LBAcache is an XMS cache driver for read transfers on drives which use 
+Large Block Adressing, instead of old CHS method.
+You should notice response time improvements if accessing the same data
+more often.

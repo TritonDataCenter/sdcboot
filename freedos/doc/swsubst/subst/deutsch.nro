@@ -1,0 +1,126 @@
+.TH SUBST 1G "22 May 1995"
+.. 
+..    This is the documentation for the SWSUBST package, a SUBST/JOIN & more
+..    Copyright (C) 1995  Steffen Kaiser
+.. 
+..    This program is free software; you can redistribute it and/or modify
+..    it under the terms of the GNU General Public License as published by
+..    the Free Software Foundation; either version 2 of the License, or
+..    (at your option) any later version.
+.. 
+..    This program is distributed in the hope that it will be useful,
+..    but WITHOUT ANY WARRANTY; without even the implied warranty of
+..    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+..    GNU General Public License for more details.
+.. 
+..    You should have received a copy of the GNU General Public License
+..    along with this program; if not, write to the Free Software
+..    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+.. 
+..  $Id: SUBST.1G 1.2 1995/05/26 05:31:58 ska Exp ska $
+.SH NAME
+subst - substituiert den Pfad mit einem Laufwerksbuchstaben
+.SH SYNOPSIS
+.cb
+subst
+.cb
+/?
+
+.cb
+subst
+.cb
+lw1
+.ct : 
+.cb
+lw2
+.ct :
+.cb
+.ct pfad
+
+.cb
+subst
+.cb
+lw
+.ct : 
+.cb
+/d
+
+.cb
+subst
+.SH DESCRIPTION
+.cu
+subst
+manipuliert die CDS (
+.cb
+.ct C
+.ct urrent 
+.cb
+D
+.ct irectory
+.cb
+S
+.ct tructure), so daá auf einen Pfad auch ber einen
+Laufwerksbuchstaben zugegriffen werden kann.
+
+.cu
+subst
+ist Teil des 
+.cu
+swsubst
+Pakets. Es kann, falls es nicht
+bereits existiert, durch Kopieren des Programms 
+.cb
+swsubst.exe
+nach
+.cb
+subst.exe
+erzeugt werden.
+.SH OPTIONS
+.IP /? 
+Gibt einen kleinen Hilfebildschirm aus.
+.IP /d
+Hebt die Verbindung zwischen dem Laufwerk 
+.cb
+lw
+und dem geSUBSTeten
+Pfad wieder auf. Falls das Laufwerk geJOINt ist, wird die Verbindung
+ebenfalls gel”st.
+.IP "lw1: lw2:pfad"
+Substituiert den Pfad 
+.cb
+pfad
+auf Laufwerk 
+.cb
+lw2
+mit dem
+Laufwerksbuchstaben 
+.cb
+lw1
+.ct . Falls 
+.cb
+lw1
+bereits geSUBSTet oder
+geJOINt ist, wird diese Verbindung automatisch gel”st. 
+.cb
+pfad
+muá weder existieren noch vollst„ndig sein.
+.IP "ohne Parameter"
+Gibt alle geSUBSTeten Laufwerke in der Form: 'X: => Y:\PATH' aus, wobei
+Y:\PATH der auch mit X:\ ansprechbare vollst„ndige Pfad ist.  Falls
+kein Laufwerk geSUBSTet ist, wird auch keine Ausgabe erzeugt.
+.SH "SEE ALSO"
+swsubst, join.
+.SH "KNOWN BUGS"
+.IP o
+Netzlaufwerke, wie z.B. CD-ROMs, k”nnen nicht benutzt werden.
+.IP o
+Manchmal funktionieren Substitutionen auf Diskettenlaufwerken nicht.
+.ne 8
+.SH CONTRIBUTERS
+.ce 6
+Steffen Kaiser
+Mittelstraáe 112/B115
+53757 Sankt Augustin - Menden
+Deutschland - Germany
+
+e-mail: Steffen.Kaiser@@FH-Rhein-Sieg.DE

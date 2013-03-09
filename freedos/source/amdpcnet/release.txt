@@ -1,0 +1,113 @@
+Packet Driver 
+
+Version 1.0
+;***********************************************************************
+PNINIT.ASM	01-27-94	
+	1. Fix mechanism 1 chipset implementation issue, for PCI1 & PCI2 
+           keyword cases, check entire config space and skip the mechanism
+           1 & 2 host bridge test in scan_pci.
+	
+PCNTPK.ASM	01-26-94, 01-31-94
+	1. Fix tp input error, don't increase si during input parsing 
+	   in compare_str.
+	2. Fix load high problem by doing following 
+	   a. Save es,di and don't transfer physical address again while
+	      VDS complete in segmoffs_to_phys.
+	   b. Save physical addr of xmit & rcv buffser starting pt. in etopen.
+	   c. Set proper phys_buf_addr & logic_buf addr before calling
+	      phys_to_segmoffs in send_pkt & recv.
+	   d. Add VDS check and transfer address offset from physical to
+	      logical in phys_to_segmoffs.
+
+;-----------------------------------------------------------------------
+PNINIT.ASM	02-17-94	
+	1. Save bus/dev/func # in dw_pci_bdfnum, for pci bus hang patch
+	   modify scan_pci_m1, sacn_pci_m2.
+
+PCNTPK.ASM	02-17-94
+	1. Add dw_pci_bdfnum, dw_pci_m1_cad, w_m2_fwd_reg, w_m2_cfg_reg,
+	   b_1st_reset, pci_stop_pcnet, pci_reset_pcnet, pci_m1_disable_dma,
+	   pci_m1_enable_dma, pci_m2_disable_dma, pci_m2_enable_dma.
+	2. Modify initialize, terminate, recv, etopen
+
+;-----------------------------------------------------------------------
+
+Version 1.1
+;***********************************************************************
+MSG.ASM		03-02-94
+	1. Delete PCnet in bad_reset_msg, bad_init_msg and move error_header,
+	   usage_msg close to copyright_msg
+	2. Add second digit to version after decimal point
+
+;-----------------------------------------------------------------------
+PNINIT.ASM	05-19-94
+	1. Add conditional compiler to eliminated OEM1 related code
+
+Version 1.2
+;***********************************************************************
+TAIL.ASM	06-13-94
+	1. add full duplex(FDUP) support data structure
+
+HEAD.ASM	06-13-94
+	1. specify the segment registers for clarify purpose
+
+PCNTPK.ASM	06-14-94
+	1. add full duplex(FDUP) support
+	   add get_fullduplex_string, FDUP structure
+	   modify get_string to get_bustype_string
+	2. modify run-time reset to use stop-start instead of read reset port
+	   modify complete_reset, device_reset, pci_reset_pcnet
+	3. modify program-led for isa & isa+ case
+
+PNINIT.ASM	06-12-94
+	1. add PCI BIOS API support & check for PCI device enable
+	   add pci_bios_api
+	   modify scan_pci, scan_pci_m1, scan_pci_m2, handle_pci_m1_cfg
+
+PNINIT.ASM	07-28-94
+	1. modify command reg access by using read/modify/write
+
+PCNTPK.ASM	07-28-94
+	1. check full duplex & TP conflict case
+
+PNINIT.ASM	08-04-94
+	1. add pause function in display_error_message
+
+PCNTPK.ASM	08-04-94
+	1. add force auto-selection code
+
+PCNTPK.ASM	08-17-94
+	1. delete check of full duplex & TP conflict case
+
+PCNTPK.ASM	08-31-94
+	1. modify all conditional jump instructions to short format
+	   for 286 compatible
+
+PNINIT.ASM	08-31-94
+	1. modify all conditional jump instructions to short format
+	   for 286 compatible
+
+PCNTPK.ASM	09-08-94
+	1. add device stop before DMA controller mask in etopen
+
+Version 2.0
+;***********************************************************************
+
+MSG.ASM		10-14-94
+	1. incorporate new message translation in driver
+
+PNINIT.ASM	11-16-94
+	1. modify handle_pci_m1_conf, scan_pci_m2, pci_bios_api
+	   for P1 glitch patch
+
+PCNTPK.ASM	11-16-94
+	1. add program_dmatimer, modify parse_args, related equates
+	   for "BUSTIMER" keyword
+	2. modify pci_m1_en/disable_dma, pci_m2_en/disable_dma
+	   for P1 glitch patch
+
+TAIL.ASM	11-16-94
+	1. add DMA timer(BUSTIMER) support data structure
+
+Version 2.2
+;***********************************************************************

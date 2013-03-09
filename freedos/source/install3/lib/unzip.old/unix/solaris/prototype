@@ -1,0 +1,9 @@
+i pkginfo
+f none opt/local/bin/unzip=unzip 0755 root bin
+f none opt/local/bin/funzip=funzip 0755 root bin
+f none opt/local/bin/unzipsfx=unzipsfx 0755 root bin
+l none opt/local/bin/zipinfo=unzip
+f none usr/man/man1/unzip.1=unix/unzip.1 0444 root bin
+f none usr/man/man1/unzipsfx.1=unix/unzipsfx.1 0444 root bin
+f none usr/man/man1/zipinfo.1=unix/zipinfo.1 0444 root bin
+f none usr/man/man1/funzip.1=unix/funzip.1 0444 root bin
