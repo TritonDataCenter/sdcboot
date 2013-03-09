@@ -1,0 +1,6 @@
+[submodule "syslinux"]
+	path = syslinux
+	url = https://github.com/joyent/syslinux
+[submodule "memdisk_getargs"]
+	path = memdisk_getargs
+	url = https://github.com/PerditionC/memdisk_getargs
