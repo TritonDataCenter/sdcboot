@@ -116,6 +116,10 @@ BOOT_BINS = \
 FILES = \
 	autoexec.bat
 
+SUBMODULES = \
+	memdisk_getargs \
+	syslinux
+
 ROOT_FILES =		$(FILES:%=$(ROOT)/%)
 ROOT_JOYENT_BINS =	$(JOYENT_BINS:%=$(FREEDOS_ROOT)/joyent/%)
 ROOT_FREEDOS_BINS =	$(FREEDOS_BINS:%=$(FREEDOS_ROOT)/freedos/%)
@@ -135,7 +139,10 @@ $(BOOT_ROOT)/memdisk :		FILEMODE = 755
 $(ROOT)/autoexec.bat :		FILEMODE = 755
 
 .PHONY: all
-all: $(ROOT_FREEDOS) $(ROOT_BOOT) $(ROOT_FILES)
+all: $(SUBMODULES) $(ROOT_FREEDOS) $(ROOT_BOOT) $(ROOT_FILES)
+
+%/.git:
+	git submodule update --init $*
 
 $(ROOT):
 	$(INS.dir)
