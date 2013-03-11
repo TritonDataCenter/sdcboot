@@ -18,6 +18,17 @@ CLEAN_FILES += \
 	src/*.elf \
 	src/*.com
 
+#
+# ipxe assumes GNU without using prefixed commands.
+#
+IPXE_MAKE =	/opt/local/bin/gmake
+IPXE_ENV = \
+	AS=/opt/local/bin/as \
+	LD=/opt/local/bin/ld \
+	AWK=/usr/bin/nawk \
+	GREP=/usr/xpg4/bin/grep \
+	V=1
+
 CC =		/opt/local/bin/gcc
 LD =		/usr/bin/ld
 MAPFILE =	mapfile-dos
@@ -111,33 +122,42 @@ JOYENT_BINS = \
 	int14.com
 
 BOOT_BINS = \
+	ipxe.lkrn \
 	memdisk
 
-FILES = \
+DOS_BINS = \
 	autoexec.bat
 
 SUBMODULE_DIRS = \
+	ipxe \
 	memdisk_getargs \
 	syslinux
 
 ROOT_FILES =		$(FILES:%=$(ROOT)/%)
 ROOT_JOYENT_BINS =	$(JOYENT_BINS:%=$(FREEDOS_ROOT)/joyent/%)
 ROOT_FREEDOS_BINS =	$(FREEDOS_BINS:%=$(FREEDOS_ROOT)/freedos/%)
+ROOT_DOS_BINS =		$(DOS_BINS:%=$(FREEDOS_ROOT)/%)
 ROOT_GNU_BINS =		$(GNU_BINS:%=$(FREEDOS_ROOT)/gnu/%)
 ROOT_BOOT_BINS =	$(BOOT_BINS:%=$(BOOT_ROOT)/%)
 SUBMODULES =		$(SUBMODULE_DIRS:%=%/.git)
 
-ROOT_FREEDOS =	$(ROOT_JOYENT_BINS) $(ROOT_FREEDOS_BINS) $(ROOT_GNU_BINS)
+ROOT_FREEDOS = \
+	$(ROOT_DOS_BINS) \
+	$(ROOT_FREEDOS_BINS) \
+	$(ROOT_GNU_BINS) \
+	$(ROOT_JOYENT_BINS)
+
 ROOT_BOOT =	$(ROOT_BOOT_BINS)
 
 include ./tools/mk/Makefile.defs
 
+$(FREEDOS_ROOT)/autoexec.bat :	FILEMODE = 755
 $(FREEDOS_ROOT)/joyent/%.com :	FILEMODE = 755
 $(FREEDOS_ROOT)/freedos/%.com :	FILEMODE = 755
 $(FREEDOS_ROOT)/freedos/%.exe :	FILEMODE = 755
 $(FREEDOS_ROOT)/gnu/%.exe :	FILEMODE = 755
 $(BOOT_ROOT)/memdisk :		FILEMODE = 755
-$(ROOT)/autoexec.bat :		FILEMODE = 755
+$(BOOT_ROOT)/ipxe.lkrn :	FILEMODE = 755
 
 .PHONY: all
 all: $(SUBMODULES) $(ROOT_FREEDOS) $(ROOT_BOOT) $(ROOT_FILES)
@@ -150,6 +170,9 @@ $(ROOT):
 
 $(FREEDOS_ROOT): $(ROOT)
 	$(INS.dir)
+
+$(FREEDOS_ROOT)/%: src/% $(FREEDOS_ROOT)
+	$(INS.file)
 
 $(FREEDOS_ROOT)/joyent: $(FREEDOS_ROOT)
 	$(INS.dir)
@@ -178,7 +201,7 @@ $(BOOT_ROOT): $(ROOT)
 $(BOOT_ROOT)/%: memdisk/% $(BOOT_ROOT)
 	$(INS.file)
 
-$(ROOT)/%: src/% $(ROOT)
+$(BOOT_ROOT)/%: ipxe/src/bin/% $(BOOT_ROOT)
 	$(INS.file)
 
 .PRECIOUS: src/%.elf
@@ -192,11 +215,19 @@ src/%.elf: src/%.o
 src/%.com: src/%.elf
 	$(OBJCOPY) -O binary $< $@
 
+ipxe/src/bin/%: ipxe/.git
+	(cd ipxe/src && $(IPXE_MAKE) bin/$(@F) $(IPXE_ENV))
+
 .PHONY: test
 test:
 
 .PHONY: pkg
 pkg: all
+
+clean:: ipxe.clean
+
+ipxe.clean:
+	(cd ipxe/src && $(IPXE_MAKE) clean $(IPXE_ENV))
 
 release: $(RELEASE_TARBALL)
 

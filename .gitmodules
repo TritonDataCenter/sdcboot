@@ -4,3 +4,6 @@
 [submodule "memdisk_getargs"]
 	path = memdisk_getargs
 	url = https://github.com/PerditionC/memdisk_getargs
+[submodule "ipxe"]
+	path = ipxe
+	url = https://github.com/joyent/ipxe
