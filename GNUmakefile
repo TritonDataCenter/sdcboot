@@ -16,12 +16,32 @@ CLEAN_FILES += \
 	$(NAME)-pkg-*.tar.gz \
 	src/*.o \
 	src/*.elf \
-	src/*.com
+	src/*.com \
+	$(MTOOLS_DIR)
+
+#
+# We would like to use mkfs_pcfs here, but it creates a filesystem that can
+# boot but cannot be read.  Bug in FreeDOS?  Bug in mkfs_pcfs?  It's not
+# clear.  So instead we will build and use mtools for this purpose.
+#
+MTOOLS_VER =	4.0.18
+MTOOLS_TARBALL =	tools/mtools-$(MTOOLS_VER).tar.bz2
+MTOOLS_DIR =	tools/mtools-$(MTOOLS_VER)
+MFORMAT =	$(MTOOLS_DIR)/mformat
+MCOPY =		$(MTOOLS_DIR)/mcopy
+MTOOLS =	$(MFORMAT) $(MCOPY)
+MTOOLS_BUILD_ENV = \
+		LIBS="-liconv" \
+		LDFLAGS="-L/opt/local/lib -R/opt/local/lib" \
+		CPPFLAGS="-I/opt/local/include"
+
+MFORMAT.bootflop = \
+	$(MFORMAT) -t 80 -h 2 -n 18 -v $(FLOPPY_LABEL) \
+	-f 1440 -B $(FLOPPY_BOOTSECT) -i $@ ::
 
 #
 # ipxe assumes GNU without using prefixed commands.
 #
-IPXE_MAKE =	/opt/local/bin/gmake
 IPXE_ENV = \
 	AS=/opt/local/bin/as \
 	LD=/opt/local/bin/ld \
@@ -29,17 +49,31 @@ IPXE_ENV = \
 	GREP=/usr/xpg4/bin/grep \
 	V=1
 
+MAPFILE =	mapfile-dos
 CC =		/opt/local/bin/gcc
 LD =		/usr/bin/ld
-MAPFILE =	mapfile-dos
+TAR =		/opt/local/bin/tar
+MKDIR =		/usr/bin/mkdir
+MKFILE =	/usr/sbin/mkfile
+CP =		/usr/bin/cp
 OBJCOPY =	/opt/local/bin/objcopy
-RM =		/usr/bin/rm
+CHMOD =		/usr/bin/chmod
+RM =		/usr/bin/rm -f
 INS =		/usr/sbin/install
+
 FILEMODE =	644
 DIRMODE =	755
 
 INS.file =	$(RM) $@; $(INS) -s -m $(FILEMODE) -f $(@D) $<
 INS.dir =	$(INS) -s -d -m $(DIRMODE) $@
+
+FLOPPY_IMAGE =	$(BOOT_ROOT)/freedos.img
+FLOPPY_BOOTSECT =	src/bootsect.bin
+FLOPPY_LABEL =	FREEDOS
+
+FLOPPY_FILES = \
+	freedos/bin/kernel.sys \
+	src/fdconfig.sys
 
 FREEDOS_BINS = \
 	append.exe \
@@ -74,7 +108,6 @@ FREEDOS_BINS = \
 	jemm386.exe \
 	jemmex.exe \
 	join.exe \
-	kernel.sys \
 	label.exe \
 	mem.exe \
 	mode.com \
@@ -160,7 +193,7 @@ $(BOOT_ROOT)/memdisk :		FILEMODE = 755
 $(BOOT_ROOT)/ipxe.lkrn :	FILEMODE = 755
 
 .PHONY: all
-all: $(SUBMODULES) $(ROOT_FREEDOS) $(ROOT_BOOT) $(ROOT_FILES)
+all: $(SUBMODULES) $(ROOT_FREEDOS) $(ROOT_BOOT) $(ROOT_FILES) $(FLOPPY_IMAGE)
 
 %/.git:
 	git submodule update --init $*
@@ -168,41 +201,54 @@ all: $(SUBMODULES) $(ROOT_FREEDOS) $(ROOT_BOOT) $(ROOT_FILES)
 $(ROOT):
 	$(INS.dir)
 
-$(FREEDOS_ROOT): $(ROOT)
+$(FREEDOS_ROOT): | $(ROOT)
 	$(INS.dir)
 
-$(FREEDOS_ROOT)/%: src/% $(FREEDOS_ROOT)
+$(FREEDOS_ROOT)/%: src/% | $(FREEDOS_ROOT)
 	$(INS.file)
 
-$(FREEDOS_ROOT)/joyent: $(FREEDOS_ROOT)
+$(FREEDOS_ROOT)/joyent: | $(FREEDOS_ROOT)
 	$(INS.dir)
 
-$(FREEDOS_ROOT)/joyent/%: src/% $(FREEDOS_ROOT)/joyent
+$(FREEDOS_ROOT)/joyent/%: src/% | $(FREEDOS_ROOT)/joyent
 	$(INS.file)
 
-$(FREEDOS_ROOT)/freedos: $(FREEDOS_ROOT)
+$(FREEDOS_ROOT)/freedos: | $(FREEDOS_ROOT)
 	$(INS.dir)
 
-$(FREEDOS_ROOT)/freedos/%: freedos/bin/% $(FREEDOS_ROOT)/freedos
+$(FREEDOS_ROOT)/freedos/%: freedos/bin/% | $(FREEDOS_ROOT)/freedos
 	$(INS.file)
 
-$(FREEDOS_ROOT)/freedos/%: memdisk/% $(FREEDOS_ROOT)/freedos
+$(FREEDOS_ROOT)/freedos/%: memdisk/% | $(FREEDOS_ROOT)/freedos
 	$(INS.file)
 
-$(FREEDOS_ROOT)/gnu: $(FREEDOS_ROOT)
+$(FREEDOS_ROOT)/gnu: | $(FREEDOS_ROOT)
 	$(INS.dir)
 
-$(FREEDOS_ROOT)/gnu/%: gnu/out/% $(FREEDOS_ROOT)/gnu
+$(FREEDOS_ROOT)/gnu/%: gnu/out/% | $(FREEDOS_ROOT)/gnu
 	$(INS.file)
 
-$(BOOT_ROOT): $(ROOT)
+$(BOOT_ROOT): | $(ROOT)
 	$(INS.dir)
 
-$(BOOT_ROOT)/%: memdisk/% $(BOOT_ROOT)
+$(BOOT_ROOT)/%: memdisk/% | $(BOOT_ROOT)
 	$(INS.file)
 
-$(BOOT_ROOT)/%: ipxe/src/bin/% $(BOOT_ROOT)
+$(BOOT_ROOT)/%: ipxe/src/bin/% | $(BOOT_ROOT)
 	$(INS.file)
+
+$(FLOPPY_IMAGE): $(FLOPPY_BOOTSECT) $(FLOPPY_FILES) $(MTOOLS) | $(BOOT_ROOT)
+	$(MKFILE) 1440k $(FLOPPY_IMAGE)
+	$(MFORMAT.bootflop)
+	$(MCOPY) -i $@ $(FLOPPY_FILES) ::
+	$(CHMOD) $(FILEMODE) $@
+
+.ONESHELL:
+$(MTOOLS): $(MTOOLS_TARBALL)
+	$(TAR) x -C tools -j -f $<
+	cd $(MTOOLS_DIR)
+	$(MTOOLS_BUILD_ENV) ./configure
+	$(MAKE)
 
 .PRECIOUS: src/%.elf
 
@@ -216,7 +262,7 @@ src/%.com: src/%.elf
 	$(OBJCOPY) -O binary $< $@
 
 ipxe/src/bin/%: ipxe/.git
-	(cd ipxe/src && $(IPXE_MAKE) bin/$(@F) $(IPXE_ENV))
+	(cd ipxe/src && $(MAKE) bin/$(@F) $(IPXE_ENV))
 
 .PHONY: test
 test:
@@ -227,7 +273,7 @@ pkg: all
 clean:: ipxe.clean
 
 ipxe.clean:
-	(cd ipxe/src && $(IPXE_MAKE) clean $(IPXE_ENV))
+	(cd ipxe/src && $(MAKE) clean $(IPXE_ENV))
 
 release: $(RELEASE_TARBALL)
 
