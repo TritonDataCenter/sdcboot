@@ -2,7 +2,7 @@
 # Copyright (c) 2013, Joyent, Inc. All rights reserved.
 #
 
-NAME =	freedos
+NAME =	sdcboot
 
 TOP :=	$(shell pwd)
 ROOT =	$(TOP)/proto
@@ -10,7 +10,7 @@ ROOT =	$(TOP)/proto
 FREEDOS_ROOT =	$(ROOT)/dos
 BOOT_ROOT =	$(ROOT)/boot
 
-RELEASE_TARBALL =	$(NAME)-pkg-$(STAMP).tar.gz
+RELEASE_TARBALL =	$(NAME)-$(STAMP).tgz
 CLEAN_FILES += \
 	$(ROOT) \
 	$(NAME)-pkg-*.tar.gz \
@@ -166,7 +166,6 @@ SUBMODULE_DIRS = \
 	memdisk_getargs \
 	syslinux
 
-ROOT_FILES =		$(FILES:%=$(ROOT)/%)
 ROOT_JOYENT_BINS =	$(JOYENT_BINS:%=$(FREEDOS_ROOT)/joyent/%)
 ROOT_FREEDOS_BINS =	$(FREEDOS_BINS:%=$(FREEDOS_ROOT)/freedos/%)
 ROOT_DOS_BINS =		$(DOS_BINS:%=$(FREEDOS_ROOT)/%)
@@ -193,7 +192,7 @@ $(BOOT_ROOT)/memdisk :		FILEMODE = 755
 $(BOOT_ROOT)/ipxe.lkrn :	FILEMODE = 755
 
 .PHONY: all
-all: $(SUBMODULES) $(ROOT_FREEDOS) $(ROOT_BOOT) $(ROOT_FILES) $(FLOPPY_IMAGE)
+all: $(SUBMODULES) $(ROOT_FREEDOS) $(ROOT_BOOT) $(FLOPPY_IMAGE)
 
 %/.git:
 	git submodule update --init $*
@@ -288,8 +287,12 @@ prepublish:
 		echo "error: 'BITS_DIR' must be set for 'publish' target"; \
 		exit 1; \
 	fi
+	@if [[ ! -d "$(BITS_DIR)" ]]; then \
+		echo "error: $(BITS_DIR) is not a directory"; \
+		exit 1; \
+	fi
 
-$(BITS_DIR)/$(NAME)/$(RELEASE_TARBALL): $(RELEASE_TARBALL) $(BITS_DIR)/$(NAME)
+$(BITS_DIR)/$(NAME)/$(RELEASE_TARBALL): $(RELEASE_TARBALL) | $(BITS_DIR)/$(NAME)
 	$(INS.file)
 
 $(BITS_DIR)/$(NAME):
