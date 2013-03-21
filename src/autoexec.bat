@@ -22,3 +22,18 @@ ctty %condev%
 SET DIRCMD=/P /OGN /4 
 SET LANG=EN
 SET PATH=C:\DOS\FREEDOS;C:\DOS\GNU;A:\
+
+:initfdum
+cls
+echo Joyent Firmware Diagnostics and Upgrade Mode [FreeDOS]
+echo\
+if not exist c:\firmware\main.bat goto nofdum
+call c:\firmware\main.bat
+goto initfdum
+:nofdum
+
+echo No firmware bundle found; dropping to FreeDOS shell.
+echo A: is a nonpersistent boot ramdisk
+echo C: is /mnt/usbkey
+echo Useful commands may be found in C:\DOS.  To reboot, utter 'fdapm warmboot'.
+echo\
