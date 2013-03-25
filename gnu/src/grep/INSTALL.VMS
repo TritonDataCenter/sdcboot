@@ -1,0 +1,8 @@
+VMS users should try running the enclosed command file "make.com".
+It may be necessary to add 
+
+#ifdef vms
+#include <perror.h>
+#endif
+
+at line 72 of grep.c.

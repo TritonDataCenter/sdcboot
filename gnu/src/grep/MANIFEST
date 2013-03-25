@@ -1,0 +1,34 @@
+AUTHORS			List of authors and other contributors.
+ChangeLog		Revision history of this program.
+COPYING			Terms for redistribution.
+INSTALL			Compilation and installation instructions.
+INSTALL.VMS		VMS instructions.
+MANIFEST		This file.
+Makefile.in		Source for the Makefile produced by 'configure'.
+NEWS			History of major changes since the last release.
+PROJECTS		Useful things to do.
+README			Overview.
+alloca.c		Doug Gwyn's C alloca() emulation.
+configure		Configuration script used in installation.
+configure.in		Input to autoconf to produce configure.
+dfa.c			Deterministic regexp matcher.
+dfa.h			Interface to dfa.c.
+getopt.c		Argument parser.
+getopt.h		Declarations for getopt.c.
+getpagesize.h		Portability hack for getpagesize().
+grep.c			Main program.
+grep.h			Interface to grep.c for searching subroutines.
+grep.man		Manual page (nroff -man).
+kwset.c			Fixed string keyword set matcher.
+kwset.h			Interface to kwset.c.
+make.com		VMS command script to build grep.
+obstack.c		Stack-oriented allocation subroutines.
+obstack.h		Stack-oriented allocation macros.
+regex.c			Backtracking regexp matcher.
+regex.h			Interface to regex.c and syntax flags shared by dfa.c.
+search.c		Interface from grep to all the matchers.
+tests/check.sh		Driver shell script for the tests.
+tests/khadafy.lines	How many ways can you spell Khaddafy?
+tests/khadafy.regexp	Moby regexp matching the all of them.
+tests/scriptgen.awk	Test script generator.
+tests/spencer.tests	Input for scriptgen.

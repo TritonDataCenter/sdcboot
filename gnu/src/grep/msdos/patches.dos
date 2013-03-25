@@ -1,0 +1,342 @@
+*** orig/dfa.c	Sun May 30 18:02:20 1993
+--- dfa.c	Tue Mar 28 16:40:40 1995
+***************
+*** 13,16 ****
+  
+     You should have received a copy of the GNU General Public License
+     along with this program; if not, write to the Free Software
+!    Foundation, Inc., 675 Mass 
+\ No newline at end of file
+--- 13,18 ----
+  
+     You should have received a copy of the GNU General Public License
+     along with this program; if not, write to the Free Software
+!    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+! 
+! /* Written June
+\ No newline at end of file
+*** orig/getpages.h	Fri May 21 00:18:58 1993
+--- getpages.h	Tue Mar 28 16:40:40 1995
+***************
+*** 1,3 ****
+--- 1,7 ----
++ #ifdef HAVE_CONFIG_H
++ #include "config.h"
++ #endif
++ 
+  #ifdef BSD
+  #ifndef BSD4_1
+  #define HAVE_GETPAGESIZE
+*** orig/grep.c	Sun May 23 00:52:52 1993
+--- grep.c	Tue Mar 28 17:13:36 1995
+***************
+*** 20,28 ****
+--- 20,34 ----
+  #include <errno.h>
+  #include <stdio.h>
+  
++ #ifdef HAVE_CONFIG_H
++ #include "config.h"
++ #endif
++ 
++ #ifndef _MSC_VER
+  #ifndef errno
+  extern int errno;
+  #endif
++ #endif
+  
+  #ifdef STDC_HEADERS
+  #include <stdlib.h>
+***************
+*** 98,105 ****
+--- 104,116 ----
+  int match_lines;
+  
+  /* Functions we'll use to search. */
++ #if __STDC__
++ static void (*compile)(char *, size_t);
++ static char *(*execute)(char *, size_t, char **);
++ #else
+  static void (*compile)();
+  static char *(*execute)();
++ #endif
+  
+  /* For error messages. */
+  static char *prog;
+***************
+*** 314,320 ****
+--- 325,335 ----
+  #else
+    cc = read(bufdesc, buffer + bufsalloc, bufalloc - bufsalloc);
+  #endif
++ #ifdef _MSC_VER
++   if ((cc != 0) && (cc != -1))		/* 1 <= cc <= 65534 is okay (?) */
++ #else
+    if (cc > 0)
++ #endif
+      buflim = buffer + bufsalloc + cc;
+    else
+      buflim = buffer + bufsalloc;
+***************
+*** 331,337 ****
+--- 346,356 ----
+  static int out_after;		/* Lines of trailing context. */
+  
+  /* Internal variables to keep track of byte count, context, etc. */
++ #ifdef _MSC_VER
++ static unsigned long totalcc;	/* Total character count before bufbeg. */
++ #else
+  static size_t totalcc;		/* Total character count before bufbeg. */
++ #endif
+  static char *lastnl;		/* Pointer after last newline counted. */
+  static char *lastout;		/* Pointer after last character output;
+  				   NULL if no character has been output
+***************
+*** 362,372 ****
+    if (out_line)
+      {
+        nlscan(beg);
+!       printf("%d%c", ++totalnl, sep);
+        lastnl = lim;
+      }
+    if (out_byte)
+      printf("%lu%c", totalcc + (beg - bufbeg), sep);
+    fwrite(beg, 1, lim - beg, stdout);
+    if (ferror(stdout))
+      error("writing output", errno);
+--- 381,403 ----
+    if (out_line)
+      {
+        nlscan(beg);
+!       printf("%u%c", ++totalnl, sep);
+        lastnl = lim;
+      }
+    if (out_byte)
++ #ifdef MSDOS
++     {
++       if (!out_line)
++ 	{
++ 	  nlscan(beg);
++ 	  ++totalnl;
++ 	  lastnl = lim;
++ 	}
++       printf("%lu%c", totalcc + (beg - bufbeg) + totalnl - 1, sep);
++     }
++ #else
+      printf("%lu%c", totalcc + (beg - bufbeg), sep);
++ #endif
+    fwrite(beg, 1, lim - beg, stdout);
+    if (ferror(stdout))
+      error("writing output", errno);
+***************
+*** 518,524 ****
+--- 549,559 ----
+  
+    for (;;)
+      {
++ #ifdef _MSC_VER
++       if (fillbuf(save) == -1)
++ #else
+        if (fillbuf(save) < 0)
++ #endif
+  	{
+  	  error(filename, errno);
+  	  return nlines;
+***************
+*** 553,558 ****
+--- 588,597 ----
+        totalcc += buflim - bufbeg - save;
+        if (out_line)
+  	nlscan(beg);
++ #ifdef MSDOS
++       else if (out_byte)
++ 	nlscan(beg);
++ #endif
+      }
+    if (residue)
+      {
+***************
+*** 563,569 ****
+--- 602,612 ----
+    return nlines;
+  }
+  
++ #ifdef MSDOS
++ static char version[] = "GNU grep version 2.0 (MS-DOS rev A)";
++ #else
+  static char version[] = "GNU grep version 2.0";
++ #endif
+  
+  #define USAGE \
+    "usage: %s [-[[AB] ]<num>] [-[CEFGVchilnqsvwx]] [-[ef]] <expr> [<files...>]\n"
+*** orig/kwset.c	Sun May 02 14:26:20 1993
+--- kwset.c	Tue Mar 28 16:40:42 1995
+***************
+*** 28,33 ****
+--- 28,37 ----
+     Vol. 18, No. 6, which describes the failure function used below. */
+  
+  
++ #ifdef HAVE_CONFIG_H
++ #include "config.h"
++ #endif
++ 
+  #ifdef STDC_HEADERS
+  #include <limits.h>
+  #include <stdlib.h>
+*** orig/obstack.h	Fri May 21 21:55:22 1993
+--- obstack.h	Tue Mar 28 16:40:42 1995
+***************
+*** 107,112 ****
+--- 107,117 ----
+     because on word-addressable machines a simple cast to int
+     may ignore the byte-within-word field of the pointer.  */
+  
++ #ifdef _MSC_VER
++ #define __PTR_TO_INT(P) ((unsigned long)(P))
++ #define __INT_TO_PTR(P) ((void *)(P))
++ #endif
++ 
+  #ifndef __PTR_TO_INT
+  #define __PTR_TO_INT(P) ((P) - (char *)0)
+  #endif
+***************
+*** 140,145 ****
+--- 145,154 ----
+  #else
+  #define PTR_INT_TYPE long
+  #endif
++ #ifdef _MSC_VER
++ #undef PTR_INT_TYPE
++ #define PTR_INT_TYPE long
++ #endif
+  
+  struct _obstack_chunk		/* Lives at front of each chunk. */
+  {
+***************
+*** 156,162 ****
+    char	*next_free;		/* where to add next char to current object */
+    char	*chunk_limit;		/* address of char after current chunk */
+    PTR_INT_TYPE temp;		/* Temporary for some macros.  */
+!   int   alignment_mask;		/* Mask of alignment for each object. */
+    struct _obstack_chunk *(*chunkfun) (); /* User's fcn to allocate a chunk.  */
+    void (*freefun) ();		/* User's function to free a chunk.  */
+    char *extra_arg;		/* first arg for chunk alloc/dealloc funcs */
+--- 165,171 ----
+    char	*next_free;		/* where to add next char to current object */
+    char	*chunk_limit;		/* address of char after current chunk */
+    PTR_INT_TYPE temp;		/* Temporary for some macros.  */
+!   long  alignment_mask;		/* Mask of alignment for each object. */
+    struct _obstack_chunk *(*chunkfun) (); /* User's fcn to allocate a chunk.  */
+    void (*freefun) ();		/* User's function to free a chunk.  */
+    char *extra_arg;		/* first arg for chunk alloc/dealloc funcs */
+***************
+*** 218,224 ****
+  
+  void * obstack_base (struct obstack *obstack);
+  void * obstack_next_free (struct obstack *obstack);
+! int obstack_alignment_mask (struct obstack *obstack);
+  int obstack_chunk_size (struct obstack *obstack);
+  
+  #endif /* __STDC__ */
+--- 227,233 ----
+  
+  void * obstack_base (struct obstack *obstack);
+  void * obstack_next_free (struct obstack *obstack);
+! long obstack_alignment_mask (struct obstack *obstack);
+  int obstack_chunk_size (struct obstack *obstack);
+  
+  #endif /* __STDC__ */
+*** orig/regex.c	Fri May 21 00:11:40 1993
+--- regex.c	Tue Mar 28 16:40:44 1995
+***************
+*** 141,146 ****
+--- 141,150 ----
+  #undef isascii
+  #define isascii(c) 1
+  #endif
++ #ifdef _MSC_VER
++ #undef isascii
++ #define isascii(c) (__isascii(c))
++ #endif
+  
+  #ifdef isblank
+  #define ISBLANK(c) (isascii (c) && isblank (c))
+***************
+*** 965,971 ****
+--- 969,979 ----
+  /* This is not an arbitrary limit: the arguments which represent offsets
+     into the pattern are two bytes long.  So if 2^16 bytes turns out to
+     be too small, many things would have to change.  */
++ #ifdef _MSC_VER
++ #define MAX_BUF_SIZE (1L << 15)
++ #else
+  #define MAX_BUF_SIZE (1L << 16)
++ #endif
+  
+  
+  /* Extend the buffer by twice its current size via realloc and
+***************
+*** 980,986 ****
+      bufp->allocated <<= 1;						\
+      if (bufp->allocated > MAX_BUF_SIZE)					\
+        bufp->allocated = MAX_BUF_SIZE; 					\
+!     bufp->buffer = (unsigned char *) realloc (bufp->buffer, bufp->allocated);\
+      if (bufp->buffer == NULL)						\
+        return REG_ESPACE;						\
+      /* If the buffer moved, move all the pointers into it.  */		\
+--- 988,994 ----
+      bufp->allocated <<= 1;						\
+      if (bufp->allocated > MAX_BUF_SIZE)					\
+        bufp->allocated = MAX_BUF_SIZE; 					\
+!     bufp->buffer = (unsigned char *) realloc (bufp->buffer, (size_t)bufp->allocated);\
+      if (bufp->buffer == NULL)						\
+        return REG_ESPACE;						\
+      /* If the buffer moved, move all the pointers into it.  */		\
+***************
+*** 1200,1203 ****
+          }
+        if (!bufp->buffer) return REG_ESPACE;
+  
+!       bufp->allocated = INIT_BUF_SIZE
+\ No newline at end of file
+--- 1208,1211 ----
+          }
+        if (!bufp->buffer) return REG_ESPACE;
+  
+!       bufp->allocated = INIT_BUF_SIZE;
+\ No newline at end of file
+*** orig/regex.h	Fri May 21 00:11:42 1993
+--- regex.h	Tue Mar 28 16:40:44 1995
+***************
+*** 35,41 ****
+     remains the value 0.  The bits are given in alphabetical order, and
+     the definitions shifted by one from the previous bit; thus, when we
+     add or remove a bit, only one other definition need change.  */
+! typedef unsigned reg_syntax_t;
+  
+  /* If this bit is not set, then \ inside a bracket expression is literal.
+     If set, then such a \ quotes the following character.  */
+--- 35,41 ----
+     remains the value 0.  The bits are given in alphabetical order, and
+     the definitions shifted by one from the previous bit; thus, when we
+     add or remove a bit, only one other definition need change.  */
+! typedef unsigned long reg_syntax_t;
+  
+  /* If this bit is not set, then \ inside a bracket expression is literal.
+     If set, then such a \ quotes the following character.  */
+*** orig/search.c	Sun May 02 16:02:00 1993
+--- search.c	Tue Mar 28 16:40:44 1995
+***************
+*** 19,24 ****
+--- 19,28 ----
+  
+  #include <ctype.h>
+  
++ #ifdef HAVE_CONFIG_H
++ #include "config.h"
++ #endif
++ 
+  #ifdef STDC_HEADERS
+  #include <limits.h>
+  #include <stdlib.h>

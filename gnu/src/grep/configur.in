@@ -1,0 +1,70 @@
+dnl Process this file with autoconf to produce a configure script
+AC_INIT(grep.c)
+AC_PROG_AWK
+AC_PROG_CC
+AC_ISC_POSIX
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_STDC_HEADERS
+AC_HAVE_HEADERS(string.h sys/param.h)
+AC_MEMORY_H
+AC_UNISTD_H
+AC_SIZE_T
+AC_ALLOCA
+AC_HAVE_FUNCS(getpagesize memchr strerror valloc)
+AC_CHAR_UNSIGNED
+AC_CONST
+echo checking for working mmap
+AC_TEST_PROGRAM([
+#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/mman.h>
+
+#ifdef BSD
+#ifndef BSD4_1
+#define HAVE_GETPAGESIZE
+#endif
+#endif
+#ifndef HAVE_GETPAGESIZE
+#include <sys/param.h>
+#ifdef EXEC_PAGESIZE
+#define getpagesize() EXEC_PAGESIZE
+#else
+#ifdef NBPG
+#define getpagesize() NBPG * CLSIZE
+#ifndef CLSIZE
+#define CLSIZE 1
+#endif /* no CLSIZE */
+#else /* no NBPG */
+#define getpagesize() NBPC
+#endif /* no NBPG */
+#endif /* no EXEC_PAGESIZE */
+#endif /* not HAVE_GETPAGESIZE */
+
+#ifdef __osf__
+#define valloc malloc
+#endif
+
+extern char *valloc();
+
+int
+main()
+{
+  char *buf1, *buf2;
+  int i = getpagesize(), j;
+  int fd;
+
+  buf1 = valloc(i);
+  buf2 = valloc(i);
+  for (j = 0; j < i; ++j)
+    *(buf1 + j) = rand();
+  fd = open("conftestmmap", O_CREAT | O_RDWR, 0666);
+  write(fd, buf1, i);
+  mmap(buf2, i, PROT_READ | PROT_WRITE, MAP_FIXED | MAP_PRIVATE, fd, 0);
+  for (j = 0; j < i; ++j)
+    if (*(buf1 + j) != *(buf2 + j))
+      exit(1);
+  exit(0);
+}
+], AC_DEFINE(HAVE_WORKING_MMAP))
+AC_OUTPUT(Makefile)
