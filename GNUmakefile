@@ -136,6 +136,7 @@ GNU_BINS = \
 	cut.exe \
 	expand.exe \
 	fold.exe \
+	grep.exe \
 	head.exe \
 	join.exe \
 	nl.exe \
@@ -150,6 +151,9 @@ GNU_BINS = \
 	unexpand.exe \
 	uniq.exe \
 	wc.exe
+
+MISC_BINS = \
+	sed.exe
 
 JOYENT_BINS = \
 	int14.com
@@ -167,7 +171,9 @@ SUBMODULE_DIRS = \
 	syslinux
 
 ROOT_JOYENT_BINS =	$(JOYENT_BINS:%=$(FREEDOS_ROOT)/joyent/%)
-ROOT_FREEDOS_BINS =	$(FREEDOS_BINS:%=$(FREEDOS_ROOT)/freedos/%)
+ROOT_FREEDOS_BINS =	\
+	$(FREEDOS_BINS:%=$(FREEDOS_ROOT)/freedos/%) \
+	$(MISC_BINS:%=$(FREEDOS_ROOT)/freedos/%)
 ROOT_DOS_BINS =		$(DOS_BINS:%=$(FREEDOS_ROOT)/%)
 ROOT_GNU_BINS =		$(GNU_BINS:%=$(FREEDOS_ROOT)/gnu/%)
 ROOT_BOOT_BINS =	$(BOOT_BINS:%=$(BOOT_ROOT)/%)
@@ -216,6 +222,9 @@ $(FREEDOS_ROOT)/freedos: | $(FREEDOS_ROOT)
 	$(INS.dir)
 
 $(FREEDOS_ROOT)/freedos/%: freedos/bin/% | $(FREEDOS_ROOT)/freedos
+	$(INS.file)
+
+$(FREEDOS_ROOT)/freedos/%: misc/% | $(FREEDOS_ROOT)/freedos
 	$(INS.file)
 
 $(FREEDOS_ROOT)/freedos/%: memdisk/% | $(FREEDOS_ROOT)/freedos
