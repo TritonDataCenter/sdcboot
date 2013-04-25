@@ -1,0 +1,17 @@
+#!ipxe
+
+#
+# We attempt to boot from 10Gb interfaces first, if there are any that match
+# our expected PCI ID.  Failing that, try anything.
+#
+iseq ${net0/busid} 01:80:86:10:fb && autoboot net0 ||
+iseq ${net1/busid} 01:80:86:10:fb && autoboot net1 ||
+iseq ${net2/busid} 01:80:86:10:fb && autoboot net2 ||
+iseq ${net3/busid} 01:80:86:10:fb && autoboot net3 ||
+iseq ${net4/busid} 01:80:86:10:fb && autoboot net4 ||
+iseq ${net5/busid} 01:80:86:10:fb && autoboot net5 ||
+iseq ${net6/busid} 01:80:86:10:fb && autoboot net6 ||
+iseq ${net7/busid} 01:80:86:10:fb && autoboot net7 ||
+iseq ${net8/busid} 01:80:86:10:fb && autoboot net8 ||
+iseq ${net9/busid} 01:80:86:10:fb && autoboot net9 ||
+autoboot
