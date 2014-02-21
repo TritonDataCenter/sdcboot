@@ -44,9 +44,10 @@ MFORMAT.bootflop = \
 #
 IPXE_ENV = \
 	AS=/opt/local/bin/as \
-	LD=/opt/local/bin/ld \
+	LD=/opt/local/bin/gld \
 	AWK=/usr/bin/nawk \
 	GREP=/usr/xpg4/bin/grep \
+	GITVERSION= \
 	V=1
 
 MAPFILE =	mapfile-dos
