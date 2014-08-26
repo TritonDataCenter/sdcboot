@@ -1,6 +1,14 @@
 @echo off
 
-rem Copyright (c) 2013 Joyent, Inc.  All rights reserved.
+rem
+rem This Source Code Form is subject to the terms of the Mozilla Public
+rem License, v. 2.0. If a copy of the MPL was not distributed with this
+rem file, You can obtain one at http://mozilla.org/MPL/2.0/.
+rem
+
+rem
+rem Copyright (c) 2014, Joyent, Inc.
+rem
 
 c:\dos\freedos\getargs > c:\dos\tmp.bat
 call c:\dos\tmp.bat > nul

@@ -1,11 +1,19 @@
 /*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
+/*
+ * Copyright (c) 2014, Joyent, Inc.
+ */
+
+/*
  * DOS "COM" style TSR
  *
  * Installs alternate handler for int 14 (BIOS serial I/O) and exits.
  * Note that the PSP is from CS:0000 to CS:0100.  We cannot put anything
  * there, and must save it when we terminate.
- *
- * Copyright (c) 2013 Joyent, Inc.  All rights reserved.
  */
 
 #define	IVT_INT14_IP	(0x14 * 4)
