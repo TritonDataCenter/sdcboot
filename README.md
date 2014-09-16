@@ -1,3 +1,34 @@
+sdcboot
+=======
+Provide separate build and release for GPL artifacts used to provide an
+optional SmartOS Firmware Diagnostics and Upgrade Mode.
+
+Example: Add FreeDOS FDUM to SmartOS USB Key
+--------------------------------------------
+ 1. Run **make** on a multiarch SmartOS zone.
+ 2. Copy **proto/boot/memdisk** and **proto/boot/freedos.img** to
+    **grub/boot** on the USB key.
+ 3. Copy **proto/dos** to **dos** on the USB key.
+ 4. Add the following to **grub/menu.lst**:
+
+    ```
+    title Firmware Diagnostics and Update Mode [FreeDOS]
+       kernel /boot/grub/memdisk
+       module /boot/grub/freedos.img
+    ```
+
+ 5. Create a **firmware** directory on the root of the USB key.
+ 5. Copy DOS-compatible **BIOS.exe** to **firmware** on the USB key.
+ 6. Boot to **Firmware Diagnostics and Update Mode [FreeDOS]**.
+
+    Machine will boot to **A:\** unless **firmware/main.bat** is on the USB
+    key.  Getting that **firmware/main.bat** to work is an exercise for
+    the reader.
+ 7. Run your BIOS Update **C:\firmware\BIOS.exe** (or whatever you named
+    it).
+
+Contents
+--------
 This repository contains the following:
 
 - FreeDOS 1.1 with all source and tools
@@ -8,6 +39,8 @@ This repository contains the following:
 - A replacement for the BIOS int 0x14 service that actually works
 - Glue for building the FreeDOS-related portions of the SDC boot system
 
+Purpose
+-------
 This repository serves three main purposes: first, it contains the
 original sources for all DOS-related binaries.  Since we don't have any
 ability to build them, they aren't really useful, but we still need them
