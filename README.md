@@ -1,3 +1,24 @@
+<!--
+    This Source Code Form is subject to the terms of the Mozilla Public
+    License, v. 2.0. If a copy of the MPL was not distributed with this
+    file, You can obtain one at http://mozilla.org/MPL/2.0/.
+-->
+
+<!--
+    Copyright (c) 2014, Joyent, Inc.
+-->
+
+# sdcboot
+
+This repository is part of the Joyent SmartDataCenter project (SDC).  For
+contribution guidelines, issues, and general documentation, visit the main
+[SDC](http://github.com/joyent/sdc) project page.
+
+Note that most of the contents of this repository are covered by their
+own separate licenses and copyright statements.
+
+# Development
+
 This repository contains the following:
 
 - FreeDOS 1.1 with all source and tools
@@ -8,7 +29,7 @@ This repository contains the following:
 - A replacement for the BIOS int 0x14 service that actually works
 - Glue for building the FreeDOS-related portions of the SDC boot system
 
-This repository serves three main purposes: first, it contains the
+The repository serves three main purposes: first, it contains the
 original sources for all DOS-related binaries.  Since we don't have any
 ability to build them, they aren't really useful, but we still need them
 due to licensing requirements.  Second, this repository assembles a
@@ -40,3 +61,7 @@ If we do later need to change any of these before we finally rid
 ourselves of the need for them, we can revisit then.  In any case, for
 those who so desire, all of the source is included here or in
 submodules.  Changes to build from source would generally be welcome.
+
+# Testing
+
+No tests are available.
