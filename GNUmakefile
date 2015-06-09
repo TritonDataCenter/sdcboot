@@ -166,6 +166,7 @@ JOYENT_BINS = \
 	int14.com
 
 BOOT_BINS = \
+	undionly.kpxe \
 	default.ipxe \
 	ipxe.lkrn \
 	memdisk
@@ -205,6 +206,7 @@ $(FREEDOS_ROOT)/gnu/%.exe :	FILEMODE = 755
 $(BOOT_ROOT)/memdisk :		FILEMODE = 755
 $(BOOT_ROOT)/ipxe.lkrn :	FILEMODE = 755
 $(BOOT_ROOT)/default.ipxe :	FILEMODE = 644
+$(BOOT_ROOT)/undionly.kpxe :	FILEMODE = 644
 
 .PHONY: all
 all: $(SUBMODULES) $(ROOT_FREEDOS) $(ROOT_BOOT) $(FLOPPY_IMAGE)
