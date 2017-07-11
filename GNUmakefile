@@ -8,6 +8,8 @@
 # Copyright (c) 2014, Joyent, Inc.
 #
 
+# WARNING: this has only been tested to build on SmartOS
+
 NAME =	sdcboot
 
 TOP :=	$(shell pwd)
