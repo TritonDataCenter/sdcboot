@@ -5,10 +5,14 @@
 -->
 
 <!--
-    Copyright (c) 2014, Joyent, Inc.
+    Copyright (c) 2018, Joyent, Inc.
 -->
 
 # sdcboot
+
+*This repository is now retired, as we deliver (only) iPXE straight from the
+[ipxe](https://github.com/joyent/ipxe) repository. The below is of historical
+interest only.*
 
 This repository is part of the Joyent SmartDataCenter project (SDC).  For
 contribution guidelines, issues, and general documentation, visit the main
