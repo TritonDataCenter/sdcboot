@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2014, Joyent, Inc.
+# Copyright (c) 2019, Joyent, Inc.
 #
 
 NAME =	sdcboot
@@ -19,7 +19,7 @@ BOOT_ROOT =	$(ROOT)/boot
 RELEASE_TARBALL =	$(NAME)-$(STAMP).tgz
 CLEAN_FILES += \
 	$(ROOT) \
-	$(NAME)-pkg-*.tar.gz \
+	$(NAME)-*.tgz \
 	src/*.o \
 	src/*.elf \
 	src/*.com \
@@ -59,7 +59,7 @@ IPXE_ENV = \
 MAPFILE =	mapfile-dos
 CC =		/opt/local/bin/gcc
 LD =		/usr/bin/ld
-TAR =		/opt/local/bin/tar
+TAR =		/usr/bin/gtar
 MKDIR =		/usr/bin/mkdir
 MKFILE =	/usr/sbin/mkfile
 CP =		/usr/bin/cp
@@ -196,7 +196,8 @@ ROOT_FREEDOS = \
 
 ROOT_BOOT =	$(ROOT_BOOT_BINS)
 
-include ./tools/mk/Makefile.defs
+ENGBLD_REQUIRE	:= $(shell git submodule update --init deps/eng)
+include ./deps/eng/tools/mk/Makefile.defs
 
 $(FREEDOS_ROOT)/autoexec.bat :	FILEMODE = 755
 $(FREEDOS_ROOT)/joyent/%.com :	FILEMODE = 755
@@ -300,25 +301,18 @@ ipxe.clean:
 release: $(RELEASE_TARBALL)
 
 $(RELEASE_TARBALL): pkg
-	(cd $(ROOT); $(TAR) czf $(TOP)/$(RELEASE_TARBALL) .)
+	(cd $(ROOT); $(TAR) -I pigz -cf $(TOP)/$(RELEASE_TARBALL) .)
 
-publish: prepublish $(BITS_DIR)/$(NAME)/$(RELEASE_TARBALL)
-
-.PHONY: prepublish
-prepublish:
-	@if [[ -z "$(BITS_DIR)" ]]; then \
-		echo "error: 'BITS_DIR' must be set for 'publish' target"; \
-		exit 1; \
-	fi
-	@if [[ ! -d "$(BITS_DIR)" ]]; then \
-		echo "error: $(BITS_DIR) is not a directory"; \
+publish: $(ENGBLD_BITS_DIR)/$(NAME)/$(RELEASE_TARBALL)
+	@if [[ ! -d "$(ENGBLD_BITS_DIR)" ]]; then \
+		echo "error: $(ENGBLD_BITS_DIR) is not a directory"; \
 		exit 1; \
 	fi
 
-$(BITS_DIR)/$(NAME)/$(RELEASE_TARBALL): $(RELEASE_TARBALL) | $(BITS_DIR)/$(NAME)
+$(ENGBLD_BITS_DIR)/$(NAME)/$(RELEASE_TARBALL): $(RELEASE_TARBALL) | $(ENGBLD_BITS_DIR)/$(NAME)
 	$(INS.file)
 
-$(BITS_DIR)/$(NAME):
+$(ENGBLD_BITS_DIR)/$(NAME):
 	$(INS.dir)
 
-include ./tools/mk/Makefile.targ
+include ./deps/eng/tools/mk/Makefile.targ

@@ -7,3 +7,6 @@
 [submodule "ipxe"]
 	path = ipxe
 	url = https://github.com/joyent/ipxe
+[submodule "deps/eng"]
+	path = deps/eng
+	url = git@github.com:joyent/eng.git
